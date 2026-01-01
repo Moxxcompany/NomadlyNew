@@ -298,11 +298,65 @@ const client = new MongoClient(process.env.MONGO_URL, {
     strict: true,
     deprecationErrors: true,
   },
+  maxPoolSize: 10,
+  minPoolSize: 2,
+  maxIdleTimeMS: 30000,
+  connectTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
+  serverSelectionTimeoutMS: 10000,
+  heartbeatFrequencyMS: 10000,
+  retryWrites: true,
+  retryReads: true,
 })
-client
-  .connect()
-  .then(loadData)
-  .catch(err => log('DB Error bro', err, err?.message))
+
+let isDbConnected = false
+
+client.on('connectionPoolCleared', () => {
+  log('⚠️ MongoDB connection pool cleared')
+  isDbConnected = false
+})
+
+client.on('connectionPoolReady', () => {
+  log('✅ MongoDB connection pool ready')
+  isDbConnected = true
+})
+
+client.on('serverHeartbeatFailed', (event) => {
+  log('❌ MongoDB heartbeat failed:', event.failure?.message || 'unknown error')
+  isDbConnected = false
+})
+
+client.on('serverHeartbeatSucceeded', () => {
+  if (!isDbConnected) {
+    log('✅ MongoDB heartbeat restored')
+    isDbConnected = true
+  }
+})
+
+const connectWithRetry = async (retryCount = 0) => {
+  const maxRetries = 5
+  const retryDelay = Math.min(1000 * Math.pow(2, retryCount), 30000)
+  
+  try {
+    await client.connect()
+    isDbConnected = true
+    await loadData()
+  } catch (err) {
+    log(`❌ DB connection failed (attempt ${retryCount + 1}/${maxRetries}):`, err?.message)
+    isDbConnected = false
+    
+    if (retryCount < maxRetries - 1) {
+      log(`🔄 Retrying in ${retryDelay / 1000} seconds...`)
+      setTimeout(() => connectWithRetry(retryCount + 1), retryDelay)
+    } else {
+      log('❌ Max retries reached. Please check your MongoDB connection.')
+    }
+  }
+}
+
+connectWithRetry()
+
+const isDbHealthy = () => isDbConnected
 
 
 async function sendRemindersForExpiringPackages() {
@@ -5428,8 +5482,23 @@ app.get('/woo', (req, res) => {
   log(req.hostname + req.originalUrl)
   res.send(html('woo'))
 })
-app.get('/health', (req, res) => {
-  res.send(html('health ok'))
+app.get('/health', async (req, res) => {
+  const dbHealthy = isDbHealthy()
+  
+  if (!dbHealthy) {
+    log('⚠️ Health check failed: Database not connected')
+    return res.status(503).json({
+      status: 'unhealthy',
+      database: 'disconnected',
+      uptime: ((new Date() - serverStartTime) / (1000 * 60 * 60)).toFixed(2) + ' hours'
+    })
+  }
+  
+  res.json({
+    status: 'healthy',
+    database: 'connected',
+    uptime: ((new Date() - serverStartTime) / (1000 * 60 * 60)).toFixed(2) + ' hours'
+  })
 })
 app.get('/json1444', async (req, res) => {
   await backupTheData()
