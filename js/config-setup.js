@@ -159,9 +159,9 @@ const setDefault = (key, value) => {
 
 // Core application defaults
 setDefault('DB_NAME', 'nomadly_bot');
-setDefault('HOSTED_ON', 'replit');
-setDefault('SELF_URL', 'https://nomadly-bot.replit.dev');
+setDefault('HOSTED_ON', 'railway');
 setDefault('REST_APIS_ON', 'true');
+// NOTE: SELF_URL must be set via environment variable - no default to avoid webhook conflicts
 setDefault('CHAT_BOT_NAME', 'NomadlyBot');
 setDefault('CHAT_BOT_BRAND', 'Nomadly');
 
