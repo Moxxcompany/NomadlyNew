@@ -1397,30 +1397,41 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
       const caption = dynamicMessage || (promoMessages[lang]?.[theme] || promoMessages.en[theme])[variationIndex % 5]
       const bannerUrl = PROMO_BANNERS[theme]
 
-      try {
+      const trySend = async (useHtml) => {
+        const opts = useHtml ? { parse_mode: 'HTML' } : {}
         if (bannerUrl) {
-          await bot.sendPhoto(chatId, bannerUrl, { caption, parse_mode: 'HTML' })
+          try {
+            await bot.sendPhoto(chatId, bannerUrl, { caption, ...opts })
+          } catch (photoErr) {
+            // Photo URL failed — fall back to text-only
+            log(`[AutoPromo] Photo send failed for ${chatId}, falling back to text: ${photoErr.message}`)
+            await bot.sendMessage(chatId, caption, { ...opts, disable_web_page_preview: true })
+          }
         } else {
-          await bot.sendMessage(chatId, caption, { parse_mode: 'HTML', disable_web_page_preview: true })
+          await bot.sendMessage(chatId, caption, { ...opts, disable_web_page_preview: true })
         }
+      }
+
+      try {
+        await trySend(true)
       } catch (parseErr) {
-        // If HTML parsing fails (bad AI output), retry without parse_mode
         if (parseErr.message?.includes('parse') || parseErr.response?.statusCode === 400) {
           log(`[AutoPromo] HTML parse error for ${chatId}, retrying plain text`)
-          if (bannerUrl) {
-            await bot.sendPhoto(chatId, bannerUrl, { caption })
-          } else {
-            await bot.sendMessage(chatId, caption, { disable_web_page_preview: true })
-          }
+          await trySend(false)
         } else {
           throw parseErr
         }
       }
       return { success: true }
     } catch (error) {
-      if (error.response?.statusCode === 403) {
+      const code = error.response?.statusCode
+      if (code === 403) {
         await setOptOut(chatId, true)
         log(`[AutoPromo] User ${chatId} blocked bot, auto opted-out`)
+      } else if (code === 429) {
+        log(`[AutoPromo] Rate limited sending to ${chatId}`)
+      } else {
+        log(`[AutoPromo] Failed to send to ${chatId}: [${code || 'unknown'}] ${error.message}`)
       }
       return { success: false, error: error.message }
     }
