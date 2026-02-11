@@ -427,7 +427,12 @@ bot?.on('message', async msg => {
   const chatId = msg?.chat?.id
   const message = msg?.text || ''
   log('message: ' + message + '\tfrom: ' + chatId + ' ' + msg?.from?.username)
-  NOT_TRY_CR === undefined && tryConnectReseller() // our ip may change on railway hosting so make sure its correct
+  // Throttle Connect Reseller IP check to once per hour instead of every message
+  const now_cr = Date.now()
+  if (NOT_TRY_CR === undefined && now_cr - last_cr_check_time > 3600000) {
+    last_cr_check_time = now_cr
+    tryConnectReseller()
+  }
 
   // License check cached at startup to avoid blocking every message
 
