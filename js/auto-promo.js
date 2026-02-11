@@ -1357,4 +1357,4 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
   }
 }
 
-module.exports = { initAutoPromo, promoMessages }
+module.exports = { initAutoPromo, promoMessages, PROMO_BANNERS }
