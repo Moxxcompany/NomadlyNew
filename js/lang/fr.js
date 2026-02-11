@@ -390,6 +390,8 @@ ${
   dnsRecordUpdated: `Enregistrement mis à jour`,
   provideLink: `Veuillez fournir une URL valide. ex https://google.com`,
   comingSoonWithdraw: `Retrait bientôt disponible. Contactez le support ${SUPPORT_USERNAME}. Découvrez plus ${TG_HANDLE}.`,
+  promoOptOut: `Vous avez été désabonné des messages promotionnels. Tapez /start_promos pour vous réabonner à tout moment.`,
+  promoOptIn: `Vous êtes de nouveau abonné aux messages promotionnels. Vous recevrez nos dernières offres et promotions !`,
   selectCurrencyToDeposit: `Veuillez sélectionner la devise à déposer`,
   depositNGN: `Veuillez entrer le montant NGN :`,
   askEmailForNGN: `Veuillez fournir un email pour la confirmation du paiement`,

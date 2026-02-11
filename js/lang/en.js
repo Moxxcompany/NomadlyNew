@@ -418,6 +418,8 @@ ${
   provideLink: 'Please provide a valid URL. e.g https://google.com',
 
   comingSoonWithdraw: `Withdraw coming soon. Contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
+  promoOptOut: `You have been unsubscribed from promotional messages. Type /start_promos to re-subscribe anytime.`,
+  promoOptIn: `You have been re-subscribed to promotional messages. You will receive our latest offers and deals!`,
 
   selectCurrencyToDeposit: `Please select currency to deposit`,
 

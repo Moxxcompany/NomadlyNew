@@ -381,6 +381,8 @@ ${
   dnsRecordUpdated: `记录已更新`,
   provideLink: `请输入有效的 URL。例如：https://google.com`,
   comingSoonWithdraw: `提现即将上线。请联系支持 ${SUPPORT_USERNAME}。更多信息请访问 ${TG_HANDLE}。`,
+  promoOptOut: `您已取消订阅促销消息。输入 /start_promos 随时重新订阅。`,
+  promoOptIn: `您已重新订阅促销消息。您将收到我们最新的优惠和活动！`,
   selectCurrencyToDeposit: `请选择要存入的货币`,
   depositNGN: `请输入 NGN 金额：`,
   askEmailForNGN: `请输入支付确认邮件`,
