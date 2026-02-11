@@ -82,6 +82,16 @@ Tested user-provided credentials with real phone numbers:
 - Exported `PROMO_BANNERS` for easy URL management
 - All message captions verified under Telegram's 1024-char limit
 
+### 8. AI-Powered Dynamic Promos (Session 3 - Feb 2026)
+- Integrated OpenAI GPT-4o-mini for on-the-fly promo message generation
+- Each broadcast generates a fresh, unique message per theme+language
+- Service context (pricing, features, CTAs) baked into prompts for accuracy
+- Friendly, persuasive tone with Telegram HTML formatting
+- Automatic fallback to static messages if OpenAI fails
+- Admin alert via Telegram bot on AI failure (APP_OPEN_API_KEY issue)
+- Stats track whether AI or static was used per broadcast
+- New dependency: `openai` npm package
+
 ---
 
 ## MongoDB Collections (New)
