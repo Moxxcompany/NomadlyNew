@@ -1,29 +1,30 @@
 # PRD - Telegram Bot (tg-bot-link-shorten)
 
 ## Overview
-A Telegram bot for URL shortening, domain purchasing, phone lead gen/validation, web hosting, VPS management, and crypto/bank payments.
+Telegram bot for URL shortening, domain purchasing, phone lead gen/validation, web hosting, VPS, and crypto/bank payments.
 
 ## Architecture
-- **Runtime**: Node.js v20
-- **Entry**: `js/start-bot.js` -> `js/_index.js`
-- **Database**: MongoDB local (Railway URL preserved in MONGO_URL_RAILWAY)
-- **Bot**: `node-telegram-bot-api` (webhook mode)
-- **Express**: Port 8001 with `/api` prefix stripping middleware
-- **Webhook**: `https://...emergentagent.com/api/telegram/webhook`
+- **Runtime**: Node.js v20 | **DB**: MongoDB (Railway) | **Bot**: node-telegram-bot-api (webhook)
+- **Express**: Port 8001 with optional `/api` prefix stripping middleware
+
+## Environment-Agnostic Design (Railway + Emergent)
+The code uses `${SELF_URL}/path` everywhere. The only difference between environments is SELF_URL:
+- **Railway**: `SELF_URL="https://nomadlynew-production.up.railway.app"` → no prefix needed
+- **Emergent**: `SELF_URL="https://pod.emergentagent.com/api"` → middleware strips `/api`
+
+This means:
+- URL shortener: `${SELF_URL}/${slug}` works on both
+- Callbacks: `${SELF_URL}/dynopay/...` routes correctly on both
+- Webhook: `${SELF_URL}/telegram/webhook` works on both
+- Custom domains: fallback lookup in `/:id` handler
 
 ## Fixes Applied
-- [Jan 2026] Added `/api` prefix stripping middleware in Express (Emergent ingress passes `/api/*` without stripping)
-- [Jan 2026] Webhook URL set to `SELF_URL/api/telegram/webhook` for correct Emergent routing
-- [Jan 2026] Removed blocking `raw.githubusercontent.com` check on every message
-- [Jan 2026] Switched to local MongoDB (Railway DB unreachable from pod)
-- [Jan 2026] Removed `serverApi` strict mode from MongoClient (local MongoDB incompatible)
-
-## Bot Status: RUNNING
-- MongoDB: Connected
-- Express: Listening on port 8001
-- Telegram webhook: Active, receiving and processing /start messages
-- All routes accessible via `/api/*` prefix
+- [Jan 2026] Added `/api` prefix stripping middleware (Emergent-only, no-op on Railway)
+- [Jan 2026] Fixed `/:id` redirect handler: primary lookup via SELF_URL key, fallback via req.hostname for custom domains
+- [Jan 2026] Fixed DynoPay env var mismatch (DYNOPAY_* vs DYNO_PAY_*)
+- [Jan 2026] Removed blocking GitHub API check on every message
 
 ## Backlog
-- P1: Data migration from Railway MongoDB if needed
+- P1: Test full URL shortener e2e (create + redirect)
+- P2: Verify Cutt.ly API key still works
 - P2: npm security audit
