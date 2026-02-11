@@ -2988,17 +2988,17 @@ bot?.on('message', async msg => {
 
   if (action === a.redSelectProvider) {
     if (message === t.back) return goto.redSelectUrl()
-    if (message === user.buyPlan) return send(chatId, trans('l.redirectMessage'))
+    if (message === user.buyPlan) return goto['choose-subscription']()
     const redSelectProvider = trans('redSelectProvider')
     if (!redSelectProvider.includes(message)) return send(chatId, t.what)
     saveInfo('provider', message)
     // bitly
     if (message === redSelectProvider[0]) {
-      return send(chatId, trans('l.redirectMessage'))
+      return goto.redSelectRandomCustom()
     }
     // cuttly
     if (redSelectProvider[1] === message) {
-      return send(chatId, trans('l.redirectMessage'))
+      return goto.redSelectRandomCustom()
     }
   }
   if (action === a.redSelectRandomCustom) {
@@ -3104,7 +3104,7 @@ bot?.on('message', async msg => {
   }
 
   if (message === user.urlShortener) {
-    return send(chatId, trans('l.redirectMessage'))
+    return goto['choose-url-to-shorten']()
   }
   if (action === 'choose-url-to-shorten') {
     if (message === t.back) return goto.submenu1()
@@ -3183,7 +3183,7 @@ bot?.on('message', async msg => {
   //
   //
   if (message === user.buyDomainName) {
-    return send(chatId, trans('l.redirectMessage'))
+    return goto['choose-domain-to-buy']()
   }
   if (action === 'choose-domain-to-buy') {
     if (message === t.back) return goto.submenu2()
@@ -3598,7 +3598,7 @@ bot?.on('message', async msg => {
   }
   //
   if (message === user.buyPlan) {
-    return send(chatId, trans('l.redirectMessage'))
+    return goto['choose-subscription']()
   }
   if (action === 'choose-subscription') {
     const planOptionsOf = trans('planOptionsOf')
@@ -3703,7 +3703,6 @@ bot?.on('message', async msg => {
   //
   //
   if (message === user.dnsManagement) {
-    return send(chatId, trans('l.redirectMessage'))
     if (!(await ownsDomainName(chatId))) {
       send(chatId, t.noDomainFound)
       return
