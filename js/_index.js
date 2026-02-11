@@ -831,7 +831,7 @@ bot?.on('message', async msg => {
       const { amount, tickerView, userLanguage } = info
       const ticker = tickerOf[tickerView]
       if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
-        const { address, bb } = await getCryptoDepositAddress(ticker, chatId, SELF_URL, `/crypto-wallet?a=b&ref=${ref}&`)
+        const { address, bb } = await getCryptoDepositAddress(ticker, chatId, SELF_URL, `/api/crypto-wallet?a=b&ref=${ref}&`)
         if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
         log({ ref })
         sendQrCode(bot, chatId, bb, userLanguage ?? 'en')
@@ -3296,7 +3296,7 @@ bot?.on('message', async msg => {
       const ref = nanoid()
       if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
         const coin = tickerOf[ticker]
-        const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-domain?a=b&ref=${ref}&`)
+        const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/api/crypto-pay-domain?a=b&ref=${ref}&`)
         if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
         set(chatIdOfPayment, ref, { chatId, price, domain })
         saveInfo('ref', ref)
@@ -3377,7 +3377,7 @@ bot?.on('message', async msg => {
     const ref = nanoid()
     if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
       const coin = tickerOf[ticker]
-      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-hosting?a=b&ref=${ref}&`)
+      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/api/crypto-pay-hosting?a=b&ref=${ref}&`)
       if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
       set(chatIdOfPayment, ref, { chatId, price, domain })
       log({ ref })
@@ -3471,7 +3471,7 @@ bot?.on('message', async msg => {
     if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
       const coin = tickerOf[ticker]
       set(chatIdOfPayment, ref, { chatId, price, vpsDetails })
-      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-vps?a=b&ref=${ref}&`)
+      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/api/crypto-pay-vps?a=b&ref=${ref}&`)
       if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
       log({ ref })
       await sendQrCode(bot, chatId, bb, info?.userLanguage ?? 'en')
@@ -3561,7 +3561,7 @@ bot?.on('message', async msg => {
     if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
       const coin = tickerOf[ticker]
       set(chatIdOfPayment, ref, { chatId, price, vpsDetails })
-      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-upgrade-vps?a=b&ref=${ref}&`)
+      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/api/crypto-pay-upgrade-vps?a=b&ref=${ref}&`)
       if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
       log({ ref })
       await sendQrCode(bot, chatId, bb, info?.userLanguage ?? 'en')
@@ -3664,7 +3664,7 @@ bot?.on('message', async msg => {
     const price = info?.couponApplied ? info?.newPrice : info?.price 
     if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
       const coin = tickerOf[ticker]
-      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-plan?a=b&ref=${ref}&`)
+      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/api/crypto-pay-plan?a=b&ref=${ref}&`)
       if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
       set(chatIdOfPayment, ref, { chatId, price, plan })
       log({ ref })
