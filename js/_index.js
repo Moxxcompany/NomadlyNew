@@ -1943,7 +1943,7 @@ bot?.on('message', async msg => {
       try {
         const { url } = info
         const slug = nanoid()
-        const __shortUrl = `${SELF_URL}/${slug}`
+        const __shortUrl = `${SELF_URL}/api/${slug}`
         _shortUrl = await createShortBitly(__shortUrl)
         const shortUrl = __shortUrl.replaceAll('.', '@').replace('https://', '')
         increment(totalShortLinks)
@@ -3009,7 +3009,7 @@ bot?.on('message', async msg => {
           set(linksOf, chatId, shortUrl, url)
         } else {
           const slug = nanoid()
-          const __shortUrl = `${SELF_URL}/${slug}`
+          const __shortUrl = `${SELF_URL}/api/${slug}`
           _shortUrl = await createShortUrlApi(__shortUrl)
           shortUrl = __shortUrl.replaceAll('.', '@').replace('https://', '')
           const shortUrlLink = _shortUrl.replaceAll('.', '@').replace('https://', '')
