@@ -120,6 +120,7 @@ const {
 } = require('./vm-instance-setup.js')
 const { console } = require('inspector')
 const BROADCAST_CONFIG = require('./broadcast-config.js')
+const { initAutoPromo } = require('./auto-promo.js')
 
 process.env['NTBA_FIX_350'] = 1
 
