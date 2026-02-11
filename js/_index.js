@@ -414,7 +414,7 @@ async function sendRemindersForExpiringPackages() {
   }
 }
 
-schedule.scheduleJob('* * * * *', function() {
+schedule.scheduleJob('*/5 * * * *', function() {
   sendRemindersForExpiringPackages()
 })
 
@@ -4480,7 +4480,7 @@ const buyDomainFullProcess = async (chatId, lang, domain) => {
   }
 }
 
-schedule.scheduleJob('* * * * *', function() {
+schedule.scheduleJob('*/5 * * * *', function() {
   checkVPSPlansExpiryandPayment()
 })
 
