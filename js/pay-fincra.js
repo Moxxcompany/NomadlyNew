@@ -18,7 +18,7 @@ const createCheckout = async (amount, redirectPath, email, name, ref) => {
       customer: { name: 'Name is ' + name, email },
       paymentMethods: ['bank_transfer', 'card'],
       amount: Number(amount),
-      redirectUrl: `${process.env.SELF_URL}${redirectPath}`,
+      redirectUrl: `${process.env.SELF_URL}/api${redirectPath}`,
       reference: ref,
       feeBearer: 'business', // 'customer',
       settlementDestination: 'wallet',
