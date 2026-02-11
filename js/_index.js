@@ -2156,9 +2156,9 @@ bot?.on('message', async msg => {
     return send(chatId, trans('l.declinedTermsMsg'),  trans('k.of', [[trans('l.viewTermsAgainButton')], [trans('l.exitSetupButton')], [trans('t.backButton')]]))
   }
 
-  // cPanel Plans Events Handlers - Redirect to @Hostbay_bot
+  // cPanel Plans Events Handlers
   if ([user.cPanelWebHostingPlans, user.pleskWebHostingPlans].includes(message)) {
-    return send(chatId, trans('l.redirectMessage'))
+    return goto.selectPlan(a.starterPlan)
   }
 
   if (message === user.contactSupport) {
@@ -2166,9 +2166,9 @@ bot?.on('message', async msg => {
     return
   }
 
-  // Free Plan - Redirect to @Hostbay_bot
+  // Free Plan
   if (message === user.freeTrial) {
-    return send(chatId, trans('l.redirectMessage'))
+    return goto.selectPlan(a.freeTrial)
   }
 
   if (action === a.freeTrial) {
@@ -2224,9 +2224,9 @@ bot?.on('message', async msg => {
   }
 
 
-  // Starter Plan - Redirect to @Hostbay_bot
+  // Starter Plan
   if (message === user.starterPlan) {
-    return send(chatId, trans('l.redirectMessage'))
+    return goto.selectPlan(a.starterPlan)
   }
 
   if (action === a.starterPlan) {
@@ -2240,9 +2240,9 @@ bot?.on('message', async msg => {
   }
 
 
-  // Business Plan - Redirect to @Hostbay_bot
+  // Business Plan
   if (message === user.businessPlan) {
-    return send(chatId, trans('l.redirectMessage'))
+    return goto.selectPlan(a.businessPlan)
   }
 
   if (action === a.businessPlan) {
@@ -2256,9 +2256,9 @@ bot?.on('message', async msg => {
   }
 
 
-  // Pro Plan - Redirect to @Hostbay_bot
+  // Pro Plan
   if (message === user.proPlan) {
-    return send(chatId, trans('l.redirectMessage'))
+    return goto.selectPlan(a.proPlan)
   }
 
   if (action === a.proPlan) {
@@ -2355,18 +2355,18 @@ bot?.on('message', async msg => {
     if (message === t.iHaveSentThePayment) return goto.iHaveSentThePayment()
   }
 
-  // shortURL - Redirect to @Hostbay_bot
+  // shortURL
   if (message === user.redSelectUrl) {
-    return send(chatId, trans('l.redirectMessage'))
+    return goto.redSelectUrl()
   }
 
-  //VPS plans - Redirect to @Hostbay_bot
+  //VPS plans
   if (message === user.vpsPlans) {
-    return send(chatId, trans('l.redirectMessage'))
+    return goto.submenu4()
   }
 
   if (message === user.buyVpsPlan) {
-    return send(chatId, trans('l.redirectMessage'))
+    return goto.createNewVpsFlow()
   }
 
   if (action === a.askCountryForVPS) {
@@ -2669,7 +2669,7 @@ bot?.on('message', async msg => {
   }
 
   if (message === user.manageVpsPlan) {
-    return send(chatId, trans('l.redirectMessage'))
+    return goto.getUserAllVmIntances()
   }
 
   if (action === a.getUserAllVmIntances) {
