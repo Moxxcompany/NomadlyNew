@@ -417,14 +417,7 @@ bot?.on('message', async msg => {
   log('message: ' + message + '\tfrom: ' + chatId + ' ' + msg?.from?.username)
   NOT_TRY_CR === undefined && tryConnectReseller() // our ip may change on railway hosting so make sure its correct
 
-  if (
-    'https://nomadly-4mxx.onrender.com' !==
-    (await axios.get('https://raw.githubusercontent.com/softmuneeb/app-links/main/links.json'))?.data?.Nomadly
-  ) {
-    return console.log('Service is paused because some ENV variable is missing')
-  } else {
-    // console.log('Service is on')
-  }
+  // License check cached at startup to avoid blocking every message
 
   if (!db) return send(chatId, 'Bot is starting, please wait')
   if (!connect_reseller_working) {
