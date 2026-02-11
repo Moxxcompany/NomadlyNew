@@ -5573,32 +5573,23 @@ app.get('/:id', async (req, res) => {
   const id = req?.params?.id
   if (id === '') return res.json({ message: 'Salam', from: req.hostname })
 
-  // Try custom domain lookup first (e.g., goog.link/abc → goog@link/abc)
-  const shortUrl = `${req.hostname}/${id}`
-  const shortUrlSanitized = shortUrl.replaceAll('.', '@')
-  let url = await get(fullUrlOf, shortUrlSanitized)
+  // Build lookup key from SELF_URL (works on both Railway and Emergent)
+  // On Railway: SELF_URL = "https://app.railway.app" → key = "app@railway@app/slug"
+  // On Emergent: SELF_URL = "https://pod.emergentagent.com/api" → key = "pod@...@com/api/slug"
+  const selfUrlPath = (process.env.SELF_URL || '').replace('https://', '').replace('http://', '')
+  const selfKey = `${selfUrlPath}/${id}`.replaceAll('.', '@')
+  let url = await get(fullUrlOf, selfKey)
+  let lookupKey = selfKey
 
-  // Fallback: try self-hosted URL lookup using SELF_URL hostname
+  // Fallback: try custom domain lookup (e.g., goog.link/abc → goog@link/abc)
   if (!url) {
-    const selfHost = (process.env.SELF_URL || '').replace('https://', '').replace('http://', '')
-    const selfKey = `${selfHost}/api/${id}`.replaceAll('.', '@')
-    url = await get(fullUrlOf, selfKey)
-    if (url) {
-      // Check expiry with the self-hosted key
-      if (!(await isValid(selfKey))) return res.status(404).send(html(translation('t.linkExpired')))
-      res.redirect(url)
-      increment(clicksOf, 'total')
-      increment(clicksOf, today())
-      increment(clicksOf, week())
-      increment(clicksOf, month())
-      increment(clicksOf, year())
-      increment(clicksOn, selfKey)
-      return
-    }
+    const customKey = `${req.hostname}/${id}`.replaceAll('.', '@')
+    url = await get(fullUrlOf, customKey)
+    lookupKey = customKey
   }
 
   if (!url) return res.status(404).send(html('Link not found'))
-  if (!(await isValid(shortUrlSanitized))) return res.status(404).send(html(translation('t.linkExpired')))
+  if (!(await isValid(lookupKey))) return res.status(404).send(html(translation('t.linkExpired')))
 
   res.redirect(url)
   increment(clicksOf, 'total')
@@ -5606,7 +5597,7 @@ app.get('/:id', async (req, res) => {
   increment(clicksOf, week())
   increment(clicksOf, month())
   increment(clicksOf, year())
-  increment(clicksOn, shortUrlSanitized)
+  increment(clicksOn, lookupKey)
 })
 
 // Telegram Webhook Endpoint
