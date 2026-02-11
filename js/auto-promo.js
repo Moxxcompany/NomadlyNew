@@ -25,6 +25,101 @@ const PROMO_BANNERS = {
 // Language names for AI prompt
 const LANG_NAMES = { en: 'English', fr: 'French', zh: 'Chinese (Simplified)', hi: 'Hindi' }
 
+// Service details for AI context (keeps promos accurate)
+const SERVICE_CONTEXT = {
+  domains: {
+    services: 'DMCA-ignored offshore domain registration',
+    details: [
+      '.sbs, .com, .net, .org and 400+ extensions',
+      'Offshore registration with total content privacy',
+      'Instant DNS setup and full management panel',
+      'Pay with BTC, ETH, USDT or bank transfer',
+      'Free .sbs domains with subscription plans',
+    ],
+    cta: 'Register Domain Names',
+    crossPromo: '@hostbay_bot for cPanel/Plesk hosting and country TLDs (.ng .za .ke .gh .cm .tz)',
+  },
+  shortener: {
+    services: 'URL shortener with custom domain branding',
+    details: [
+      'Custom branded short URLs with your own domain',
+      'Real-time click analytics and tracking',
+      'Bitly integration available',
+      'Random or custom back-half for links',
+      'Unlimited links with subscription plans (Daily/Weekly/Monthly)',
+    ],
+    cta: 'URL Shortener',
+    crossPromo: '@hostbay_bot for cPanel/Plesk hosting and country TLDs (.ng .za .ke .gh .cm .tz)',
+  },
+  leads: {
+    services: 'Phone number lead generation and validation',
+    details: [
+      'Buy verified phone leads filtered by country, state, area code',
+      'SMS-ready and voice-ready leads',
+      'Filter by carrier (T-Mobile, AT&T, Verizon etc.)',
+      'Validate your own phone numbers (BYOL) for $15/1000',
+      'Buy leads starting from $20 per 1000',
+      'CNAM lookup available',
+      'Bulk download with instant delivery',
+    ],
+    cta: 'HQ SMS Lead',
+    crossPromo: '@hostbay_bot for cPanel/Plesk hosting and country TLDs (.ng .za .ke .gh .cm .tz)',
+  },
+}
+
+/**
+ * Generate a dynamic promo message using OpenAI
+ */
+async function generateDynamicPromo(theme, lang) {
+  const ai = getOpenAI()
+  if (!ai) return null
+
+  const ctx = SERVICE_CONTEXT[theme]
+  const langName = LANG_NAMES[lang] || 'English'
+
+  const prompt = `You are a friendly, persuasive Telegram bot copywriter. Write a short promotional message for a Telegram bot that offers ${ctx.services}.
+
+Key selling points:
+${ctx.details.map(d => '- ' + d).join('\n')}
+
+Rules:
+- Write in ${langName}
+- Use Telegram HTML formatting: <b>bold</b>, <code>code</code> only. No markdown.
+- Start with a catchy <b>HEADLINE</b> in the message language
+- Be friendly, engaging, and create urgency without being spammy
+- Keep under 900 characters total (this will be a photo caption)
+- End with a call-to-action: tap <b>${ctx.cta}</b>
+- Add a separator line "-----" at the bottom
+- Below the separator, mention: ${ctx.crossPromo}
+- Each message should feel unique — vary the angle, hook, and structure
+- Do NOT use emoji characters
+
+Return ONLY the message text, nothing else.`
+
+  try {
+    const res = await ai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 500,
+      temperature: 0.9,
+    })
+    const content = res.choices?.[0]?.message?.content?.trim()
+    if (content && content.length > 50 && content.length <= 1024) {
+      return content
+    }
+    // If too long, truncate at last complete line under 1024
+    if (content && content.length > 1024) {
+      const truncated = content.substring(0, 1020)
+      const lastNewline = truncated.lastIndexOf('\n')
+      return lastNewline > 500 ? truncated.substring(0, lastNewline) : truncated
+    }
+    return null
+  } catch (error) {
+    log(`[AutoPromo] OpenAI error: ${error.message}`)
+    return null
+  }
+}
+
 // Timezone offsets per language (hours from UTC)
 // Used to send promos at "local" times for each user group
 const TIMEZONE_OFFSETS = {
