@@ -1,38 +1,52 @@
 # PRD - Telegram Bot Link Shortener (Nomadly)
 
 ## Original Problem Statement
-Setup and install needed dependencies for an existing Node.js Telegram bot project.
+Setup and install needed dependencies, update SELF_URL to Emergent pod URL, test all service connectivity, and identify bad credentials.
 
 ## Architecture
 - **Runtime**: Node.js v20.20.0
 - **Database**: MongoDB (via `mongodb` npm driver)
 - **Bot Framework**: `node-telegram-bot-api`
-- **HTTP Server**: Express.js (for webhooks, REST APIs, payment callbacks)
-- **Key Integrations**: Telegram Bot API, BlockBee (crypto payments), Fincra (bank payments), DynoPay, Connect Reseller (domains), Bitly/Cuttly (URL shortening), Nodemailer (emails), Railway/Render (hosting)
-
-## Core Features
-- Telegram bot with URL shortening (Bitly, custom domains)
-- Domain name purchase & DNS management (Connect Reseller)
-- cPanel/Plesk hosting plans (Free Trial, Starter, Pro, Business)
-- VPS instance management (create, stop, start, delete, upgrade, SSH keys)
-- Phone number leads (buy/validate bulk leads)
-- Wallet system (USD/NGN) with crypto & bank deposits
-- Subscription plans (Daily, Weekly, Monthly)
-- Multi-language support (EN, FR, HI, ZH)
-- Admin tools (analytics, broadcast, user management)
+- **HTTP Server**: Express.js (webhooks, REST APIs, payment callbacks)
+- **Key Integrations**: Telegram Bot API, BlockBee, Fincra, DynoPay, ConnectReseller, Bitly, Cuttly, Nodemailer/Brevo SMTP, Railway, Render, Neutrino, Twilio, Nameword/VPS
 
 ## What's Been Implemented (Jan 2026)
-- [x] Installed all 301 npm dependencies via `npm install`
-- [x] Verified all 14 npm packages load correctly (axios, cors, dotenv, express, graphql, mongodb, nanoid, node-schedule, node-telegram-bot-api, nodemailer, qrcode, validator, etc.)
-- [x] Verified all 7 core local modules load correctly
-- [x] Created `.env` file with all 60+ required environment variables (placeholder values for secrets)
-- [x] Config setup loads successfully with environment detection
+- [x] Installed all 301 npm dependencies
+- [x] Created `.env` with all 100+ environment variables from user-provided credentials
+- [x] Updated `SELF_URL` to Emergent pod URL: `https://444cdde2-bce0-4565-8b58-9a834a768843.preview.emergentagent.com`
+- [x] Ran comprehensive connectivity tests for 15 services
+- [x] Identified 9 working services and 7 failed/bad credential services
+
+## Connectivity Test Results
+
+### ✅ Working (9 services)
+| Service | Details |
+|---------|---------|
+| MongoDB | Connected, DB "test" has 27 collections |
+| Telegram Bot | @NomadlyBot authenticated |
+| BlockBee | API key valid (crypto payments disabled) |
+| SMTP/Email | Brevo SMTP verified (smtp-relay.brevo.com:587) |
+| Twilio | Account active, name: AppLemon |
+| Bitly | Authenticated as o_4qne9pe0od |
+| OpenExchangeRates | Working, 1 USD = 1353.39 NGN |
+| SELF_URL | Updated to Emergent pod URL |
+
+### ❌ Bad Credentials / Failed (7 services)
+| Service | Issue |
+|---------|-------|
+| Fincra | 401 Invalid authentication credentials - public key may be expired or wrong |
+| DynoPay | 401 Requires "user" auth, wallet token is "customer" type |
+| ConnectReseller | 404 API endpoint returned Tomcat error page - API key may need IP whitelisting |
+| Railway API | GraphQL "Not Authorized" - API token expired or revoked |
+| Render API | 401 Unauthorized - token expired or revoked |
+| Nameword/VPS | Timeout - server at 34.44.198.68 unreachable |
+| Neutrino | 403 ACCESS DENIED - user ID or API key invalid |
 
 ## Next Action Items
-- P0: Replace placeholder values in `.env` with real credentials (MONGO_URL, TELEGRAM_BOT_TOKEN are critical)
-- P1: Test full bot startup with real MongoDB and Telegram token
-- P2: Run `npm audit fix` to address 25 known vulnerabilities
+- P0: Fix 7 failed credentials (see table above)
+- P1: Start bot with `npm start` for full end-to-end test
+- P2: ConnectReseller likely needs this pod's IP whitelisted
 
 ## Backlog
-- P2: Upgrade deprecated packages (request, request-promise, uuid@3)
-- P2: Add `nodemon` as dev dependency for easier development
+- P2: Upgrade deprecated npm packages (request, uuid@3)
+- P3: Add health-check endpoint for monitoring
