@@ -67,8 +67,8 @@ const admin = {
 }
 const user = {
   // main keyboards
-  // cPanelWebHostingPlans: '俄罗斯 cPanel 托管计划 🔒',
-  // pleskWebHostingPlans: '俄罗斯 Plesk 托管计划 🔒',
+  cPanelWebHostingPlans: '俄罗斯 cPanel 托管计划 🔒',
+  pleskWebHostingPlans: '俄罗斯 Plesk 托管计划 🔒',
   joinChannel: '📢 加入频道',
   phoneNumberLeads: '📲 HQ 短信线索',
   hostingDomainsRedirect: '🌐 托管和域名',
