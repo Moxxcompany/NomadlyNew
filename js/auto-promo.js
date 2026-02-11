@@ -12,7 +12,7 @@ try { OpenAI = require('openai') } catch { log('[AutoPromo] openai package not i
 // OpenAI client (lazy init)
 let openai = null
 function getOpenAI() {
-  if (!openai && process.env.APP_OPEN_API_KEY) {
+  if (!openai && OpenAI && process.env.APP_OPEN_API_KEY) {
     openai = new OpenAI({ apiKey: process.env.APP_OPEN_API_KEY })
   }
   return openai
