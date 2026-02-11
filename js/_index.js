@@ -3194,7 +3194,7 @@ bot?.on('message', async msg => {
     const domainRegex = /^(?:(?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}$/
     if (!domainRegex.test(domain))
       return send(chatId, t.domainInvalid)
-    send(chatId, `🔍 Searching for availability of *${domain}*...`, { parse_mode: 'Markdown' })
+    send(chatId, `🔍 Searching for availability of _${domain}_...`, { parse_mode: 'Markdown' })
     const { available, price, originalPrice, message: msg } = await checkDomainPriceOnline(domain)
     if (!available) return send(chatId, msg)
     if (!originalPrice) {
