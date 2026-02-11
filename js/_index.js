@@ -4672,6 +4672,12 @@ const authDyno = async (req, res, next) => {
   log('URL:', req.hostname + req.originalUrl)
   log('Full request body:', JSON.stringify(req.body, null, 2))
   
+  // Skip pending events — they don't carry meta_data yet
+  if (req.body?.event === 'payment.pending' || req.body?.status === 'pending') {
+    log('Skipping pending payment event (no meta_data yet)')
+    return res.send(html('OK'))
+  }
+
   const { meta_data } = req.body
   const ref = meta_data?.refId
   
