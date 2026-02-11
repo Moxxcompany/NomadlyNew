@@ -1948,7 +1948,7 @@ bot?.on('message', async msg => {
       try {
         const { url } = info
         const slug = nanoid()
-        const __shortUrl = `${SELF_URL}/api/${slug}`
+        const __shortUrl = `${SELF_URL}/${slug}`
         _shortUrl = await createShortBitly(__shortUrl)
         const shortUrl = __shortUrl.replaceAll('.', '@').replace('https://', '')
         increment(totalShortLinks)
@@ -3014,7 +3014,7 @@ bot?.on('message', async msg => {
           set(linksOf, chatId, shortUrl, url)
         } else {
           const slug = nanoid()
-          const __shortUrl = `${SELF_URL}/api/${slug}`
+          const __shortUrl = `${SELF_URL}/${slug}`
           _shortUrl = await createShortUrlApi(__shortUrl)
           shortUrl = __shortUrl.replaceAll('.', '@').replace('https://', '')
           const shortUrlLink = _shortUrl.replaceAll('.', '@').replace('https://', '')
@@ -3047,7 +3047,7 @@ bot?.on('message', async msg => {
     try {
       const { url } = info
       const slug = nanoid()
-      const __shortUrl = `${SELF_URL}/api/${slug}`
+      const __shortUrl = `${SELF_URL}/${slug}`
       const _shortUrl = await createCustomShortUrlCuttly(__shortUrl, message)
       const shortUrl = __shortUrl.replaceAll('.', '@').replace('https://', '')
       increment(totalShortLinks)
@@ -5629,7 +5629,7 @@ const setupTelegramWebhook = async () => {
   }
 
   try {
-    const webhookUrl = `${SELF_URL}/api/telegram/webhook`
+    const webhookUrl = `${SELF_URL}/telegram/webhook`
     
     // Delete any existing webhook first
     await bot.deleteWebHook()
