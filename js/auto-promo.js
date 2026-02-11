@@ -3,8 +3,11 @@
 
 const schedule = require('node-schedule')
 const { log } = require('console')
-const OpenAI = require('openai')
 const BROADCAST_CONFIG = require('./broadcast-config.js')
+
+// OpenAI - optional dependency (graceful fallback if missing)
+let OpenAI = null
+try { OpenAI = require('openai') } catch { log('[AutoPromo] openai package not installed, using static messages only') }
 
 // OpenAI client (lazy init)
 let openai = null
