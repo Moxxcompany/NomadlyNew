@@ -836,7 +836,7 @@ bot?.on('message', async msg => {
       const { amount, tickerView, userLanguage } = info
       const ticker = tickerOf[tickerView]
       if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
-        const { address, bb } = await getCryptoDepositAddress(ticker, chatId, SELF_URL, `/api/crypto-wallet?a=b&ref=${ref}&`)
+        const { address, bb } = await getCryptoDepositAddress(ticker, chatId, SELF_URL, `/crypto-wallet?a=b&ref=${ref}&`)
         if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
         log({ ref })
         sendQrCode(bot, chatId, bb, userLanguage ?? 'en')
@@ -846,7 +846,7 @@ bot?.on('message', async msg => {
         send(chatId, t.showDepositCryptoInfo(usdIn, tickerView, address), trans('o'))
       } else {
         const tickerDyno = tickerOfDyno[tickerView]
-        const redirect_url = `${SELF_URL}/api/dynopay/crypto-wallet`
+        const redirect_url = `${SELF_URL}/dynopay/crypto-wallet`
         const meta_data = {
           "product_name": dynopayActions.walletFund,
           "refId" : ref
@@ -3301,7 +3301,7 @@ bot?.on('message', async msg => {
       const ref = nanoid()
       if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
         const coin = tickerOf[ticker]
-        const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/api/crypto-pay-domain?a=b&ref=${ref}&`)
+        const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-domain?a=b&ref=${ref}&`)
         if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
         set(chatIdOfPayment, ref, { chatId, price, domain })
         saveInfo('ref', ref)
@@ -3312,7 +3312,7 @@ bot?.on('message', async msg => {
         return send(chatId, t.showDepositCryptoInfoDomain(priceCrypto, ticker, address, domain), trans('o'))
       } else {
         const coin = tickerOfDyno[ticker]
-        const redirect_url = `${SELF_URL}/api/dynopay/crypto-pay-domain`
+        const redirect_url = `${SELF_URL}/dynopay/crypto-pay-domain`
         const meta_data = {
           "product_name": dynopayActions.payDomain,
           "refId" : ref
@@ -3382,7 +3382,7 @@ bot?.on('message', async msg => {
     const ref = nanoid()
     if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
       const coin = tickerOf[ticker]
-      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/api/crypto-pay-hosting?a=b&ref=${ref}&`)
+      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-hosting?a=b&ref=${ref}&`)
       if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
       set(chatIdOfPayment, ref, { chatId, price, domain })
       log({ ref })
@@ -3393,7 +3393,7 @@ bot?.on('message', async msg => {
     } else {
       const coin = tickerOfDyno[ticker]
       if (!coin) return send(chatId, t.askValidCrypto)
-      const redirect_url = `${SELF_URL}/api/dynopay/crypto-pay-hosting`
+      const redirect_url = `${SELF_URL}/dynopay/crypto-pay-hosting`
       const meta_data = {
         "product_name": dynopayActions.payHosting,
         "refId" : ref
@@ -3476,7 +3476,7 @@ bot?.on('message', async msg => {
     if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
       const coin = tickerOf[ticker]
       set(chatIdOfPayment, ref, { chatId, price, vpsDetails })
-      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/api/crypto-pay-vps?a=b&ref=${ref}&`)
+      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-vps?a=b&ref=${ref}&`)
       if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
       log({ ref })
       await sendQrCode(bot, chatId, bb, info?.userLanguage ?? 'en')
@@ -3485,7 +3485,7 @@ bot?.on('message', async msg => {
       return send(chatId, vp.showDepositCryptoInfoVps(priceCrypto, ticker, address, vpsDetails), trans('o'))
     } else {
       const coin = tickerOfDyno[ticker]
-      const redirect_url = `${SELF_URL}/api/dynopay/crypto-pay-vps`
+      const redirect_url = `${SELF_URL}/dynopay/crypto-pay-vps`
       const meta_data = {
         "product_name": dynopayActions.payVps,
         "refId" : ref
@@ -3566,7 +3566,7 @@ bot?.on('message', async msg => {
     if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
       const coin = tickerOf[ticker]
       set(chatIdOfPayment, ref, { chatId, price, vpsDetails })
-      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/api/crypto-pay-upgrade-vps?a=b&ref=${ref}&`)
+      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-upgrade-vps?a=b&ref=${ref}&`)
       if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
       log({ ref })
       await sendQrCode(bot, chatId, bb, info?.userLanguage ?? 'en')
@@ -3575,7 +3575,7 @@ bot?.on('message', async msg => {
       return send(chatId, vp.showDepositCryptoInfoVpsUpgrade(priceCrypto, ticker, address), trans('o'))
     } else {
       const coin = tickerOfDyno[ticker]
-      const redirect_url = `${SELF_URL}/api/dynopay/crypto-pay-upgrade-vps`
+      const redirect_url = `${SELF_URL}/dynopay/crypto-pay-upgrade-vps`
       const meta_data = {
         "product_name": dynopayActions.payVps,
         "refId" : ref
@@ -3669,7 +3669,7 @@ bot?.on('message', async msg => {
     const price = info?.couponApplied ? info?.newPrice : info?.price 
     if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
       const coin = tickerOf[ticker]
-      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/api/crypto-pay-plan?a=b&ref=${ref}&`)
+      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-plan?a=b&ref=${ref}&`)
       if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
       set(chatIdOfPayment, ref, { chatId, price, plan })
       log({ ref })
@@ -3680,7 +3680,7 @@ bot?.on('message', async msg => {
     } else {
       const coin = tickerOfDyno[ticker]
       if (!coin) return send(chatId, t.askValidCrypto)
-      const redirect_url = `${SELF_URL}/api/dynopay/crypto-pay-plan`
+      const redirect_url = `${SELF_URL}/dynopay/crypto-pay-plan`
       const meta_data = {
         "product_name": dynopayActions.payPlan,
         "refId" : ref
