@@ -71,6 +71,52 @@ const SERVICE_CONTEXT = {
 }
 
 /**
+ * Sanitize AI output for Telegram HTML
+ * - Convert markdown bold/italic to HTML
+ * - Strip unsupported HTML tags
+ * - Fix unclosed <b>, <i>, <code> tags
+ */
+function sanitizeForTelegram(text) {
+  let s = text
+
+  // Convert markdown bold **text** or __text__ to <b>text</b>
+  s = s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+  s = s.replace(/__(.+?)__/g, '<b>$1</b>')
+
+  // Convert markdown italic *text* or _text_ to <i>text</i> (single only, not inside words)
+  s = s.replace(/(?<!\w)\*([^*\n]+?)\*(?!\w)/g, '<i>$1</i>')
+  s = s.replace(/(?<!\w)_([^_\n]+?)_(?!\w)/g, '<i>$1</i>')
+
+  // Convert markdown code `text` to <code>text</code>
+  s = s.replace(/`([^`\n]+?)`/g, '<code>$1</code>')
+
+  // Strip markdown headers (# ## ###)
+  s = s.replace(/^#{1,3}\s+/gm, '')
+
+  // Strip any HTML tags Telegram doesn't support (keep b, i, u, s, code, pre, a)
+  s = s.replace(/<\/?(?!b|\/b|i|\/i|u|\/u|s|\/s|code|\/code|pre|\/pre|a[ >]|\/a)[^>]*>/gi, '')
+
+  // Fix unclosed tags — count opens vs closes for b, i, code
+  for (const tag of ['b', 'i', 'code']) {
+    const opens = (s.match(new RegExp(`<${tag}>`, 'gi')) || []).length
+    const closes = (s.match(new RegExp(`</${tag}>`, 'gi')) || []).length
+    for (let i = 0; i < opens - closes; i++) {
+      s += `</${tag}>`
+    }
+    // Remove orphan closing tags (more closes than opens)
+    if (closes > opens) {
+      let excess = closes - opens
+      s = s.replace(new RegExp(`</${tag}>`, 'gi'), (match) => {
+        if (excess > 0) { excess--; return '' }
+        return match
+      })
+    }
+  }
+
+  return s.trim()
+}
+
+/**
  * Generate a dynamic promo message using OpenAI
  */
 async function generateDynamicPromo(theme, lang) {
@@ -87,7 +133,7 @@ ${ctx.details.map(d => '- ' + d).join('\n')}
 
 Rules:
 - Write in ${langName}
-- Use Telegram HTML formatting: <b>bold</b>, <code>code</code> only. No markdown.
+- Use ONLY Telegram HTML tags: <b>bold</b> and <code>code</code>. Do NOT use markdown syntax like **bold** or *italic* or \`code\`.
 - Start with a catchy <b>HEADLINE</b> in the message language
 - Be friendly, engaging, and create urgency without being spammy
 - Keep under 900 characters total (this will be a photo caption)
@@ -106,17 +152,18 @@ Return ONLY the message text, nothing else.`
       max_tokens: 500,
       temperature: 0.9,
     })
-    const content = res.choices?.[0]?.message?.content?.trim()
-    if (content && content.length > 50 && content.length <= 1024) {
-      return content
-    }
+    let content = res.choices?.[0]?.message?.content?.trim()
+    if (!content || content.length < 50) return null
+
+    // Sanitize: fix markdown leaks, bad HTML, unclosed tags
+    content = sanitizeForTelegram(content)
+
+    if (content.length <= 1024) return content
+
     // If too long, truncate at last complete line under 1024
-    if (content && content.length > 1024) {
-      const truncated = content.substring(0, 1020)
-      const lastNewline = truncated.lastIndexOf('\n')
-      return lastNewline > 500 ? truncated.substring(0, lastNewline) : truncated
-    }
-    return null
+    const truncated = content.substring(0, 1020)
+    const lastNewline = truncated.lastIndexOf('\n')
+    return sanitizeForTelegram(lastNewline > 500 ? truncated.substring(0, lastNewline) : truncated)
   } catch (error) {
     log(`[AutoPromo] OpenAI error: ${error.message}`)
     return null
