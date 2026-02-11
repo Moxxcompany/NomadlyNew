@@ -1,56 +1,35 @@
-# PRD - Telegram Bot (tg-bot-link-shorten)
+# PRD - Nomadly Telegram Bot (tg-bot-link-shorten)
 
 ## Original Problem Statement
-Setup and install needed dependencies after analyzing codebase.
+Setup and install needed dependencies after analyzing codebase. Ensure SELF_URL uses Emergent pod URL and webhooks are working.
 
 ## Architecture
-- **Runtime**: Node.js v20 (single process)
+- **Runtime**: Node.js v20 (Express on port 5000)
+- **Proxy**: FastAPI reverse proxy on port 8001 → Node.js port 5000
 - **Entry Point**: `js/start-bot.js` → `js/_index.js`
-- **Database**: MongoDB (via `mongodb` driver v5)
+- **Database**: MongoDB (external Railway instance)
 - **Bot Framework**: `node-telegram-bot-api` (webhook mode)
-- **Web Server**: Express.js (REST APIs for payment callbacks, health checks)
-- **Deployment Targets**: Railway, Replit, Nixpacks
-
-## Core Features
-- Telegram bot with multi-language support (EN/FR/ZH/HI)
-- URL shortening (Bitly, Cuttly, custom domain)
-- Domain name purchasing (Connect Reseller API)
-- DNS management (A, CNAME, NS records)
-- Phone number leads (buy + validate bulk numbers)
-- Crypto payments (BlockBee, DynoPay)
-- Bank/card payments (Fincra)
-- Wallet system (USD + NGN)
-- cPanel/Plesk hosting plans
-- VPS instance management (Nameword API)
-- Auto-promo system (AI-powered via OpenAI)
-- Admin broadcast messaging
-
-## Key Integrations
-- Telegram Bot API
-- MongoDB
-- Connect Reseller (domains)
-- BlockBee / DynoPay (crypto payments)
-- Fincra (bank payments)
-- Twilio / AWS Pinpoint / SignalWire (phone validation)
-- OpenAI (auto-promo)
-- Bitly / Cuttly (URL shortening)
-- Nodemailer (emails)
-- Nameword (VPS management)
+- **Webhook URL**: `https://08cb8415-a230-42f2-b61f-a0a112370a97.preview.emergentagent.com/api/telegram/webhook`
+- **Pod Routing**: `/api/*` → port 8001 (FastAPI proxy) → port 5000 (Node.js Express)
 
 ## What's Been Implemented (Jan 2026)
-- [x] Analyzed full codebase (41 JS source files, 4 language files, hosting module)
-- [x] Installed all 21 npm dependencies + `validator` (438 packages total)
-- [x] Created `.env` file with all 110 environment variables
-- [x] Verified all 28 core modules load successfully
-- [x] Node.js v20.20.0 environment confirmed
+- [x] Analyzed full codebase (41 JS files, 4 language packs, hosting module)
+- [x] Installed all npm dependencies (438 packages) + missing `validator` package
+- [x] Created `.env` with all user-provided credentials
+- [x] Set `SELF_URL` to Emergent pod URL (`/api` prefix for ingress routing)
+- [x] Created FastAPI reverse proxy (`/app/backend/server.py`) to bridge Emergent's port 8001 → Node.js port 5000
+- [x] Telegram webhook registered and verified via Telegram API
+- [x] Bot is live and processing messages (confirmed `/start` command working)
+- [x] MongoDB connected to external Railway instance
+- [x] AutoPromo system initialized (12 scheduled jobs)
 
-## Critical Environment Variables (Must Be Set)
-- `MONGO_URL` - MongoDB connection string
-- `TELEGRAM_BOT_TOKEN` - Telegram Bot API token
-- `TELEGRAM_BOT_ON` - Set to `true` to enable bot
+## Key Configuration
+- SELF_URL: `https://pod-url/api` (Emergent ingress strips `/api`, forwards to port 8001)
+- Bot Token: Production token active
+- MongoDB: External Railway MongoDB
+- Bot logs: `/var/log/supervisor/node-bot.log`
 
 ## Backlog / Next Steps
-- P0: User to provide MONGO_URL and TELEGRAM_BOT_TOKEN to start bot
-- P1: Run the bot and test end-to-end flows
+- P1: Whitelist pod IP `34.16.56.64` in Connect Reseller API dashboard
 - P2: Address npm audit vulnerabilities (23 total)
-- P2: Fix `validatePhoneAlcazar.js` undefined carrier edge case
+- P2: AWS credentials not yet configured (phone validation via AWS Pinpoint)
