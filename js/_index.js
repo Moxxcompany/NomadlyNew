@@ -222,6 +222,8 @@ let adminDomains = [],
   connect_reseller_working = true,
   ip_whitelist_message_sent = false
 
+let autoPromo = null
+
 // restoreData(); // can be use when there is no db
 
 let db
