@@ -393,7 +393,7 @@ ${
   selectCurrencyToDeposit: `Veuillez sélectionner la devise à déposer`,
   depositNGN: `Veuillez entrer le montant NGN :`,
   askEmailForNGN: `Veuillez fournir un email pour la confirmation du paiement`,
-  depositUSD: `Veuillez entrer le montant USD, notez que la valeur minimum est de 6 USD :`,
+  depositUSD: `Veuillez entrer le montant USD, notez que la valeur minimum est de 10 USD :`,
   selectCryptoToDeposit: `Veuillez choisir une cryptomonnaie :`,
   'bank-pay-plan': (priceNGN, plan) =>
     `Veuillez envoyer ${priceNGN} NGN en cliquant sur "Faire le paiement" ci-dessous. Une fois la transaction confirmée, vous serez notifié immédiatement et votre plan ${plan} sera activé sans encombre.

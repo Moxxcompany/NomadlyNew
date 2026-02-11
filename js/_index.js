@@ -3900,7 +3900,7 @@ bot?.on('message', async msg => {
     if (message === t.back) return goto[a.selectCurrencyToDeposit]()
 
     const amount = Number(message)
-    if (isNaN(amount) || amount < 6) return send(chatId, t.whatNum)
+    if (isNaN(amount) || amount < 10) return send(chatId, t.whatNum)
     await saveInfo('amount', amount)
 
     return goto[a.selectCryptoToDeposit]()

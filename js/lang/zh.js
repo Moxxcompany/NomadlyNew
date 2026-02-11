@@ -384,7 +384,7 @@ ${
   selectCurrencyToDeposit: `请选择要存入的货币`,
   depositNGN: `请输入 NGN 金额：`,
   askEmailForNGN: `请输入支付确认邮件`,
-  depositUSD: `请输入 USD 金额，注意最小值为 $6：`,
+  depositUSD: `请输入 USD 金额，注意最小值为 $10：`,
   selectCryptoToDeposit: `请选择加密货币：`,
   'bank-pay-plan': (priceNGN, plan) =>
     `请点击“付款”按钮，发送 ${priceNGN} NGN。一旦交易确认，您将立即收到通知，您的 ${plan} 计划将顺利激活。

@@ -13,31 +13,35 @@ const headers = {
   'Authorization' : `Bearer ${walletToken}`
 }
 
-const fetchSupportedCryptoCurrency = async () => {
-  const options = {
-    method: 'GET',
-    url: `${baseUrl}/getSupportedCurrency`,
-    headers: headers
-  }
+// Hardcoded supported currencies (the /getSupportedCurrency endpoint no longer exists)
+const SUPPORTED_CRYPTO = [
+  { currency: 'BTC', name: 'Bitcoin' },
+  { currency: 'ETH', name: 'Ethereum' },
+  { currency: 'LTC', name: 'Litecoin' },
+  { currency: 'DOGE', name: 'Dogecoin' },
+  { currency: 'USDT-TRC20', name: 'USDT (TRC20)' },
+  { currency: 'USDT-ERC20', name: 'USDT (ERC20)' },
+  { currency: 'BCH', name: 'Bitcoin Cash' },
+  { currency: 'TRX', name: 'TRON' },
+]
 
-  try {
-    const response = await axios.request(options)
-    return response.data.data
-  } catch (error) {
-    console.error('Error in Fetching Crypto Currency', error?.message)
-    return { error: error?.message }
-  }
+const fetchSupportedCryptoCurrency = async () => {
+  return SUPPORTED_CRYPTO
 }
 
-const getDynopayCryptoAddress = async (amount, currency, redirect_uri, meta_data) => {
+const getDynopayCryptoAddress = async (amount, currency, webhook_url, meta_data) => {
+  // Enforce minimum $1 USD as required by DynoPay
+  const finalAmount = Math.max(amount, 1)
+
   const options = {
     method: 'POST',
     url: `${baseUrl}/user/cryptoPayment`,
     headers: headers,
     data: {
-      amount,
+      amount: finalAmount,
       currency,
-      redirect_uri,
+      redirect_uri: webhook_url,
+      webhook_url: webhook_url,
       meta_data
     },
   }
@@ -46,7 +50,7 @@ const getDynopayCryptoAddress = async (amount, currency, redirect_uri, meta_data
     const response = await axios.request(options)
     return response?.data?.data
   } catch (error) {
-    console.error('Error in gettign Crypto address', error?.message)
+    console.error('Error in getting Crypto address', error?.message)
     return { error: error?.message }
   }
 }

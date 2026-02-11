@@ -372,7 +372,7 @@ ${CHAT_BOT_NAME}`,
   depositNGN: `Please enter NGN Amount:`,
   askEmailForNGN: `Please provide an email for payment confirmation`,
 
-  depositUSD: `Please enter USD Amount, note that minium value is $6:`,
+  depositUSD: `Please enter USD Amount, note that minimum value is $10:`,
   selectCryptoToDeposit: `Please choose a crypto currency:`,
 
   'bank-pay-plan': (
