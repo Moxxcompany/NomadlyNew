@@ -294,9 +294,13 @@ const loadData = async () => {
   // set(freeShortLinksOf, 6687923716, FREE_LINKS)
   // adminDomains = await getPurchasedDomains(TELEGRAM_DOMAINS_SHOW_CHAT_ID)
 
-  // Initialize auto-promo system
-  autoPromo = initAutoPromo(bot, db, nameOf, state)
-  log('[AutoPromo] System loaded successfully')
+  // Initialize auto-promo system only when Telegram bot is actually enabled
+  if (TELEGRAM_BOT_ON === 'true') {
+    autoPromo = initAutoPromo(bot, db, nameOf, state)
+    log('[AutoPromo] System loaded successfully')
+  } else {
+    log('[AutoPromo] Skipped — Telegram bot is disabled')
+  }
 }
 
 const client = new MongoClient(process.env.MONGO_URL, {
@@ -305,13 +309,13 @@ const client = new MongoClient(process.env.MONGO_URL, {
     strict: true,
     deprecationErrors: true,
   },
-  maxPoolSize: 10,
-  minPoolSize: 2,
-  maxIdleTimeMS: 30000,
+  maxPoolSize: 5,
+  minPoolSize: 1,
+  maxIdleTimeMS: 60000,
   connectTimeoutMS: 10000,
   socketTimeoutMS: 45000,
   serverSelectionTimeoutMS: 10000,
-  heartbeatFrequencyMS: 10000,
+  heartbeatFrequencyMS: 30000,
   retryWrites: true,
   retryReads: true,
 })
