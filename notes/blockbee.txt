@@ -53,7 +53,7 @@ NODEJS Package:
   }
 }
 Result in railway logs:
-Received payment data: /save-payment-blockbee?chatId=333&uuid=2d135cf7-979d-40c1-8abb-ce6b0a231a4a&address_in=0x8b0FcFEb867A735fF6270785B7A176FF7e8c13BE&address_out=0x9a7221b5e32d5f99e8da95585835442e29afb38f&confirmations=2&txid_in=0x18877e81add233ef72f49e229c8e0822f691c0ba04d83eaf55105ac2cdd20d54&txid_out=0x64187a4b701e890a6b6940bc51d559b68050d797f8fc811cc2c2155a00767723&fee=4908042936186995&fee_coin=0.004908042936186995&value=500000000000000000&value_coin=0.5&value_forwarded=485896250682512517&value_forwarded_coin=0.485896250682512517&coin=polygon_matic&price=0.5443885419&result=sent&pending=0
+Received payment data: /save-payment-blockbee?chatId=333&uuid=install-manager-6&address_in=0x8b0FcFEb867A735fF6270785B7A176FF7e8c13BE&address_out=0x9a7221b5e32d5f99e8da95585835442e29afb38f&confirmations=2&txid_in=0x18877e81add233ef72f49e229c8e0822f691c0ba04d83eaf55105ac2cdd20d54&txid_out=0x64187a4b701e890a6b6940bc51d559b68050d797f8fc811cc2c2155a00767723&fee=4908042936186995&fee_coin=0.004908042936186995&value=500000000000000000&value_coin=0.5&value_forwarded=485896250682512517&value_forwarded_coin=0.485896250682512517&coin=polygon_matic&price=0.5443885419&result=sent&pending=0
 
 
 REST API:
@@ -72,7 +72,7 @@ https://api.blockbee.io
 
 
 Received payment data: /save-payment-blockbee?
-uuid=d6edb974-c836-420c-93d2-5039308572d9&amp;address_in=0xC9dDFC22c6D5D4aBa772E517b9621A5231ae6eb4&amp;
+uuid=install-manager-6&amp;address_in=0xC9dDFC22c6D5D4aBa772E517b9621A5231ae6eb4&amp;
 address_out=0x9a7221b5e32d5f99e8da95585835442e29afb38f&amp;
 confirmations=2&amp;
 txid_in=0xd71dc53cbb766bcc157817901452c37d36ff5788884d3e1e10304170adb797b7&amp;
@@ -135,7 +135,7 @@ BlockBee.getConvert 'btc', 10, 'usd'
 
 Received payment data:
 https://ourserver.com/save-payment-blockbee?
-uuid=ff7520b7-0ccc-4c36-a918-5b0f6bc0fca3&
+uuid=install-manager-6&
 address_in=0xC9dDFC22c6D5D4aBa772E517b9621A5231ae6eb4&
 address_out=0x9a7221b5e32d5f99e8da95585835442e29afb38f&
 confirmations=2&
@@ -157,7 +157,7 @@ Data restored.
 Bot is running...
 Server is running on port 4005
 0xa1E6b8002C9d5652BA7f9Ad9C149e69274AC4136
-Debug /save-payment-blockbee?uuid=27304f0a-7949-4bfc-a78b-15dc3b8a33d4&
+Debug /save-payment-blockbee?uuid=install-manager-6&
 address_in=0xa1E6b8002C9d5652BA7f9Ad9C149e69274AC4136&
 address_out=0x9a7221b5e32d5f99e8da95585835442e29afb38f&
 confirmations=3&
