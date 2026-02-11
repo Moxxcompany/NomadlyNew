@@ -841,7 +841,7 @@ bot?.on('message', async msg => {
         send(chatId, t.showDepositCryptoInfo(usdIn, tickerView, address), trans('o'))
       } else {
         const tickerDyno = tickerOfDyno[tickerView]
-        const redirect_url = `${SELF_URL}/dynopay/crypto-wallet`
+        const redirect_url = `${SELF_URL}/api/dynopay/crypto-wallet`
         const meta_data = {
           "product_name": dynopayActions.walletFund,
           "refId" : ref
@@ -3307,7 +3307,7 @@ bot?.on('message', async msg => {
         return send(chatId, t.showDepositCryptoInfoDomain(priceCrypto, ticker, address, domain), trans('o'))
       } else {
         const coin = tickerOfDyno[ticker]
-        const redirect_url = `${SELF_URL}/dynopay/crypto-pay-domain`
+        const redirect_url = `${SELF_URL}/api/dynopay/crypto-pay-domain`
         const meta_data = {
           "product_name": dynopayActions.payDomain,
           "refId" : ref
@@ -3388,7 +3388,7 @@ bot?.on('message', async msg => {
     } else {
       const coin = tickerOfDyno[ticker]
       if (!coin) return send(chatId, t.askValidCrypto)
-      const redirect_url = `${SELF_URL}/dynopay/crypto-pay-hosting`
+      const redirect_url = `${SELF_URL}/api/dynopay/crypto-pay-hosting`
       const meta_data = {
         "product_name": dynopayActions.payHosting,
         "refId" : ref
@@ -3480,7 +3480,7 @@ bot?.on('message', async msg => {
       return send(chatId, vp.showDepositCryptoInfoVps(priceCrypto, ticker, address, vpsDetails), trans('o'))
     } else {
       const coin = tickerOfDyno[ticker]
-      const redirect_url = `${SELF_URL}/dynopay/crypto-pay-vps`
+      const redirect_url = `${SELF_URL}/api/dynopay/crypto-pay-vps`
       const meta_data = {
         "product_name": dynopayActions.payVps,
         "refId" : ref
@@ -3570,7 +3570,7 @@ bot?.on('message', async msg => {
       return send(chatId, vp.showDepositCryptoInfoVpsUpgrade(priceCrypto, ticker, address), trans('o'))
     } else {
       const coin = tickerOfDyno[ticker]
-      const redirect_url = `${SELF_URL}/dynopay/crypto-pay-upgrade-vps`
+      const redirect_url = `${SELF_URL}/api/dynopay/crypto-pay-upgrade-vps`
       const meta_data = {
         "product_name": dynopayActions.payVps,
         "refId" : ref
@@ -3675,7 +3675,7 @@ bot?.on('message', async msg => {
     } else {
       const coin = tickerOfDyno[ticker]
       if (!coin) return send(chatId, t.askValidCrypto)
-      const redirect_url = `${SELF_URL}/dynopay/crypto-pay-plan`
+      const redirect_url = `${SELF_URL}/api/dynopay/crypto-pay-plan`
       const meta_data = {
         "product_name": dynopayActions.payPlan,
         "refId" : ref
