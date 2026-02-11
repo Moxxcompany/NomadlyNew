@@ -94,7 +94,7 @@ function sanitizeForTelegram(text) {
   s = s.replace(/^#{1,3}\s+/gm, '')
 
   // Strip any HTML tags Telegram doesn't support (keep b, i, u, s, code, pre, a)
-  s = s.replace(/<\/?(?!b|\/b|i|\/i|u|\/u|s|\/s|code|\/code|pre|\/pre|a[ >]|\/a)[^>]*>/gi, '')
+  s = s.replace(/<\/?(?!(?:b|i|u|s|code|pre|a)\b)[^>]*>/gi, '')
 
   // Fix unclosed tags — count opens vs closes for b, i, code
   for (const tag of ['b', 'i', 'code']) {
