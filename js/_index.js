@@ -3940,16 +3940,16 @@ bot?.on('message', async msg => {
   //
   //
   if (message === user.urlShortenerMain) {
-    return send(chatId, trans('l.redirectMessage'))
+    return goto['choose-url-to-shorten']()
   }
   if (message === user.domainNames) {
-    return send(chatId, trans('l.redirectMessage'))
+    return goto.submenu2()
   }
   if (message === user.phoneNumberLeads) {
     return goto.phoneNumberLeads()
   }
   if (message === user.hostingDomainsRedirect) {
-    return send(chatId, trans('l.redirectMessage'))
+    return goto.submenu3()
   }
   if (action === a.phoneNumberLeads) {
     const phoneNumberLeads = trans('phoneNumberLeads')
@@ -4183,7 +4183,6 @@ bot?.on('message', async msg => {
   }
 
   if (message === user.viewPlan) {
-    return send(chatId, trans('l.redirectMessage'))
     const subscribedPlan = await get(planOf, chatId)
     if (subscribedPlan) {
       const timeEnd = new Date(await get(planEndingTime, chatId))
@@ -4206,7 +4205,6 @@ bot?.on('message', async msg => {
     return send(chatId, t.becomeReseller)
   }
   if (message === user.viewShortLinks) {
-    return send(chatId, trans('l.redirectMessage'))
     const links = await getShortLinks(chatId)
     if (links.length === 0) {
       send(chatId, t.noShortenedUrlLink)
@@ -4218,7 +4216,6 @@ bot?.on('message', async msg => {
     return
   }
   if (message === user.viewDomainNames) {
-    return send(chatId, trans('l.redirectMessage'))
     const purchasedDomains = await getPurchasedDomains(chatId)
     if (purchasedDomains.length === 0) {
       send(chatId, t.noDomainRegistered)
