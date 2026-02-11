@@ -5577,7 +5577,7 @@ app.get('/:id', async (req, res) => {
 })
 
 // Telegram Webhook Endpoint
-app.post('/telegram/webhook', (req, res) => {
+app.post('/api/telegram/webhook', (req, res) => {
   try {
     log('📨 Telegram webhook received')
     bot.processUpdate(req.body)
