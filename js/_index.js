@@ -4684,6 +4684,13 @@ const authDyno = async (req, res, next) => {
 const app = express()
 app.use(express.json())
 app.use(cors())
+// Strip /api prefix from incoming requests (Emergent ingress sends /api/* to port 8001 without stripping)
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    req.url = req.url.replace(/^\/api/, '')
+  }
+  next()
+})
 app.set('json spaces', 2)
 let serverStartTime = new Date()
 
