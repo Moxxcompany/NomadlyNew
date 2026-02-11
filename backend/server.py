@@ -16,12 +16,13 @@ def start_node_bot():
     global NODE_PROCESS
     env = {**os.environ}
     env["PORT"] = str(NODE_PORT)
+    log_file = open("/var/log/supervisor/node-bot.log", "a")
     NODE_PROCESS = subprocess.Popen(
         ["node", "js/start-bot.js"],
         cwd="/app",
         env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        stdout=log_file,
+        stderr=log_file,
     )
     print(f"[proxy] Node.js bot started (pid={NODE_PROCESS.pid}) on port {NODE_PORT}")
 
