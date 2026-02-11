@@ -9,7 +9,7 @@ Setup and install needed dependencies after analyzing codebase. Ensure SELF_URL 
 - **Entry Point**: `js/start-bot.js` → `js/_index.js`
 - **Database**: MongoDB (external Railway instance)
 - **Bot Framework**: `node-telegram-bot-api` (webhook mode)
-- **Webhook URL**: `https://08cb8415-a230-42f2-b61f-a0a112370a97.preview.emergentagent.com/api/telegram/webhook`
+- **Webhook URL**: `https://env-setup-26.preview.emergentagent.com/api/telegram/webhook`
 - **Pod Routing**: `/api/*` → port 8001 (FastAPI proxy) → port 5000 (Node.js Express)
 
 ## What's Been Implemented (Jan 2026)
