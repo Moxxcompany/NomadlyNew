@@ -1,30 +1,30 @@
-# PRD - Telegram Bot (tg-bot-link-shorten)
+# PRD - tg-bot-link-shorten
 
-## Overview
-Telegram bot for URL shortening, domain purchasing, phone lead gen/validation, web hosting, VPS, and crypto/bank payments.
+## Project
+Telegram link shortener bot that sells domain names and phone number leads.
 
 ## Architecture
-- **Runtime**: Node.js v20 | **DB**: MongoDB (Railway) | **Bot**: node-telegram-bot-api (webhook)
-- **Express**: Port 8001 with optional `/api` prefix stripping middleware
+- **Runtime**: Node.js (>=20.0.0)
+- **Entry**: `js/start-bot.js`
+- **Deployment**: Railway (Nixpacks builder)
+- **DB**: MongoDB
 
-## Environment-Agnostic Design (Railway + Emergent)
-The code uses `${SELF_URL}/path` everywhere. The only difference between environments is SELF_URL:
-- **Railway**: `SELF_URL="https://nomadlynew-production.up.railway.app"` → no prefix needed
-- **Emergent**: `SELF_URL="https://pod.emergentagent.com/api"` → middleware strips `/api`
+## Issue Fixed (2026-01-xx)
+### Deployment failure: `npm ci` out-of-sync lock file + Node engine mismatch
 
-This means:
-- URL shortener: `${SELF_URL}/${slug}` works on both
-- Callbacks: `${SELF_URL}/dynopay/...` routes correctly on both
-- Webhook: `${SELF_URL}/telegram/webhook` works on both
-- Custom domains: fallback lookup in `/:id` handler
+**Root Causes:**
+1. `.nvmrc` pinned Node v18.13.0 — AWS SDK v3.987+ requires Node >=20
+2. `package-lock.json` was stale (3616 lines) — many deps added to `package.json` were missing from lock file
+3. `npm ci` enforces exact sync and rightly failed
 
-## Fixes Applied
-- [Jan 2026] Added `/api` prefix stripping middleware (Emergent-only, no-op on Railway)
-- [Jan 2026] Fixed `/:id` redirect handler: primary lookup via SELF_URL key, fallback via req.hostname for custom domains
-- [Jan 2026] Fixed DynoPay env var mismatch (DYNOPAY_* vs DYNO_PAY_*)
-- [Jan 2026] Removed blocking GitHub API check on every message
+**Changes Made:**
+- Updated `.nvmrc` from `v18.13.0` → `v20.20.0`
+- Added `"engines": { "node": ">=20.0.0" }` to `package.json`
+- Regenerated `package-lock.json` (now 7651 lines, fully synced)
 
-## Backlog
-- P1: Test full URL shortener e2e (create + redirect)
-- P2: Verify Cutt.ly API key still works
-- P2: npm security audit
+**Verification:**
+- `npm ci` completes with 0 errors and 0 EBADENGINE warnings
+
+## Next Action Items
+- Re-deploy on Railway and confirm Docker build succeeds
+- Consider running `npm audit fix` to address 10 reported vulnerabilities
