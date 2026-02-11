@@ -1264,6 +1264,13 @@ function localToUtc(localHour, localMinute, offsetHours) {
 function initAutoPromo(bot, db, nameOf, stateCol) {
   const promoTracker = db.collection('promoTracker')
   const promoOptOut = db.collection('promoOptOut')
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID
+
+  function alertAdmin(msg) {
+    if (adminChatId) {
+      bot.sendMessage(adminChatId, `[AutoPromo Alert] ${msg}`).catch(() => {})
+    }
+  }
 
   /**
    * Get the next rotation index for a theme+lang combo
