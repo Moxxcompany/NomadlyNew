@@ -1222,16 +1222,21 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
   }
 
   /**
-   * Send a promo to a single user
+   * Send a promo to a single user (with banner image)
    */
   async function sendPromoToUser(chatId, theme, variationIndex, lang) {
     try {
       if (await isOptedOut(chatId)) return { success: true, skipped: true }
 
       const messages = promoMessages[lang]?.[theme] || promoMessages.en[theme]
-      const message = messages[variationIndex % messages.length]
+      const caption = messages[variationIndex % messages.length]
+      const bannerUrl = PROMO_BANNERS[theme]
 
-      await bot.sendMessage(chatId, message, { parse_mode: 'HTML', disable_web_page_preview: true })
+      if (bannerUrl) {
+        await bot.sendPhoto(chatId, bannerUrl, { caption, parse_mode: 'HTML' })
+      } else {
+        await bot.sendMessage(chatId, caption, { parse_mode: 'HTML', disable_web_page_preview: true })
+      }
       return { success: true }
     } catch (error) {
       if (error.response?.statusCode === 403) {
