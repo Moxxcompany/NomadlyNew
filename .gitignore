@@ -65,4 +65,7 @@ typings/
 # IDEs and editors
 .idea/
 .wwebjs_auth
-.wwebjs_cache
+.wwebjs_cache-e 
+# Environment files
+*.env
+*.env.*
