@@ -220,7 +220,8 @@ let nameOf = {},
 // some info to use with bot
 let adminDomains = [],
   connect_reseller_working = true,
-  ip_whitelist_message_sent = false
+  ip_whitelist_message_sent = false,
+  last_cr_check_time = 0
 
 let autoPromo = null
 
