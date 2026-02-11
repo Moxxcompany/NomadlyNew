@@ -1409,6 +1409,26 @@ ${
 
 <strong>✅ क्या आप ऑर्डर जारी रखना चाहते हैं?</strong>`,
 
+  upgradeDiskSummary: (newData, vpsDetails, lowBal) => `<strong>📜 ऑर्डर सारांश:</strong>
+
+<strong>• VPS ID:</strong> ${vpsDetails.name}
+<strong>• पुराना डिस्क प्रकार:</strong> ${newData.upgradeOption.from}
+<strong>• नया डिस्क प्रकार:</strong> ${newData.upgradeOption.to}
+<strong>• बिलिंग चक्र:</strong> ${newData.billingCycle}
+<strong>• नई बिलिंग दर:</strong> $${newData.totalPrice} USD${
+    newData.billingCycle === 'Hourly' ? '/घंटा' : ' (आनुपातिक समायोजन लागू)'
+  }
+${
+  lowBal
+    ? `
+नोट: आपके कुल में $${VPS_HOURLY_PLAN_MINIMUM_AMOUNT_PAYABLE} USD की जमा राशि शामिल है। पहली घंटे की दर कटने के बाद, शेष जमा राशि आपके वॉलेट में क्रेडिट की जाएगी।
+`
+    : ''
+}
+<strong>• कुल मूल्य:</strong> $${lowBal ? VPS_HOURLY_PLAN_MINIMUM_AMOUNT_PAYABLE : newData.totalPrice} USD
+
+<strong>✅ क्या आप ऑर्डर जारी रखना चाहते हैं?</strong>`,
+
   vpsSubscriptionData: (vpsData, planExpireDate, panelExpireDate) => `<strong>🗂️ आपकी सक्रिय सदस्यताएँ:</strong>
 
 <strong>• VPS ${vpsData.name} </strong> – समाप्ति तिथि: ${planExpireDate}  (स्वचालित नवीनीकरण: ${

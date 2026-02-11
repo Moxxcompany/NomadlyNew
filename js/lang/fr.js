@@ -1426,6 +1426,26 @@ ${
 
 <strong>✅ Confirmer la commande ?</strong>`,
 
+  upgradeDiskSummary: (newData, vpsDetails, lowBal) => `<strong>📜 Résumé de la commande :</strong>
+
+<strong>• VPS ID :</strong> ${vpsDetails.name}
+<strong>• Ancien type de disque :</strong> ${newData.upgradeOption.from}
+<strong>• Nouveau type de disque :</strong> ${newData.upgradeOption.to}
+<strong>• Cycle de facturation :</strong> ${newData.billingCycle}
+<strong>• Nouveau tarif :</strong> $${newData.totalPrice} USD${
+    newData.billingCycle === 'Hourly' ? '/heure' : ' (ajustement au prorata appliqué)'
+  }
+${
+  lowBal
+    ? `
+Note : Un dépôt de $${VPS_HOURLY_PLAN_MINIMUM_AMOUNT_PAYABLE} USD est inclus dans votre total. Après la première déduction horaire, le dépôt restant sera crédité dans votre portefeuille.
+`
+    : ''
+}
+<strong>• Prix total :</strong> $${lowBal ? VPS_HOURLY_PLAN_MINIMUM_AMOUNT_PAYABLE : newData.totalPrice} USD
+
+<strong>✅ Confirmer la commande ?</strong>`,
+
   vpsSubscriptionData: (vpsData, planExpireDate, panelExpireDate) => `<strong>🗂️ Vos abonnements actifs :</strong>
 
 <strong>• VPS ${vpsData.name} </strong> – Expire le : ${planExpireDate}  (Renouvellement automatique : ${

@@ -1382,6 +1382,26 @@ ${
 
 <strong>✅ 是否继续下单？</strong>`,
 
+  upgradeDiskSummary: (newData, vpsDetails, lowBal) => `<strong>📜 订单摘要：</strong>
+
+<strong>• VPS ID：</strong> ${vpsDetails.name}
+<strong>• 旧磁盘类型：</strong> ${newData.upgradeOption.from}
+<strong>• 新磁盘类型：</strong> ${newData.upgradeOption.to}
+<strong>• 计费周期：</strong> ${newData.billingCycle}
+<strong>• 新计费费率：</strong> $${newData.totalPrice} USD${
+    newData.billingCycle === 'Hourly' ? '/小时' : '（已应用按比例调整）'
+  }
+${
+  lowBal
+    ? `
+注意：您的总额包含 $${VPS_HOURLY_PLAN_MINIMUM_AMOUNT_PAYABLE} USD 的押金。扣除第一个小时费率后，剩余押金将计入您的钱包。
+`
+    : ''
+}
+<strong>• 总价格：</strong> $${lowBal ? VPS_HOURLY_PLAN_MINIMUM_AMOUNT_PAYABLE : newData.totalPrice} USD
+
+<strong>✅ 是否继续下单？</strong>`,
+
   vpsSubscriptionData: (vpsData, planExpireDate, panelExpireDate) => `<strong>🗂️ 您的有效订阅：</strong>
 
 <strong>• VPS ${vpsData.name} </strong> – 到期日期：${planExpireDate}  (自动续订：${
