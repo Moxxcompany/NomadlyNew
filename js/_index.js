@@ -2005,6 +2005,23 @@ bot?.on('message', async msg => {
     return send(chatId, 'Welcome! Please select an option:', trans('o'))
   }
 
+  // Auto-promo opt-out/opt-in commands
+  if (message === '/stop_promos') {
+    if (autoPromo) {
+      await autoPromo.setOptOut(chatId, true)
+      return send(chatId, t.promoOptOut || 'You have been unsubscribed from promotional messages. Type /start_promos to re-subscribe anytime.', bc)
+    }
+    return
+  }
+
+  if (message === '/start_promos') {
+    if (autoPromo) {
+      await autoPromo.setOptOut(chatId, false)
+      return send(chatId, t.promoOptIn || 'You have been re-subscribed to promotional messages. You will receive our latest offers and deals!', bc)
+    }
+    return
+  }
+
   if (message === user.changeSetting) {
     set(state, chatId, 'action', a.updateUserLanguage)
     return send(chatId, trans('l.askPreferredLanguage') , trans('languageMenu'))
