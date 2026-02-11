@@ -27,9 +27,9 @@ Telegram link shortener bot offering domain registration, URL shortening, phone 
 ## Changes Implemented
 
 ### 1. Deployment Fix (Session 1)
-- `.nvmrc` updated from v18.13.0 → v20.20.0
+- `.nvmrc` updated from v18.13.0 -> v20.20.0
 - Added `"engines": { "node": ">=20.0.0" }` to package.json
-- Regenerated package-lock.json (3616 → 7651 lines)
+- Regenerated package-lock.json (3616 -> 7651 lines)
 - `npm ci` now passes with 0 errors/warnings
 
 ### 2. Auto-Promo System (Session 2)
@@ -60,18 +60,48 @@ Telegram link shortener bot offering domain registration, URL shortening, phone 
 ### 4. Integration into _index.js
 - Import `initAutoPromo` from `./auto-promo.js`
 - Initialize in `loadData()` after DB connection
-- `/stop_promos` command → opt-out from promos
-- `/start_promos` command → re-subscribe to promos
+- `/stop_promos` command -> opt-out from promos
+- `/start_promos` command -> re-subscribe to promos
+
+### 5. Build Configuration Fixed (Session 2)
+- Created `nixpacks.toml` to force `npm install` during deployment
+- Updated `railway.json` with aligned build command
+- Bypasses `npm ci` sync errors
+
+### 6. Lead Credential Testing (Session 3 - Feb 2026)
+Tested user-provided credentials with real phone numbers:
+- **Alcazar** (API_ALCAZAR): WORKING - detects WIRELESS/LANDLINE + carrier
+- **NPL** (NUMBER_PROBABLITY_API_ID/PASS): WORKING - detects mobile/reachable, ~35K credits
+- **Neutrino** (NEUTRINO_ID/KEY): FAIL - free plan limit exceeded
+- **SignalWire** (API_SIGNALWIRE): FAIL - 401 Unauthorized (token format mismatch)
+
+### 7. Banner Images for Promos (Session 3 - Feb 2026)
+- Generated 3 professional banner images (domains, shortener, leads)
+- Updated `auto-promo.js` to use `bot.sendPhoto()` with image + caption
+- Fallback to `bot.sendMessage()` if banner URL unavailable
+- Exported `PROMO_BANNERS` for easy URL management
+- All message captions verified under Telegram's 1024-char limit
 
 ---
 
 ## MongoDB Collections (New)
-- `promoTracker` — rotation index per theme+lang
-- `promoOptOut` — per-user opt-out preference
-- `promoStats` — broadcast statistics/logs
+- `promoTracker` -- rotation index per theme+lang
+- `promoOptOut` -- per-user opt-out preference
+- `promoStats` -- broadcast statistics/logs
+
+## Credential Status
+| Service | Env Var | Status | Notes |
+|---------|---------|--------|-------|
+| Alcazar | API_ALCAZAR | Working | LRN lookup API |
+| NPL | NUMBER_PROBABLITY_API_ID/PASS | Working | ~35K credits |
+| Neutrino | NEUTRINO_ID/KEY | Exhausted | Free plan limit hit |
+| SignalWire | TOKEN_SIGNALWIRE | Auth Fail | Need project_id:token format |
+
+## Backlog / P0
+- Fix Neutrino: user needs to upgrade plan or add credits
+- Fix SignalWire: need correct project_id:api_token pair from user
 
 ## Backlog / P1
-- Add banner images to promos (sendPhoto instead of sendMessage)
 - Admin command to force-trigger a promo broadcast
 - Admin command to view promo stats
 - A/B testing different promo variations
