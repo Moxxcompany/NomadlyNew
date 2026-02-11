@@ -13,7 +13,7 @@ Setup and install needed dependencies, update SELF_URL to Emergent pod URL, test
 ## What's Been Implemented (Jan 2026)
 - [x] Installed all 301 npm dependencies
 - [x] Created `.env` with all 100+ environment variables from user-provided credentials
-- [x] Updated `SELF_URL` to Emergent pod URL: `https://444cdde2-bce0-4565-8b58-9a834a768843.preview.emergentagent.com`
+- [x] Updated `SELF_URL` to Emergent pod URL: `https://bot-payment-flow-1.preview.emergentagent.com`
 - [x] Ran comprehensive connectivity tests for 15 services
 - [x] Identified 9 working services and 7 failed/bad credential services
 
