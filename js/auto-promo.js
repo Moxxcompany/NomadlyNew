@@ -1389,7 +1389,25 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
       return
     }
 
-    log(`[AutoPromo] Starting ${theme} broadcast (variation #${variationIndex + 1}) to ${targetChatIds.length} ${lang} users`)
+    // Try AI-generated dynamic message first
+    let dynamicMessage = null
+    let usedAI = false
+    try {
+      dynamicMessage = await generateDynamicPromo(theme, lang)
+      if (dynamicMessage) {
+        usedAI = true
+        log(`[AutoPromo] AI-generated ${theme}/${lang} message (${dynamicMessage.length} chars)`)
+      }
+    } catch (err) {
+      log(`[AutoPromo] AI generation failed: ${err.message}`)
+    }
+
+    if (!dynamicMessage) {
+      log(`[AutoPromo] Falling back to static message for ${theme}/${lang}`)
+      alertAdmin(`OpenAI failed for ${theme}/${lang} promo. Using static fallback. Check APP_OPEN_API_KEY.`)
+    }
+
+    log(`[AutoPromo] Starting ${theme} broadcast (${usedAI ? 'AI-generated' : 'static #' + (variationIndex + 1)}) to ${targetChatIds.length} ${lang} users`)
 
     const { BATCH_SIZE, DELAY_BETWEEN_BATCHES, DELAY_BETWEEN_MESSAGES } = BROADCAST_CONFIG
     let successCount = 0
@@ -1401,7 +1419,7 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
 
       const batchPromises = batch.map(async (chatId, index) => {
         await sleep(index * DELAY_BETWEEN_MESSAGES)
-        return sendPromoToUser(chatId, theme, variationIndex, lang)
+        return sendPromoToUser(chatId, theme, variationIndex, lang, dynamicMessage)
       })
 
       const results = await Promise.allSettled(batchPromises)
@@ -1424,7 +1442,8 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
     const stats = {
       theme,
       lang,
-      variation: variationIndex + 1,
+      variation: usedAI ? 'ai-generated' : variationIndex + 1,
+      usedAI,
       total: targetChatIds.length,
       success: successCount,
       errors: errorCount,
