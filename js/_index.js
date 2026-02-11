@@ -3237,7 +3237,7 @@ bot?.on('message', async msg => {
     const yesNo = trans('yesNo')
     if (message === t.back) return goto['choose-domain-to-buy']()
     if (!yesNo.includes(message)) return send(chatId, t.what)
-    saveInfo('askDomainToUseWithShortener', message)
+    saveInfo('askDomainToUseWithShortener', message === yesNo[0])
 
     if (info?.originalPrice <= 2 && (await isSubscribed(chatId))) {
       const available = (await get(freeDomainNamesAvailableFor, chatId)) || 0
@@ -4456,7 +4456,7 @@ const buyDomainFullProcess = async (chatId, lang, domain) => {
     send(chatId, translation('t.domainBoughtSuccess', lang, domain), translation('o', lang))
 
     let info = await get(state, chatId)
-    if (info?.askDomainToUseWithShortener === translation('t.no', lang)) return
+    if (info?.askDomainToUseWithShortener === false) return
 
     // saveDomainInServerRender
     const { server, error, recordType } =
