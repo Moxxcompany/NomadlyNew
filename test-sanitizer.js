@@ -1,5 +1,3 @@
-require('dotenv').config()
-
 function sanitizeForTelegram(text) {
   let s = text
   s = s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
@@ -8,7 +6,7 @@ function sanitizeForTelegram(text) {
   s = s.replace(/(?<!\w)_([^_\n]+?)_(?!\w)/g, '<i>$1</i>')
   s = s.replace(/`([^`\n]+?)`/g, '<code>$1</code>')
   s = s.replace(/^#{1,3}\s+/gm, '')
-  s = s.replace(/<\/?(?!(?:b|i|u|s|code|pre|a)\b)[^>]*>/gi, '')
+  s = s.replace(/<(?!\/?(?:b|i|u|s|code|pre|a)\b)[^>]*>/gi, '')
   for (const tag of ['b', 'i', 'code']) {
     const opens = (s.match(new RegExp(`<${tag}>`, 'gi')) || []).length
     const closes = (s.match(new RegExp(`</${tag}>`, 'gi')) || []).length
@@ -32,7 +30,7 @@ const tests = [
   ['Extra </b> close', 'Extra  close', 'orphan close b'],
   ['<b>OK</b> and **also**', '<b>OK</b> and <b>also</b>', 'mixed html+md'],
   ['<div>bad</div> <b>ok</b>', 'bad <b>ok</b>', 'strip div'],
-  ['<span style="c">t</span>', 't', 'strip span'],
+  ['<span style="c">t</span>', 't', 'strip span w/ attr'],
   ['<b>one</b> <b>two', '<b>one</b> <b>two</b>', 'second unclosed b'],
   ['## Heading\nText', 'Heading\nText', 'strip md header'],
   ['*italic text*', '<i>italic text</i>', 'italic conversion'],
@@ -42,6 +40,11 @@ const tests = [
   ['<a href="url">link</a>', '<a href="url">link</a>', 'keep a tag'],
   ['Price $20 for **1000**', 'Price $20 for <b>1000</b>', 'dollar sign safe'],
   ['**Bold** and **bold2**', '<b>Bold</b> and <b>bold2</b>', 'multiple bolds'],
+  ['<code>test</code> works', '<code>test</code> works', 'keep code tag'],
+  ['</b> orphan </b>', ' orphan ', 'double orphan close'],
+  ['<i>italic</i> <u>underline</u>', '<i>italic</i> <u>underline</u>', 'keep i and u tags'],
+  ['<b>bold</b> <s>strike</s>', '<b>bold</b> <s>strike</s>', 'keep s tag'],
+  ['<pre>preformatted</pre>', '<pre>preformatted</pre>', 'keep pre tag'],
 ]
 
 let pass = 0
