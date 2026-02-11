@@ -1237,8 +1237,8 @@ cPanel होस्टिंग चाहिए?
  * Convert a local target time to UTC given a timezone offset
  */
 function localToUtc(localHour, localMinute, offsetHours) {
-  let utcMinute = localMinute - ((offsetHours % 1) * 60)
-  let utcHour = Math.floor(localHour - offsetHours)
+  let utcHour = localHour - Math.floor(offsetHours)
+  let utcMinute = localMinute - Math.round((offsetHours % 1) * 60)
 
   if (utcMinute < 0) {
     utcMinute += 60
