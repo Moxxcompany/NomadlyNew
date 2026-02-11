@@ -1,52 +1,41 @@
-# PRD - Telegram Bot Link Shortener (Nomadly)
+# Nomadly Telegram Bot - PRD
 
 ## Original Problem Statement
-Setup and install needed dependencies, update SELF_URL to Emergent pod URL, test all service connectivity, and identify bad credentials.
+Set up and maintain a Node.js Telegram bot for link shortening, domain registration, DNS management, hosting, and crypto payments (DynoPay).
 
 ## Architecture
-- **Runtime**: Node.js v20.20.0
-- **Database**: MongoDB (via `mongodb` npm driver)
-- **Bot Framework**: `node-telegram-bot-api`
-- **HTTP Server**: Express.js (webhooks, REST APIs, payment callbacks)
-- **Key Integrations**: Telegram Bot API, BlockBee, Fincra, DynoPay, ConnectReseller, Bitly, Cuttly, Nodemailer/Brevo SMTP, Railway, Render, Neutrino, Twilio, Nameword/VPS
+- **Runtime:** Node.js/Express.js (single monolithic app)
+- **Entry:** `js/start-bot.js` → `js/_index.js`
+- **Database:** MongoDB (Railway)
+- **Bot Framework:** `node-telegram-bot-api` with webhook mode
+- **Port:** 3000 (from .env PORT)
+- **Webhook:** `{SELF_URL}/telegram/webhook`
 
-## What's Been Implemented (Jan 2026)
-- [x] Installed all 301 npm dependencies
-- [x] Created `.env` with all 100+ environment variables from user-provided credentials
-- [x] Updated `SELF_URL` to Emergent pod URL: `https://bot-payment-flow-1.preview.emergentagent.com`
-- [x] Ran comprehensive connectivity tests for 15 services
-- [x] Identified 9 working services and 7 failed/bad credential services
+## Core Features
+1. URL Shortening (Bitly, Cuttly, Custom domains)
+2. Domain Registration (ConnectReseller API)
+3. DNS Management (Add/Update/Delete A, CNAME, NS records)
+4. Crypto Payments (DynoPay)
+5. Hosting Plans (cPanel via NAMEWORD API)
+6. Phone Number Validation
+7. SMS Broadcasting
 
-## Connectivity Test Results
+## What's Been Implemented
+- **Feb 2026:** Environment setup, webhook config, DynoPay fixes (field mapping, webhook_url, min $1), min deposit $6→$10, re-enabled core features (removed redirect messages from 22 locations), domain search progress message, DNS management analysis
+- **Feb 11, 2026:** Webhook re-registered for new pod URL, full DNS management analysis and verification
 
-### ✅ Working (9 services)
-| Service | Details |
-|---------|---------|
-| MongoDB | Connected, DB "test" has 27 collections |
-| Telegram Bot | @NomadlyBot authenticated |
-| BlockBee | API key valid (crypto payments disabled) |
-| SMTP/Email | Brevo SMTP verified (smtp-relay.brevo.com:587) |
-| Twilio | Account active, name: AppLemon |
-| Bitly | Authenticated as o_4qne9pe0od |
-| OpenExchangeRates | Working, 1 USD = 1353.39 NGN |
-| SELF_URL | Updated to Emergent pod URL |
+## DNS Management System
+All ConnectReseller API endpoints verified working:
+- ViewDomain, ViewDNSRecord, ManageDNSRecords
+- AddDNSRecord, ModifyDNSRecord, DeleteDNSRecord
+- UpdateNameServer, checkDomainPrice, SearchDomainList, Order
 
-### ❌ Bad Credentials / Failed (7 services)
-| Service | Issue |
-|---------|-------|
-| Fincra | 401 Invalid authentication credentials - public key may be expired or wrong |
-| DynoPay | 401 Requires "user" auth, wallet token is "customer" type |
-| ConnectReseller | 404 API endpoint returned Tomcat error page - API key may need IP whitelisting |
-| Railway API | GraphQL "Not Authorized" - API token expired or revoked |
-| Render API | 401 Unauthorized - token expired or revoked |
-| Nameword/VPS | Timeout - server at 34.44.198.68 unreachable |
-| Neutrino | 403 ACCESS DENIED - user ID or API key invalid |
-
-## Next Action Items
-- P0: Fix 7 failed credentials (see table above)
-- P1: Start bot with `npm start` for full end-to-end test
-- P2: ConnectReseller likely needs this pod's IP whitelisted
+## Known Issues
+- **NAMEWORD API** (`http://34.44.198.68/api/v1`) unreachable - affects hosting plan domain flow only, not direct domain purchase
+- **DynoPay getSupportedCurrency** endpoint defunct, replaced with hardcoded list
+- **DynoPay getCryptoTransaction/getSingleTransaction** endpoints untested
 
 ## Backlog
-- P2: Upgrade deprecated npm packages (request, uuid@3)
-- P3: Add health-check endpoint for monitoring
+- P2: Refactor monolithic `_index.js` (~5000+ lines) into modules
+- P2: Verify untested DynoPay tracking endpoints
+- P2: NAMEWORD API connectivity investigation
