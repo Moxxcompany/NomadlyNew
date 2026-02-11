@@ -293,6 +293,10 @@ const loadData = async () => {
   // set(planEndingTime, 6687923716, 0)
   // set(freeShortLinksOf, 6687923716, FREE_LINKS)
   // adminDomains = await getPurchasedDomains(TELEGRAM_DOMAINS_SHOW_CHAT_ID)
+
+  // Initialize auto-promo system
+  autoPromo = initAutoPromo(bot, db, nameOf, state)
+  log('[AutoPromo] System loaded successfully')
 }
 
 const client = new MongoClient(process.env.MONGO_URL, {
