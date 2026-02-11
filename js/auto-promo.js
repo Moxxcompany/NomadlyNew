@@ -1,9 +1,19 @@
 // Auto-Promo System - Sends 3 daily promotional messages to all bot users
-// Messages are language-aware, timezone-aware, and rotate to avoid repetition
+// AI-powered dynamic messages with static fallback + admin alerts
 
 const schedule = require('node-schedule')
 const { log } = require('console')
+const OpenAI = require('openai')
 const BROADCAST_CONFIG = require('./broadcast-config.js')
+
+// OpenAI client (lazy init)
+let openai = null
+function getOpenAI() {
+  if (!openai && process.env.APP_OPEN_API_KEY) {
+    openai = new OpenAI({ apiKey: process.env.APP_OPEN_API_KEY })
+  }
+  return openai
+}
 
 // Banner images for each promo theme
 const PROMO_BANNERS = {
@@ -11,6 +21,9 @@ const PROMO_BANNERS = {
   shortener: 'https://static.prod-images.emergentagent.com/jobs/f44f3da8-af55-473d-8bbc-825abdd733f0/images/b827dbbd54971ca845894edd375b003e6d8218014282ec27a95e838c12cbd679.png',
   leads: 'https://static.prod-images.emergentagent.com/jobs/f44f3da8-af55-473d-8bbc-825abdd733f0/images/134e81dc1f0118d89cd0d3ba0d9d25fc840a6b27709a0dcb31278bf1649f35da.png',
 }
+
+// Language names for AI prompt
+const LANG_NAMES = { en: 'English', fr: 'French', zh: 'Chinese (Simplified)', hi: 'Hindi' }
 
 // Timezone offsets per language (hours from UTC)
 // Used to send promos at "local" times for each user group
