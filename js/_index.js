@@ -3047,7 +3047,7 @@ bot?.on('message', async msg => {
     try {
       const { url } = info
       const slug = nanoid()
-      const __shortUrl = `${SELF_URL}/${slug}`
+      const __shortUrl = `${SELF_URL}/api/${slug}`
       const _shortUrl = await createCustomShortUrlCuttly(__shortUrl, message)
       const shortUrl = __shortUrl.replaceAll('.', '@').replace('https://', '')
       increment(totalShortLinks)
