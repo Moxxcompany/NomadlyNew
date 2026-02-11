@@ -1350,10 +1350,24 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
       const caption = dynamicMessage || (promoMessages[lang]?.[theme] || promoMessages.en[theme])[variationIndex % 5]
       const bannerUrl = PROMO_BANNERS[theme]
 
-      if (bannerUrl) {
-        await bot.sendPhoto(chatId, bannerUrl, { caption, parse_mode: 'HTML' })
-      } else {
-        await bot.sendMessage(chatId, caption, { parse_mode: 'HTML', disable_web_page_preview: true })
+      try {
+        if (bannerUrl) {
+          await bot.sendPhoto(chatId, bannerUrl, { caption, parse_mode: 'HTML' })
+        } else {
+          await bot.sendMessage(chatId, caption, { parse_mode: 'HTML', disable_web_page_preview: true })
+        }
+      } catch (parseErr) {
+        // If HTML parsing fails (bad AI output), retry without parse_mode
+        if (parseErr.message?.includes('parse') || parseErr.response?.statusCode === 400) {
+          log(`[AutoPromo] HTML parse error for ${chatId}, retrying plain text`)
+          if (bannerUrl) {
+            await bot.sendPhoto(chatId, bannerUrl, { caption })
+          } else {
+            await bot.sendMessage(chatId, caption, { disable_web_page_preview: true })
+          }
+        } else {
+          throw parseErr
+        }
       }
       return { success: true }
     } catch (error) {
