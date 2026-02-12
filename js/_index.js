@@ -3968,7 +3968,7 @@ bot?.on('message', async msg => {
   //
   //
   if (message === user.urlShortenerMain) {
-    return goto['choose-url-to-shorten']()
+    return goto.submenu1()
   }
   if (message === user.domainNames) {
     return goto.submenu2()
