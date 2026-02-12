@@ -738,7 +738,7 @@ const k = {
   //url shortening
   redSelectRandomCustom: kOf(redSelectRandomCustom),
 
-  redSelectProvider: kOf(redSelectProvider),
+  redSelectProvider: kOf([redSelectProvider[0]]),
 }
 const payOpts = HIDE_BANK_PAYMENT !== 'true' ? k.of([u.usd, u.ngn]) : k.of([u.usd])
 
