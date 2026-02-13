@@ -239,6 +239,7 @@ async function del(c, _id) {
 
 module.exports = {
   increment,
+  atomicIncrement,
   decrement,
   get,
   set,
