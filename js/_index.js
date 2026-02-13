@@ -1999,13 +1999,22 @@ bot?.on('message', async msg => {
         )
       }
       const name = await get(nameOf, chatId)
+
+      // If partial free validation, deduct free portion and log both
+      if (info?.partialFree) {
+        const freePortionAmount = info?.freePortionAmount || 0
+        set(freeValidationsAvailableFor, chatId, 0)
+        set(payments, nanoid(), `Free,Validate Leads,${freePortionAmount} leads,$0,${chatId},${name},${new Date()}`)
+        send(chatId, t.freeValidationUsed(freePortionAmount, 0), trans('o'))
+      }
+
       // wallet update
       if (coin === u.usd) {
-        set(payments, nanoid(), `Wallet,Validate Leads,${leadsAmount} leads,$${priceUsd},${chatId},${name},${new Date()}`)
+        set(payments, nanoid(), `Wallet,Validate Leads,${info?.partialFree ? info?.paidPortionAmount : leadsAmount} leads,$${priceUsd},${chatId},${name},${new Date()}`)
         const usdOut = (wallet?.usdOut || 0) + priceUsd
         await set(walletOf, chatId, 'usdOut', usdOut)
       } else if (coin === u.ngn) {
-        set(payments, nanoid(), `Wallet,Validate Leads,${leadsAmount} leads,$${priceUsd},${chatId},${name},${new Date()},${priceNgn} NGN`)
+        set(payments, nanoid(), `Wallet,Validate Leads,${info?.partialFree ? info?.paidPortionAmount : leadsAmount} leads,$${priceUsd},${chatId},${name},${new Date()},${priceNgn} NGN`)
         const ngnOut = isNaN(wallet?.ngnOut) ? 0 : Number(wallet?.ngnOut)
         await set(walletOf, chatId, 'ngnOut', ngnOut + priceNgn)
       } else {
