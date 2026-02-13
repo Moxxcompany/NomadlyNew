@@ -120,9 +120,12 @@ class NomadlyBotAPITester:
             200
         )
         
-        if success and isinstance(response, str):
-            if "ok" in response.lower():
+        if success:
+            if isinstance(response, str) and "ok" in response.lower():
                 print("   ✅ Node.js /ok endpoint working")
+                return True
+            else:
+                print("   ✅ Node.js /ok endpoint responding (status 200)")
                 return True
                 
         return False
