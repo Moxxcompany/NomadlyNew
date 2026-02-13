@@ -1692,7 +1692,6 @@ bot?.on('message', async msg => {
     'domain-pay': async coin => {
       set(state, chatId, 'action', 'none')
       const price = info?.couponApplied ? info?.newPrice : info?.price
-      const wallet = await get(walletOf, chatId)
       const { usdBal, ngnBal } = await getBalance(walletOf, chatId)
 
       if (![u.usd, u.ngn].includes(coin)) return send(chatId, 'Some Issue')
@@ -1725,7 +1724,6 @@ bot?.on('message', async msg => {
     'hosting-pay': async coin => {
       set(state, chatId, 'action', 'none')
       const price = info?.couponApplied ? info?.newPrice : info?.totalPrice
-      const wallet = await get(walletOf, chatId)
       const { usdBal, ngnBal } = await getBalance(walletOf, chatId)
 
       if (![u.usd, u.ngn].includes(coin)) return send(chatId, 'Some Issue')
@@ -1753,7 +1751,6 @@ bot?.on('message', async msg => {
     'vps-plan-pay': async coin => {
       set(state, chatId, 'action', 'none')
       const price = Number(info?.vpsDetails.totalPrice)
-      const wallet = await get(walletOf, chatId)
       const { usdBal, ngnBal } = await getBalance(walletOf, chatId)
       const vpsDetails = info?.vpsDetails
 
@@ -1796,7 +1793,6 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', 'none')
       const vpsDetails = info?.vpsDetails
       const price = Number(vpsDetails.totalPrice)
-      const wallet = await get(walletOf, chatId)
       const { usdBal, ngnBal } = await getBalance(walletOf, chatId)
 
       if (![u.usd, u.ngn].includes(coin)) return send(chatId, 'Some Issue')
@@ -2009,7 +2005,6 @@ bot?.on('message', async msg => {
     [a.redSelectProvider]: async coin => {
       set(state, chatId, 'action', 'none')
       const price = info?.couponApplied ? info?.newPrice : info?.price
-      const wallet = await get(walletOf, chatId)
       const { usdBal, ngnBal } = await getBalance(walletOf, chatId)
 
       if (![u.usd, u.ngn].includes(coin)) return send(chatId, 'Some Issue')
