@@ -22,6 +22,21 @@ const increment = async (c, key, val = 1, valueInside) => {
   }
 }
 
+// Atomic increment using MongoDB $inc — safe for concurrent wallet operations
+const atomicIncrement = async (c, key, field, amount) => {
+  try {
+    await c.updateOne(
+      { _id: key },
+      { $inc: { [field]: amount } },
+      { upsert: true }
+    )
+    return true
+  } catch (error) {
+    console.error(`Error atomicIncrement: ${key}.${field} by ${amount} in ${c.collectionName}:`, error)
+    return false
+  }
+}
+
 const decrement = async (c, key) => {
   try {
     const count = (await get(c, key)) || 0
