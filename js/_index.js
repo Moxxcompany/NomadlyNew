@@ -1677,14 +1677,12 @@ bot?.on('message', async msg => {
         const priceUsd = price
         if (usdBal < priceUsd) return send(chatId, t.walletBalanceLow, k.of([u.deposit]))
         set(payments, nanoid(), `Wallet,Plan,${plan},$${priceUsd},${chatId},${name},${new Date()}`)
-        const usdOut = (wallet?.usdOut || 0) + priceUsd
-        await set(walletOf, chatId, 'usdOut', usdOut)
+        await atomicIncrement(walletOf, chatId, 'usdOut', priceUsd)
       } else {
         const priceNgn = await usdToNgn(price)
         if (ngnBal < priceNgn) return send(chatId, t.walletBalanceLow, k.of([u.deposit]))
         set(payments, nanoid(), `Wallet,Plan,${plan},$${price},${chatId},${name},${new Date()},${priceNgn} NGN`)
-        const ngnOut = isNaN(wallet?.ngnOut) ? 0 : Number(wallet?.ngnOut)
-        await set(walletOf, chatId, 'ngnOut', ngnOut + priceNgn)
+        await atomicIncrement(walletOf, chatId, 'ngnOut', priceNgn)
       }
 
       const { usdBal: usd, ngnBal: ngn } = await getBalance(walletOf, chatId)
@@ -1716,13 +1714,11 @@ bot?.on('message', async msg => {
       // wallet update
       if (coin === u.usd) {
         set(payments, nanoid(), `Wallet,Domain,${domain},$${priceUsd},${chatId},${name},${new Date()}`)
-        const usdOut = (wallet?.usdOut || 0) + priceUsd
-        await set(walletOf, chatId, 'usdOut', usdOut)
+        await atomicIncrement(walletOf, chatId, 'usdOut', priceUsd)
       }
       if (coin === u.ngn) {
         set(payments, nanoid(), `Wallet,Domain,${domain},$${priceUsd},${chatId},${name},${new Date()},${priceNgn} NGN`)
-        const ngnOut = isNaN(wallet?.ngnOut) ? 0 : Number(wallet?.ngnOut)
-        await set(walletOf, chatId, 'ngnOut', ngnOut + priceNgn)
+        await atomicIncrement(walletOf, chatId, 'ngnOut', priceNgn)
       }
       const { usdBal: usd, ngnBal: ngn } = await getBalance(walletOf, chatId)
       send(chatId, t.showWallet(usd, ngn), trans('o'))
@@ -1746,13 +1742,11 @@ bot?.on('message', async msg => {
       // wallet update
       if (coin === u.usd) {
         set(payments, nanoid(), `Wallet,Domain,${info.domain},$${priceUsd},${chatId},${new Date()}`)
-        const usdOut = (wallet?.usdOut || 0) + priceUsd
-        await set(walletOf, chatId, 'usdOut', usdOut)
+        await atomicIncrement(walletOf, chatId, 'usdOut', priceUsd)
       }
       if (coin === u.ngn) {
         set(payments, nanoid(), `Wallet,Domain,${info.domain},$${priceUsd},${chatId},${new Date()},${priceNgn} NGN`)
-        const ngnOut = isNaN(wallet?.ngnOut) ? 0 : Number(wallet?.ngnOut)
-        await set(walletOf, chatId, 'ngnOut', ngnOut + priceNgn)
+        await atomicIncrement(walletOf, chatId, 'ngnOut', priceNgn)
       }
       const { usdBal: usd, ngnBal: ngn } = await getBalance(walletOf, chatId)
       send(chatId, t.showWallet(usd, ngn), trans('o'))
@@ -1787,13 +1781,11 @@ bot?.on('message', async msg => {
       // wallet update
       if (coin === u.usd) {
         set(payments, nanoid(), `Wallet,VPSPlan,${vpsDetails?.plan},$${priceUsd},${chatId},${name},${new Date()}`)
-        const usdOut = (Number(wallet?.usdOut) || 0) + priceUsd
-        await set(walletOf, chatId, 'usdOut', usdOut)
+        await atomicIncrement(walletOf, chatId, 'usdOut', priceUsd)
       }
       if (coin === u.ngn) {
         set(payments, nanoid(), `Wallet,VPSPlan,${vpsDetails?.plan},$${priceUsd},${chatId},${name},${new Date()},${priceNgn} NGN`)
-        const ngnOut = isNaN(wallet?.ngnOut) ? 0 : Number(wallet?.ngnOut)
-        await set(walletOf, chatId, 'ngnOut', ngnOut + priceNgn)
+        await atomicIncrement(walletOf, chatId, 'ngnOut', priceNgn)
       }
       sendMessage(chatId, translation('vp.paymentRecieved', lang), rem)
       const isSuccess = await buyVPSPlanFullProcess(chatId, lang, vpsDetails)
@@ -1830,13 +1822,11 @@ bot?.on('message', async msg => {
       // wallet update
       if (coin === u.usd) {
         set(payments, nanoid(), `Wallet,VPSUpgrade,${vpsDetails?.upgradeType},$${priceUsd},${chatId},${name},${new Date()}`)
-        const usdOut = (Number(wallet?.usdOut) || 0) + priceUsd
-        await set(walletOf, chatId, 'usdOut', usdOut)
+        await atomicIncrement(walletOf, chatId, 'usdOut', priceUsd)
       }
       if (coin === u.ngn) {
         set(payments, nanoid(), `Wallet,VPSUpgrade,${vpsDetails?.upgradeType},$${priceUsd},${chatId},${name},${new Date()},${priceNgn} NGN`)
-        const ngnOut = isNaN(wallet?.ngnOut) ? 0 : Number(wallet?.ngnOut)
-        await set(walletOf, chatId, 'ngnOut', ngnOut + priceNgn)
+        await atomicIncrement(walletOf, chatId, 'ngnOut', priceNgn)
       }
       sendMessage(chatId, translation('vp.vpsChangePaymentRecieved', lang), rem)
 
@@ -1923,12 +1913,10 @@ bot?.on('message', async msg => {
       // wallet update
       if (coin === u.usd) {
         set(payments, nanoid(), `Wallet,Phone Leads,${leadsAmount} leads,$${priceUsd},${chatId},${name},${new Date()}`)
-        const usdOut = (wallet?.usdOut || 0) + Number(priceUsd)
-        await set(walletOf, chatId, 'usdOut', usdOut)
+        await atomicIncrement(walletOf, chatId, 'usdOut', Number(priceUsd))
       } else if (coin === u.ngn) {
         set(payments, nanoid(), `Wallet,Phone Leads,${leadsAmount} leads,$${priceUsd},${chatId},${name},${new Date()},${priceNgn} NGN`)
-        const ngnOut = isNaN(wallet?.ngnOut) ? 0 : Number(wallet?.ngnOut)
-        await set(walletOf, chatId, 'ngnOut', ngnOut + priceNgn)
+        await atomicIncrement(walletOf, chatId, 'ngnOut', priceNgn)
       } else {
         return send(chatId, 'Some Issue')
       }
@@ -2011,12 +1999,10 @@ bot?.on('message', async msg => {
       // wallet update
       if (coin === u.usd) {
         set(payments, nanoid(), `Wallet,Validate Leads,${info?.partialFree ? info?.paidPortionAmount : leadsAmount} leads,$${priceUsd},${chatId},${name},${new Date()}`)
-        const usdOut = (wallet?.usdOut || 0) + priceUsd
-        await set(walletOf, chatId, 'usdOut', usdOut)
+        await atomicIncrement(walletOf, chatId, 'usdOut', priceUsd)
       } else if (coin === u.ngn) {
         set(payments, nanoid(), `Wallet,Validate Leads,${info?.partialFree ? info?.paidPortionAmount : leadsAmount} leads,$${priceUsd},${chatId},${name},${new Date()},${priceNgn} NGN`)
-        const ngnOut = isNaN(wallet?.ngnOut) ? 0 : Number(wallet?.ngnOut)
-        await set(walletOf, chatId, 'ngnOut', ngnOut + priceNgn)
+        await atomicIncrement(walletOf, chatId, 'ngnOut', priceNgn)
       } else {
         return send(chatId, 'Some Issue')
       }
@@ -2059,12 +2045,10 @@ bot?.on('message', async msg => {
       // wallet update
       if (coin === u.usd) {
         set(payments, nanoid(), `Wallet,Bit.ly Link,${_shortUrl},$${priceUsd},${chatId},${name},${new Date()}`)
-        const usdOut = (wallet?.usdOut || 0) + priceUsd
-        await set(walletOf, chatId, 'usdOut', usdOut)
+        await atomicIncrement(walletOf, chatId, 'usdOut', priceUsd)
       } else if (coin === u.ngn) {
         set(payments, nanoid(), `Wallet,Bit.ly Link,${_shortUrl},$${priceUsd},${chatId},${name},${new Date()},${priceNgn} NGN`)
-        const ngnOut = isNaN(wallet?.ngnOut) ? 0 : Number(wallet?.ngnOut)
-        await set(walletOf, chatId, 'ngnOut', ngnOut + priceNgn)
+        await atomicIncrement(walletOf, chatId, 'ngnOut', priceNgn)
       } else {
         return send(chatId, 'Some Issue')
       }
