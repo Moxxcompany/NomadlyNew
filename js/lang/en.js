@@ -327,7 +327,7 @@ Discover more: ${TG_CHANNEL}`,
 
   joinChannel: `Please Join Channel ${TG_CHANNEL}`,
 
-  dnsPropagated: `DNS Propagation for {{domain}} is completed for unlimited URL Shortening.`,
+  dnsPropagated: `DNS Propagation for {{domain}} is completed. You can now use it for URL Shortening.`,
 
   dnsNotPropagated: `DNS propagation for {{domain}} is in progress and you will be updated once it completes. ✅`,
 
