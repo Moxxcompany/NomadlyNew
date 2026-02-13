@@ -250,18 +250,18 @@ ${CHAT_BOT_NAME}`,
     HIDE_SMS_APP === 'true'
       ? `<b>Élevez votre marque avec nos plans d'abonnement !</b>
 
-- <b>Quotidien :</b> $${PRICE_DAILY} avec ${DAILY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs", raccourcisseur d'URL illimité.  
-- <b>Hebdomadaire :</b> $${PRICE_WEEKLY} avec ${WEEKLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs", raccourcisseur d'URL illimité.  
-- <b>Mensuel :</b> $${PRICE_MONTHLY} avec ${MONTHLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs", raccourcisseur d'URL illimité.  
+- <b>Quotidien :</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} domaine gratuit ".sbs/.xyz" + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA.
+- <b>Hebdomadaire :</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA.
+- <b>Mensuel :</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA.
 
-(Uniquement pour les domaines ".sbs".)`
+(Domaines gratuits exclusifs aux extensions ".sbs" et ".xyz".)`
       : `<b>Élevez votre marque avec nos plans d'abonnement !</b>
 
-- <b>Quotidien :</b> $${PRICE_DAILY} avec ${DAILY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs", raccourcisseur d'URL illimité et SMS en masse illimités.  
-- <b>Hebdomadaire :</b> $${PRICE_WEEKLY} avec ${WEEKLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs", raccourcisseur d'URL illimité et SMS en masse illimités.  
-- <b>Mensuel :</b> $${PRICE_MONTHLY} avec ${MONTHLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs", raccourcisseur d'URL illimité et SMS en masse illimités.  
+- <b>Quotidien :</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} domaine gratuit ".sbs/.xyz" + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + SMS en masse illimités.
+- <b>Hebdomadaire :</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + SMS en masse illimités.
+- <b>Mensuel :</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + SMS en masse illimités.
 
-(Uniquement pour les domaines ".sbs".)`,
+(Domaines gratuits exclusifs aux extensions ".sbs" et ".xyz".)`,
 
   askCoupon: usd =>
     `Le prix est de $${usd}. Souhaitez-vous utiliser un code promo ? Si vous en avez un, veuillez l'entrer maintenant. Sinon, appuyez sur "Passer".`,
@@ -285,8 +285,8 @@ ${CHAT_BOT_NAME}`,
   freeTrialNotAvailable: `Vous avez déjà utilisé l'essai gratuit.`,
   planSubscribed:
     HIDE_SMS_APP === 'true'
-      ? `Vous vous êtes abonné avec succès au plan {{plan}}. Profitez de nos outils de raccourcissement d'URL et de ${SMS_APP_NAME}. Besoin d'une carte E-sim ? Contactez ${SUPPORT_HANDLE}.`
-      : `Vous vous êtes abonné avec succès au plan {{plan}}. Profitez de nos outils de raccourcissement d'URL et de ${SMS_APP_NAME}. Téléchargez l'application ici : ${SMS_APP_LINK}. Besoin d'une carte E-sim ? Contactez ${SUPPORT_HANDLE}.`,
+      ? `Vous vous êtes abonné avec succès au plan {{plan}} ! Profitez de domaines ".sbs/.xyz" gratuits et de validations de numéros USA gratuites. Besoin d'une carte E-sim ? Contactez ${SUPPORT_HANDLE}.`
+      : `Vous vous êtes abonné avec succès au plan {{plan}} ! Profitez de domaines ".sbs/.xyz" gratuits, de validations USA gratuites et de ${SMS_APP_NAME}. Téléchargez l'application ici : ${SMS_APP_LINK}. Besoin d'une carte E-sim ? Contactez ${SUPPORT_HANDLE}.`,
   alreadySubscribedPlan: days => `Votre abonnement est actif et expire dans ${days} jours.`,
   payError: `Session de paiement introuvable. Veuillez réessayer ou contacter l'assistance ${SUPPORT_USERNAME}. Découvrez plus sur ${TG_HANDLE}.`,
   chooseFreeDomainText: `<b>Bonne nouvelle !</b> Ce domaine est disponible gratuitement avec votre abonnement. Souhaitez-vous le réclamer ?`,
@@ -510,7 +510,7 @@ ${CHAT_BOT_NAME}`,
   yourShortendUrl: shortUrl => `Votre URL raccourcie est : ${shortUrl}`,
 
   availablefreeDomain: (plan, available, s) =>
-    `Rappelez-vous, votre plan ${plan} comprend ${available} domaine ".sbs" gratuit${s}. Obtenez votre domaine dès aujourd'hui !`,
+    `Rappelez-vous, votre plan ${plan} comprend ${available} domaine ".sbs/.xyz" gratuit${s}. Obtenez votre domaine dès aujourd'hui !`,
   shortenedUrlLink: `Veuillez partager l'URL que vous souhaitez raccourcir et analyser. e.g https://cnn.com`,
   selectedTrialPlan: `Vous avez sélectionné le plan d'essai gratuit`,
   userPressedBtn: message => `L'utilisateur a appuyé sur le bouton ${message}.`,
@@ -519,6 +519,7 @@ ${CHAT_BOT_NAME}`,
   checkingDomainAvail: `Vérification de la disponibilité du domaine...`,
   checkingExistingDomainAvail: `Vérification de la disponibilité du domaine existant...`,
   subscribeFirst: `📋 Abonnez-vous d'abord`,
+  freeValidationUsed: (amount, remaining) => `${amount} numéros USA validés avec votre abonnement ! Validations gratuites restantes : ${remaining.toLocaleString()}.`,
   notValidHalf: `Entrez une partie arrière valide`,
   linkAlreadyExist: `Le lien existe déjà. Veuillez en essayer un autre.`,
   issueGettingPrice: `Problème pour obtenir le prix`,
