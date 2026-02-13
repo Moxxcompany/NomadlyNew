@@ -4172,9 +4172,25 @@ bot?.on('message', async msg => {
   }
   if (action === a.askCoupon + a.validatorSelectFormat) {
     if (message === t.back) return goto.validatorSelectFormat()
+
+    // Check for free USA validations before going to wallet
+    const _checkFreeValidation = async () => {
+      if (info?.country === 'USA' && (await isSubscribed(chatId))) {
+        const freeRemaining = (await get(freeValidationsAvailableFor, chatId)) || 0
+        if (freeRemaining >= info?.amount) {
+          return true
+        }
+      }
+      return false
+    }
+
     if (message === t.skip) {
       saveInfo('lastStep', a.validatorSelectFormat)
-      return (await saveInfo('couponApplied', false)) || goto.walletSelectCurrency()
+      await saveInfo('couponApplied', false)
+      if (await _checkFreeValidation()) {
+        return goto.useFreeValidation()
+      }
+      return goto.walletSelectCurrency()
     }
 
     const { price } = info
@@ -4189,6 +4205,9 @@ bot?.on('message', async msg => {
 
     await saveInfo('lastStep', a.validatorSelectFormat)
 
+    if (await _checkFreeValidation()) {
+      return goto.useFreeValidation()
+    }
     return goto.walletSelectCurrency()
   }
 
