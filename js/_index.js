@@ -1624,7 +1624,7 @@ bot?.on('message', async msg => {
 
       const { usdBal: usd, ngnBal: ngn } = await getBalance(walletOf, chatId)
       send(chatId, t.showWallet(usd, ngn), trans('o'))
-      subscribePlan(planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang)
+      subscribePlan(planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang, freeValidationsAvailableFor)
     },
 
     'domain-pay': async coin => {
@@ -4757,7 +4757,7 @@ const bankApis = {
     }
 
     // Subscribe Plan
-    subscribePlan(planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang)
+    subscribePlan(planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang, freeValidationsAvailableFor)
 
     res.send(html())
   },
@@ -5067,7 +5067,7 @@ app.get('/crypto-pay-plan', auth, async (req, res) => {
   }
 
   // Subscribe Plan
-  subscribePlan(planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang)
+  subscribePlan(planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang, freeValidationsAvailableFor)
   res.send(html())
 })
 app.get('/crypto-pay-domain', auth, async (req, res) => {
@@ -5272,7 +5272,7 @@ app.post('/dynopay/crypto-pay-plan', authDyno, async (req, res) => {
   }
 
   // Subscribe Plan
-  subscribePlan(planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang)
+  subscribePlan(planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang, freeValidationsAvailableFor)
   res.send(html())
 })
 
