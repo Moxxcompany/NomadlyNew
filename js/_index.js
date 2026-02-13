@@ -4221,7 +4221,10 @@ bot?.on('message', async msg => {
       if (info?.country === 'USA' && (await isSubscribed(chatId))) {
         const freeRemaining = (await get(freeValidationsAvailableFor, chatId)) || 0
         if (freeRemaining >= info?.amount) {
-          return true
+          return 'full' // all validations covered by free quota
+        }
+        if (freeRemaining > 0) {
+          return 'partial' // some free, rest must be paid
         }
       }
       return false
