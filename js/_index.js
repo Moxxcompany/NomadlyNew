@@ -203,6 +203,7 @@ let state = {},
   freeSmsCountOf = {},
   clicksOfSms = {},
   freeDomainNamesAvailableFor = {},
+  freeValidationsAvailableFor = {},
   hostingTransactions = {},
   vpsTransactions = {}
 
@@ -254,6 +255,7 @@ const loadData = async () => {
   vpsTransactions = db.collection('vpsTransactions')
 
   freeDomainNamesAvailableFor = db.collection('freeDomainNamesAvailableFor')
+  freeValidationsAvailableFor = db.collection('freeValidationsAvailableFor')
 
   // variables to view system information
   nameOf = db.collection('nameOf')
