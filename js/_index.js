@@ -1668,7 +1668,6 @@ bot?.on('message', async msg => {
       const lang = info?.userLanguage || 'en'
       const name = await get(nameOf, chatId)
       const price = info?.couponApplied ? info?.newPrice : info?.price
-      const wallet = await get(walletOf, chatId)
       const { usdBal, ngnBal } = await getBalance(walletOf, chatId)
 
       if (![u.usd, u.ngn].includes(coin)) return send(chatId, 'Some Issue')
@@ -1839,7 +1838,6 @@ bot?.on('message', async msg => {
     [a.buyLeadsSelectFormat]: async coin => {
       set(state, chatId, 'action', 'none')
       const price = info?.couponApplied ? info?.newPrice : info?.price
-      const wallet = await get(walletOf, chatId)
       const { usdBal, ngnBal } = await getBalance(walletOf, chatId)
 
       if (![u.usd, u.ngn].includes(coin)) return send(chatId, 'Some Issue')
@@ -1927,7 +1925,6 @@ bot?.on('message', async msg => {
     [a.validatorSelectFormat]: async coin => {
       set(state, chatId, 'action', 'none')
       const price = info?.couponApplied ? info?.newPrice : info?.price
-      const wallet = await get(walletOf, chatId)
       const { usdBal, ngnBal } = await getBalance(walletOf, chatId)
 
       if (![u.usd, u.ngn].includes(coin)) return send(chatId, 'Some Issue')
@@ -4583,7 +4580,6 @@ async function checkVPSPlansExpiryandPayment() {
     for ( const vpsPlan of expiredHourlyVpsPlans) {
       const { chatId, _id, planPrice, plan, vpsId, label } = vpsPlan
       const info = await state.findOne({ _id: parseFloat(chatId) })
-      const wallet = await get(walletOf, chatId)
       const { usdBal } = await getBalance(walletOf, chatId)
       if (usdBal < planPrice) {
         try {
