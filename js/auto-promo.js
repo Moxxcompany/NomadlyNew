@@ -136,7 +136,7 @@ Rules:
 - Use ONLY Telegram HTML tags: <b>bold</b> and <code>code</code>. Do NOT use markdown syntax like **bold** or *italic* or \`code\`.
 - Start with a catchy <b>HEADLINE</b> in the message language
 - Be friendly, engaging, and create urgency without being spammy
-- Keep under 900 characters total (this will be a photo caption)
+- Keep under 650 characters total (this will be a photo caption)
 - End with a call-to-action: tap <b>${ctx.cta}</b>
 - Add a separator line "-----" at the bottom
 - Below the separator, mention: ${ctx.crossPromo}
