@@ -1,116 +1,68 @@
 # NomadlyBot - Product Requirements Document
 
 ## Original Problem Statement
-Analyze codebase and set up the application.
+Analyze codebase, set up, audit recent subscription feature commits, and fix all identified gaps.
 
 ## Architecture Overview
+Multi-service Telegram bot with admin dashboard:
+- **Node.js Bot** (`/app/js/`) — Core business logic on Express (port 5000)
+- **FastAPI Proxy** (`/app/backend/server.py`) — Routes to Node.js (port 8001)
+- **React Dashboard** (`/app/frontend/`) — Admin status UI (port 3000)
+- **MongoDB** — Primary database
 
-### Application Type
-Multi-service Telegram bot with admin dashboard. The system consists of:
+### Core Bot Features
+URL Shortening, Domain Sales (.sbs/.xyz free with plans), Phone Leads (buy/validate), Wallet System (USD/NGN via crypto + bank), Web Hosting, VPS Management, Multi-language (en/fr/zh/hi), Subscription Plans (Daily/Weekly/Monthly), Auto-Promo, Broadcast.
 
-1. **Node.js Telegram Bot** (`/app/js/`) - Core business logic running on Express (port 5000)
-2. **FastAPI Proxy Backend** (`/app/backend/server.py`) - Proxies requests to Node.js bot (port 8001)
-3. **React Admin Dashboard** (`/app/frontend/`) - Status/health monitoring UI (port 3000)
-4. **MongoDB** - Primary database for all bot data
+## What's Been Implemented
 
-### Tech Stack
-- **Bot Engine**: Node.js 20+ with `node-telegram-bot-api`
-- **Web Server**: Express.js (port 5000)
-- **Backend Proxy**: Python FastAPI + httpx (port 8001)
-- **Frontend**: React 18 + Tailwind CSS + Craco
-- **Database**: MongoDB (via `mongodb` npm driver + `motor`/`pymongo` Python)
-- **Deployment Config**: Railway, Replit, Kubernetes
+### Session 1: Setup & Initial Fixes (Feb 2026)
+- Installed npm dependencies, created root `.env`
+- Fixed `DAILY_PLAN_FREE_VALIDATIONS` undefined in all 4 lang files
 
-### Core Bot Features (Node.js)
-1. **URL Shortening** - Bit.ly and custom domain shortening (Cuttly)
-2. **Domain Name Sales** - Register/manage domains via ConnectReseller API
-3. **Phone Number Leads** - Buy/validate phone leads with carrier filtering (US, UK, AU, NZ, Canada)
-4. **Wallet System** - USD & NGN deposits via crypto (BlockBee/DynoPay) and bank (Fincra)
-5. **Web Hosting** - cPanel & Plesk plans with free trials (Freedom Plan - 12hr)
-6. **VPS Management** - Virtual private servers with SSH key management
-7. **Multi-language** - English, French, Chinese, Hindi
-8. **Subscription Plans** - Daily, Weekly, Monthly tiers
-9. **Auto-Promo System** - Automated promotional messages
-10. **Broadcast System** - Admin broadcast to all users
+### Session 2: Subscription Feature Audit (Feb 2026)
+- Audited subscription feature implementation across entire codebase
+- Confirmed correct: validation counts (5K/10K/15K), `.xyz` in free domain logic, subscription messages in 4 langs, promo messages
 
-### Key Integrations
-- **Telegram Bot API** (node-telegram-bot-api)
-- **ConnectReseller** - Domain registration, DNS management
-- **BlockBee** - Crypto payment processing
-- **DynoPay** - Alternative crypto payments
-- **Fincra** - NGN bank/card payments
-- **Bit.ly** - URL shortening
-- **Railway** - Deployment/domain linking
-- **Twilio** - Phone validation
-- **OpenAI** - Chat functionality
-- **Nodemailer** - Email sending
+### Session 3: Gap Fixes (Feb 2026)
 
-### File Structure Summary
-```
-/app/
-  js/                    # Node.js bot code
-    _index.js            # Main bot logic (1700+ lines)
-    start-bot.js         # Entry point
-    config-setup.js      # Environment detection & defaults
-    config.js            # Bot keyboards, text templates, config
-    db.js                # MongoDB CRUD helpers
-    utils.js             # Utility functions
-    translation.js       # Multi-language support
-    lang/                # Language files (en, fr, zh, hi)
-    hosting/             # Hosting plan configs
-    pay-blockbee.js      # Crypto payments
-    pay-fincra.js        # Bank payments
-    pay-dynopay.js       # Alt crypto payments
-    cr-*.js              # ConnectReseller domain APIs
-    validatePhone*.js    # Phone validation modules
-    vm-instance-setup.js # VPS management
-    auto-promo.js        # Auto-promotion system
-    broadcast-config.js  # Broadcast settings
-  backend/
-    server.py            # FastAPI proxy to Node.js
-  frontend/
-    src/App.js           # Admin dashboard (health monitor)
-```
+**GAP 1 — Promo messages missing .xyz (6 places fixed)**
+- `auto-promo.js`: SERVICE_CONTEXT, EN/FR/ZH/HI domain promo messages all now say `.sbs/.xyz`
 
-### Environment Variables (Critical)
-- `MONGO_URL` - MongoDB connection string
-- `TELEGRAM_BOT_TOKEN` - Telegram bot token (missing - bot runs in disabled mode)
-- `DB_NAME` - Database name
-- `SELF_URL` - Public URL for webhooks
-- `REST_APIS_ON` - Enable Express REST server
-- `TELEGRAM_BOT_ON` - Enable Telegram bot
+**GAP 2 — Partial free validations not handled (new feature)**
+- Added `usePartialFreeValidation` goto in `_index.js`
+- When user has < requested free validations: uses free portion, charges wallet for remainder
+- `_checkFreeValidation()` now returns `'full'`, `'partial'`, or `false`
+- Added `partialFreeValidation` translation message in all 4 lang files
+- Wallet payment handler logs both free + paid portions separately
 
-## What's Been Implemented (Feb 2026)
+**GAP 3 — Wallet race condition (19 operations fixed)**
+- Added `atomicIncrement()` in `db.js` using MongoDB `$inc` operator
+- Replaced all 19 read-modify-write wallet operations with atomic increments
+- Also fixed `addFundsTo` to use atomic increment
+- Cleaned up 9 unused `wallet` variable reads
 
-### Setup & Bug Fixes
-- Installed Node.js npm dependencies (were missing)
-- Created root `.env` file with required environment variables
-- Fixed `DAILY_PLAN_FREE_VALIDATIONS` undefined error in all 4 language files (en.js, fr.js, zh.js, hi.js)
-- All services running: FastAPI proxy, Node.js bot (Telegram disabled), React frontend, MongoDB
+**GAP 4 — /open-api-key endpoint security**
+- Added `x-api-auth` header / `auth` query param check
+- Uses `APP_OPEN_API_AUTH` or `TELEGRAM_BOT_TOKEN` as auth secret
+- Returns 401 Unauthorized without valid credentials
 
-### Current Status
-- Health endpoint: `{ status: ok, proxy: running, node: running, db: connected }`
-- Frontend dashboard shows all services as operational
-- Telegram bot is disabled (no `TELEGRAM_BOT_TOKEN` provided)
-- ConnectReseller API unreachable (IP not whitelisted)
+**Also fixed in Session 2:**
+- `config.js` `planSubscribed` text — updated to mention .sbs/.xyz + validations
+- `config.js` `welcomeFreeTrial` text — updated
+- `zh.js` `availablefreeDomain` — fixed missing .xyz
 
 ## Prioritized Backlog
 
 ### P0 (Critical)
-- Provide `TELEGRAM_BOT_TOKEN` to enable the Telegram bot
+- Provide `TELEGRAM_BOT_TOKEN` to enable Telegram bot
 - Set `SELF_URL` for webhook functionality
-- Whitelist server IP in ConnectReseller
 
 ### P1 (Important)
-- Add authentication to admin dashboard
-- Add real-time bot metrics/analytics to dashboard
-- Configure production deployment settings
+- Add dashboard auth
+- Add real-time bot metrics/analytics
+- Test partial free validation flow end-to-end with live bot
 
 ### P2 (Nice to Have)
-- Dashboard: Show recent transactions, user stats
-- Add logging/monitoring infrastructure
-- Webhook management UI
-
-## Next Tasks
-- User to provide Telegram Bot Token to fully enable bot functionality
-- Enhance admin dashboard with real-time analytics
+- Dashboard: recent transactions, user stats
+- Logging/monitoring infrastructure
+- Rate limiting on public endpoints
