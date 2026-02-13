@@ -271,8 +271,8 @@ ${CHAT_BOT_NAME}`,
 
   planSubscribed:
     HIDE_SMS_APP === 'true'
-      ? `You have successfully subscribed to our {{plan}} plan. Enjoy our URL-shortening logics and ${SMS_APP_NAME}. Need E-sim card? contact ${SUPPORT_HANDLE}`
-      : `You have successfully subscribed to our {{plan}} plan. Enjoy our URL-shortening logics and ${SMS_APP_NAME}. Please download the app here: ${SMS_APP_LINK}. Need E-sim card? contact ${SUPPORT_HANDLE}`,
+      ? `You have successfully subscribed to our {{plan}} plan! Enjoy free ".sbs/.xyz" domains and free USA phone number validations. Need E-sim card? contact ${SUPPORT_HANDLE}`
+      : `You have successfully subscribed to our {{plan}} plan! Enjoy free ".sbs/.xyz" domains, free USA phone validations, and ${SMS_APP_NAME}. Please download the app here: ${SMS_APP_LINK}. Need E-sim card? contact ${SUPPORT_HANDLE}`,
 
   alreadySubscribedPlan: days => `Your subscription is active and expires in ${days}`,
 
@@ -299,7 +299,7 @@ Discover more: ${TG_CHANNEL}`,
   successPayment: `Payment Processed Successfully! You can now close this window.`,
 
   welcome: `Thank you for choosing ${CHAT_BOT_NAME}! Please choose an option below:`,
-  welcomeFreeTrial: `Welcome to ${CHAT_BOT_BRAND}! Enjoy our one-time free trial - shorten ${FREE_LINKS} URLs, active for ${FREE_LINKS_HOURS} hours. Experience the ${CHAT_BOT_BRAND} difference!`,
+  welcomeFreeTrial: `Welcome to ${CHAT_BOT_BRAND}! URL shortening is free for all users. Subscribe for free ".sbs/.xyz" domains and free USA phone validations. Experience the ${CHAT_BOT_BRAND} difference!`,
 
   unknownCommand: `Command not found. Press /start or Please contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
 
