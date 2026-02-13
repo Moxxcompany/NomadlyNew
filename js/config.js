@@ -236,18 +236,18 @@ ${CHAT_BOT_NAME}`,
     HIDE_SMS_APP === 'true'
       ? `<b>Elevate Your Brand with Our Subscription Plans!</b>
 
-- <b>Daily:</b> $${PRICE_DAILY} with ${DAILY_PLAN_FREE_DOMAINS} free ".sbs" domains, unlimited URL shortner.
-- <b>Weekly:</b> $${PRICE_WEEKLY} with ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs" domains, unlimited URL shortner.
-- <b>Monthly:</b> $${PRICE_MONTHLY} with ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs" domains, unlimited URL shortner.
+- <b>Daily:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domain + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations.
+- <b>Weekly:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations.
+- <b>Monthly:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations.
 
-(Exclusive to ".sbs" domains.)`
+(Free domains exclusive to ".sbs" and ".xyz" extensions.)`
       : `<b>Elevate Your Brand with Our Subscription Plans!</b>
 
-- <b>Daily:</b> $${PRICE_DAILY} with ${DAILY_PLAN_FREE_DOMAINS} free ".sbs" domains, unlimited URL shortner and unlimited BulkSMS.
-- <b>Weekly:</b> $${PRICE_WEEKLY} with ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs" domains, unlimited URL shortner and unlimited BulkSMS.
-- <b>Monthly:</b> $${PRICE_MONTHLY} with ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs" domains, unlimited URL shortner and unlimited BulkSMS.
+- <b>Daily:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domain + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited BulkSMS.
+- <b>Weekly:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited BulkSMS.
+- <b>Monthly:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited BulkSMS.
 
-(Exclusive to ".sbs" domains.)`,
+(Free domains exclusive to ".sbs" and ".xyz" extensions.)`,
 
   askCoupon: usd =>
     `The price is $${usd}. Would you like to apply a coupon code? If you have one, please enter it now. Otherwise, you can press 'Skip'.`,
