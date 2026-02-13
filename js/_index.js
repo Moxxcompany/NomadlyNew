@@ -1052,6 +1052,28 @@ bot?.on('message', async msg => {
       send(chatId, t.freeValidationUsed(leadsAmount, Math.max(0, newRemaining)), trans('o'))
     },
 
+    usePartialFreeValidation: async () => {
+      // User has some free validations but not enough for the full request
+      // Use free quota first, then charge wallet for the remainder
+      const freeRemaining = (await get(freeValidationsAvailableFor, chatId)) || 0
+      const totalAmount = info?.amount
+      const paidAmount = totalAmount - freeRemaining
+      const cnam = info?.country === 'USA' ? info?.cnam : false
+      const paidPrice = paidAmount * RATE_LEAD_VALIDATOR + (cnam ? paidAmount * RATE_CNAM_VALIDATOR : 0)
+
+      // Save partial info for the wallet flow to use
+      await saveInfo('freePortionAmount', freeRemaining)
+      await saveInfo('paidPortionAmount', paidAmount)
+      await saveInfo('price', paidPrice)
+      await saveInfo('partialFree', true)
+
+      const lang = info?.userLanguage ?? 'en'
+      send(chatId, translation('t.partialFreeValidation', lang, freeRemaining, totalAmount, paidAmount, paidPrice))
+
+      // Send to wallet to pay for the remaining portion
+      return goto.walletSelectCurrency()
+    },
+
     // short link
     redSelectUrl: async () => {
       set(state, chatId, 'action', a.redSelectUrl)
