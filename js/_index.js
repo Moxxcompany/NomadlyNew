@@ -4448,6 +4448,7 @@ async function backupTheData() {
     totalShortLinks: await getAll(totalShortLinks),
     freeShortLinksOf: await getAll(freeShortLinksOf),
     freeDomainNamesAvailableFor: await getAll(freeDomainNamesAvailableFor),
+    freeValidationsAvailableFor: await getAll(freeValidationsAvailableFor),
     freeSmsCountOf: await getAll(freeSmsCountOf),
     clicksOfSms: await getAll(clicksOfSms),
     payments: await getAll(payments),
