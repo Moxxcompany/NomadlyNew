@@ -4233,8 +4233,12 @@ bot?.on('message', async msg => {
     if (message === t.skip) {
       saveInfo('lastStep', a.validatorSelectFormat)
       await saveInfo('couponApplied', false)
-      if (await _checkFreeValidation()) {
+      const freeCheck = await _checkFreeValidation()
+      if (freeCheck === 'full') {
         return goto.useFreeValidation()
+      }
+      if (freeCheck === 'partial') {
+        return goto.usePartialFreeValidation()
       }
       return goto.walletSelectCurrency()
     }
@@ -4251,8 +4255,12 @@ bot?.on('message', async msg => {
 
     await saveInfo('lastStep', a.validatorSelectFormat)
 
-    if (await _checkFreeValidation()) {
+    const freeCheck2 = await _checkFreeValidation()
+    if (freeCheck2 === 'full') {
       return goto.useFreeValidation()
+    }
+    if (freeCheck2 === 'partial') {
+      return goto.usePartialFreeValidation()
     }
     return goto.walletSelectCurrency()
   }
