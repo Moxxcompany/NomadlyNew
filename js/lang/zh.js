@@ -247,18 +247,18 @@ ${CHAT_BOT_NAME}`,
     HIDE_SMS_APP === 'true'
       ? `<b>通过我们的订阅计划提升您的品牌！</b>
 
-- <b>每日:</b> $${PRICE_DAILY} 包含 ${DAILY_PLAN_FREE_DOMAINS} 个免费的 ".sbs" 域名，无限的 URL 缩短器。  
-- <b>每周:</b> $${PRICE_WEEKLY} 包含 ${WEEKLY_PLAN_FREE_DOMAINS} 个免费的 ".sbs" 域名，无限的 URL 缩短器。  
-- <b>每月:</b> $${PRICE_MONTHLY} 包含 ${MONTHLY_PLAN_FREE_DOMAINS} 个免费的 ".sbs" 域名，无限的 URL 缩短器。  
+- <b>每日:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证。
+- <b>每周:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证。
+- <b>每月:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证。
 
-（仅适用于 ".sbs" 域名。）`
+(免费域名仅限 ".sbs" 和 ".xyz" 扩展名。)`
       : `<b>通过我们的订阅计划提升您的品牌！</b>
 
-- <b>每日:</b> $${PRICE_DAILY} 包含 ${DAILY_PLAN_FREE_DOMAINS} 个免费的 ".sbs" 域名，无限的 URL 缩短器和无限的 BulkSMS。  
-- <b>每周:</b> $${PRICE_WEEKLY} 包含 ${WEEKLY_PLAN_FREE_DOMAINS} 个免费的 ".sbs" 域名，无限的 URL 缩短器和无限的 BulkSMS。  
-- <b>每月:</b> $${PRICE_MONTHLY} 包含 ${MONTHLY_PLAN_FREE_DOMAINS} 个免费的 ".sbs" 域名，无限的 URL 缩短器和无限的 BulkSMS。  
+- <b>每日:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限BulkSMS。
+- <b>每周:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限BulkSMS。
+- <b>每月:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限BulkSMS。
 
-（仅适用于 ".sbs" 域名。）`,
+(免费域名仅限 ".sbs" 和 ".xyz" 扩展名。)`,
 
   askCoupon: usd => `价格是 $${usd}。您是否想使用优惠券代码？如果有，请立即输入。否则，您可以按“跳过”。`,
   planAskCoupon: `您是否想使用优惠券代码？如果有，请立即输入。否则，您可以按“跳过”。`,
@@ -275,8 +275,8 @@ ${CHAT_BOT_NAME}`,
   freeTrialNotAvailable: `您已使用过免费试用。`,
   planSubscribed:
     HIDE_SMS_APP === 'true'
-      ? `您已成功订阅 {{plan}} 计划。享受我们的 URL 缩短工具和 ${SMS_APP_NAME}。需要 E-sim 卡吗？请联系 ${SUPPORT_HANDLE}。`
-      : `您已成功订阅 {{plan}} 计划。享受我们的 URL 缩短工具和 ${SMS_APP_NAME}。请在此处下载应用程序：${SMS_APP_LINK}。需要 E-sim 卡吗？请联系 ${SUPPORT_HANDLE}。`,
+      ? `您已成功订阅 {{plan}} 计划！享受免费 ".sbs/.xyz" 域名和免费USA电话号码验证。需要 E-sim 卡？请联系 ${SUPPORT_HANDLE}。`
+      : `您已成功订阅 {{plan}} 计划！享受免费 ".sbs/.xyz" 域名、免费USA验证和 ${SMS_APP_NAME}。请在此下载应用: ${SMS_APP_LINK}。需要 E-sim 卡？请联系 ${SUPPORT_HANDLE}。`,
   alreadySubscribedPlan: days => `您的订阅已激活，并将在 ${days} 天后到期。`,
   payError: `未找到支付会话，请重试或联系支持 ${SUPPORT_USERNAME}。了解更多信息，请访问 ${TG_HANDLE}。`,
   chooseFreeDomainText: `<b>好消息！</b> 此域名可随您的订阅免费提供。您想领取吗？`,
@@ -295,7 +295,7 @@ ${CHAT_BOT_BRAND}团队
 了解更多： ${TG_CHANNEL}`,
   successPayment: `支付成功处理！现在可以关闭此窗口。`,
   welcome: `感谢选择 ${CHAT_BOT_NAME}！请在下面选择一个选项：`,
-  welcomeFreeTrial: `${CHAT_BOT_BRAND}欢迎您！享受我们的一次性免费试用 - 简化 ${FREE_LINKS} 个链接，有效期为 ${FREE_LINKS_HOURS} 小时。体验${CHAT_BOT_BRAND}的不同！`,
+  welcomeFreeTrial: `${CHAT_BOT_BRAND}欢迎您！URL缩短对所有用户免费。订阅可获得免费 ".sbs/.xyz" 域名和免费USA电话验证。体验${CHAT_BOT_BRAND}的不同！`,
   unknownCommand: `找不到命令。按 /start 或联系支持 ${SUPPORT_USERNAME}。了解更多 ${TG_HANDLE}。`,
   support: `请联系支持 ${SUPPORT_USERNAME}。了解更多 ${TG_HANDLE}。`,
   joinChannel: `请加入频道 ${TG_CHANNEL}。`,
@@ -504,6 +504,7 @@ ${CHAT_BOT_NAME}`,
   checkingDomainAvail: `检查域名可用性...`,
   checkingExistingDomainAvail: `检查现有域名的可用性...`,
   subscribeFirst: `📋 先订阅`,
+  freeValidationUsed: (amount, remaining) => `已使用订阅验证了 ${amount} 个USA电话号码！剩余免费验证: ${remaining.toLocaleString()}。`,
   notValidHalf: `输入一个有效的后半部分`,
   linkAlreadyExist: `链接已经存在。请尝试其他。`,
   issueGettingPrice: `获取价格时遇到问题`,
