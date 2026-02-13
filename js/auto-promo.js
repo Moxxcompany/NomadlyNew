@@ -232,6 +232,7 @@ Every serious brand needs a domain:
 - .sbs .com .net .org and 400+ more
 - Manage DNS directly from the bot
 
+Subscribe for free .sbs/.xyz domains!
 Tap <b>Register Domain Names</b> now!
 
 -----
@@ -349,6 +350,7 @@ Target the right audience:
 - Starting from $20 per 1,000
 
 Already have numbers? Validate for $15/1000!
+Subscribers get up to 15,000 FREE USA validations!
 
 Tap <b>HQ SMS Lead</b> to start!
 
@@ -405,6 +407,7 @@ Country TLD domains (.ng .za .ke .gh)?
 4. Pay with crypto or wallet
 
 Already have a list? Validate it with us!
+Subscribers get FREE USA validations!
 
 Tap <b>HQ SMS Lead</b>
 
@@ -787,6 +790,7 @@ cPanel托管和国家域名?
 - 1000条起仅需$20
 
 已有号码? 验证$15/1000条!
+订阅用户可获得最多15,000次免费USA验证!
 
 点击 <b>HQ 短信线索</b> 开始!
 
@@ -1007,6 +1011,7 @@ cPanel होस्टिंग और देश TLD?
 - 1000 लीड्स सिर्फ $20 से
 
 नंबर हैं? $15/1000 में वैलिडेट करें!
+सब्सक्राइबर्स को 15,000 तक मुफ्त USA वैलिडेशन!
 
 <b>HQ एसएमएस लीड</b> दबाएं!
 
