@@ -5024,6 +5024,13 @@ app.post('/webhook', auth, (req, res) => {
 })
 
 app.get('/open-api-key', async (req, res) => {
+  // Require auth header to prevent unauthorized access
+  const authHeader = req.headers['x-api-auth'] || req.query?.auth
+  const expectedAuth = process.env.APP_OPEN_API_AUTH || process.env.TELEGRAM_BOT_TOKEN
+  if (!authHeader || authHeader !== expectedAuth) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
+
   const openApiKey = process.env.APP_OPEN_API_KEY
   const length = Math.ceil(openApiKey.length / 3)
   const piece1 = openApiKey.substring(0, length)
