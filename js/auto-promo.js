@@ -37,7 +37,7 @@ const SERVICE_CONTEXT = {
       'Offshore registration with total content privacy',
       'Instant DNS setup and full management panel',
       'Pay with BTC, ETH, USDT or bank transfer',
-      'Free .sbs domains with subscription plans',
+      'Free .sbs/.xyz domains with subscription plans',
     ],
     cta: 'Register Domain Names',
     crossPromo: '@hostbay_bot for cPanel/Plesk hosting and country TLDs (.ng .za .ke .gh .cm .tz)',
@@ -216,7 +216,7 @@ Why risk your site being taken down?
 
 + DMCA-Ignored registration
 + Full DNS control from day one
-+ Free .sbs domains with plans
++ Free .sbs/.xyz domains with plans
 
 Type <b>/start</b> then tap <b>Register Domain Names</b>
 
@@ -439,7 +439,7 @@ Pourquoi risquer la suppression de votre site ?
 
 + Enregistrement DMCA-ignore
 + Controle DNS complet des le premier jour
-+ Domaines .sbs gratuits avec abonnements
++ Domaines .sbs/.xyz gratuits avec abonnements
 
 Tapez <b>/start</b> puis <b>Enregistrer des noms de domaine</b>
 
