@@ -256,18 +256,18 @@ ${CHAT_BOT_NAME}`,
     HIDE_SMS_APP === 'true'
       ? `<b>Elevate Your Brand with Our Subscription Plans!</b>
 
-- <b>Daily:</b> $${PRICE_DAILY} with ${DAILY_PLAN_FREE_DOMAINS} free ".sbs" domains, unlimited URL shortner.
-- <b>Weekly:</b> $${PRICE_WEEKLY} with ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs" domains, unlimited URL shortner.
-- <b>Monthly:</b> $${PRICE_MONTHLY} with ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs" domains, unlimited URL shortner.
+- <b>Daily:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domain + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations.
+- <b>Weekly:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations.
+- <b>Monthly:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations.
 
-(Exclusive to ".sbs" domains.)`
+(Free domains exclusive to ".sbs" and ".xyz" extensions.)`
       : `<b>Elevate Your Brand with Our Subscription Plans!</b>
 
-- <b>Daily:</b> $${PRICE_DAILY} with ${DAILY_PLAN_FREE_DOMAINS} free ".sbs" domains, unlimited URL shortner and unlimited BulkSMS.
-- <b>Weekly:</b> $${PRICE_WEEKLY} with ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs" domains, unlimited URL shortner and unlimited BulkSMS.
-- <b>Monthly:</b> $${PRICE_MONTHLY} with ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs" domains, unlimited URL shortner and unlimited BulkSMS.
+- <b>Daily:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domain + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited BulkSMS.
+- <b>Weekly:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited BulkSMS.
+- <b>Monthly:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited BulkSMS.
 
-(Exclusive to ".sbs" domains.)`,
+(Free domains exclusive to ".sbs" and ".xyz" extensions.)`,
 
   askCoupon: usd =>
     `The price is $${usd}. Would you like to apply a coupon code? If you have one, please enter it now. Otherwise, you can press 'Skip'.`,
@@ -291,8 +291,8 @@ ${CHAT_BOT_NAME}`,
 
   planSubscribed:
     HIDE_SMS_APP === 'true'
-      ? `You have successfully subscribed to our {{plan}} plan. Enjoy our URL-shortening logics and ${SMS_APP_NAME}. Need E-sim card? contact ${SUPPORT_HANDLE}`
-      : `You have successfully subscribed to our {{plan}} plan. Enjoy our URL-shortening logics and ${SMS_APP_NAME}. Please download the app here: ${SMS_APP_LINK}. Need E-sim card? contact ${SUPPORT_HANDLE}`,
+      ? `You have successfully subscribed to our {{plan}} plan! Enjoy free ".sbs/.xyz" domains and free USA phone number validations. Need E-sim card? contact ${SUPPORT_HANDLE}`
+      : `You have successfully subscribed to our {{plan}} plan! Enjoy free ".sbs/.xyz" domains, free USA phone validations, and ${SMS_APP_NAME}. Please download the app here: ${SMS_APP_LINK}. Need E-sim card? contact ${SUPPORT_HANDLE}`,
 
   alreadySubscribedPlan: days => `Your subscription is active and expires in ${days}`,
 
@@ -319,7 +319,7 @@ Discover more: ${TG_CHANNEL}`,
   successPayment: `Payment Processed Successfully! You can now close this window.`,
 
   welcome: `Thank you for choosing ${CHAT_BOT_NAME}! Please choose an option below:`,
-  welcomeFreeTrial: `Welcome to ${CHAT_BOT_BRAND}! Enjoy our one-time free trial - shorten ${FREE_LINKS} URLs, active for ${FREE_LINKS_HOURS} hours. Experience the ${CHAT_BOT_BRAND} difference!`,
+  welcomeFreeTrial: `Welcome to ${CHAT_BOT_BRAND}! URL shortening is free for all users. Subscribe for free ".sbs/.xyz" domains and free USA phone validations. Experience the ${CHAT_BOT_BRAND} difference!`,
 
   unknownCommand: `Command not found. Press /start or Please contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
 
@@ -559,7 +559,7 @@ ${bal(usd, ngn)}`,
   yourShortendUrl: shortUrl => `Your shortened URL is: ${shortUrl}`,
 
   availablefreeDomain: (plan, available, s) =>
-    ` Remember, your ${plan} plan includes ${available} free ".sbs" domain${s}. Let's get your domain today!`,
+    ` Remember, your ${plan} plan includes ${available} free ".sbs/.xyz" domain${s}. Let's get your domain today!`,
   shortenedUrlLink: `Kindly share the URL that you would like shortened and analyzed. e.g https://cnn.com`,
   selectedTrialPlan: 'Your have selected Free Trial Plan',
   userPressedBtn: message => `User has Pressed ${message} Button.`,
