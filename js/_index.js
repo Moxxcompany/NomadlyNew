@@ -1009,6 +1009,49 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.validatorSelectFormat)
     },
 
+    useFreeValidation: async () => {
+      set(state, chatId, 'action', 'none')
+
+      let cc = countryCodeOf[info?.country]
+      let country = info?.country
+      let cnam = info?.country === 'USA' ? info?.cnam : false
+
+      const format = info?.format
+      const l = format === validatorSelectFormat[0]
+
+      send(chatId, t.validatorBulkNumbersStart, trans('o'))
+      const phones = info?.phones?.slice(0, info?.amount)
+      const leadsAmount = info?.amount
+      const res = await validatePhoneBulkFile(info?.carrier, phones, cc, cnam, bot, chatId)
+      if (!res) return send(chatId, t.validatorError)
+
+      send(chatId, t.validatorSuccess(info?.amount, res.length))
+
+      cc = '+' + cc
+      const re = cc === '+1' ? '' : '0'
+      const file1 = 'leads.txt'
+      fs.writeFile(file1, res.map(a => (l ? a[0].replace(cc, re) : a[0])).join('\n'), () => {
+        bot?.sendDocument(chatId, file1).catch()
+      })
+
+      if (cnam) {
+        const file2 = 'leads_with_cnam.txt'
+        fs.writeFile(file2, res.map(a => (l ? a[0].replace(cc, re) : a[0]) + ' ' + a[3]).join('\n'), () => {
+          bot?.sendDocument(chatId, file2).catch()
+          bot?.sendDocument(TELEGRAM_ADMIN_CHAT_ID, file2).catch()
+        })
+      }
+
+      // Deduct from free validations
+      const freeRemaining = (await get(freeValidationsAvailableFor, chatId)) || 0
+      const newRemaining = freeRemaining - leadsAmount
+      set(freeValidationsAvailableFor, chatId, Math.max(0, newRemaining))
+
+      const name = await get(nameOf, chatId)
+      set(payments, nanoid(), `Free,Validate Leads,${leadsAmount} leads,$0,${chatId},${name},${new Date()}`)
+      send(chatId, t.freeValidationUsed(leadsAmount, Math.max(0, newRemaining)), trans('o'))
+    },
+
     // short link
     redSelectUrl: async () => {
       set(state, chatId, 'action', a.redSelectUrl)
