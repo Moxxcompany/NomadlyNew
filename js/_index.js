@@ -4607,9 +4607,8 @@ async function checkVPSPlansExpiryandPayment() {
           { $set: { 'end_time': oneHourFromNow } },
         )
         set(payments, nanoid(), `Wallet,VPSPlan,${plan},$${planPrice},${chatId},${new Date()}`)
-        const usdOut = (wallet?.usdOut || 0) + Number(planPrice)
         send(chatId, translation('vp.vpsHourlyPlanRenewed', info?.userLanguage, label, planPrice))
-        await set(walletOf, chatId, 'usdOut', usdOut)
+        await atomicIncrement(walletOf, chatId, 'usdOut', Number(planPrice))
         const { usdBal: usd, ngnBal: ngn } = await getBalance(walletOf, chatId)
         send(chatId, translation('t.showWallet', info?.userLanguage, usd, ngn))
       }
