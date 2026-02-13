@@ -311,7 +311,7 @@ ${CHAT_BOT_NAME}`,
 
 Support ${SUPPORT_USERNAME} at Telegram.`,
 
-  linkExpired: `Your ${CHAT_BOT_BRAND} trial has ended and your short link is deactivated. We invite you to subscribe to maintain access to our URL service and free domain names. Choose a suitable plan and follow the instructions to subscribe. Please Contact us for any queries.
+  linkExpired: `This short link has expired and is no longer active. Please contact us for any queries.
 Best,
 ${CHAT_BOT_BRAND} Team
 Discover more: ${TG_CHANNEL}`,
