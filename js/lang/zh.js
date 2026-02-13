@@ -498,7 +498,7 @@ ${CHAT_BOT_NAME}`,
   yourShortendUrl: shortUrl => `您的短链接是：${shortUrl}`,
 
   availablefreeDomain: (plan, available, s) =>
-    `请记住，您的 ${plan} 计划包括 ${available} 个免费的“.sbs”域名${s}。今天就获取您的域名！`,
+    `请记住，您的 ${plan} 计划包括 ${available} 个免费的“.sbs/.xyz”域名${s}。今天就获取您的域名！`,
   shortenedUrlLink: `请分享您希望缩短和分析的URL。例如 https://cnn.com`,
   selectedTrialPlan: `您已选择免费试用计划`,
   userPressedBtn: message => `用户点击了 ${message} 按钮。`,
