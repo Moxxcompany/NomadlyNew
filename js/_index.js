@@ -3058,10 +3058,6 @@ bot?.on('message', async msg => {
         set(maskOf, shortUrl, _shortUrl)
         set(fullUrlOf, shortUrl, url)
 
-        if (!(await isSubscribed(chatId))) {
-          decrement(freeShortLinksOf, chatId)
-          set(expiryOf, shortUrl, Date.now() + FREE_LINKS_TIME_SECONDS)
-        }
         set(state, chatId, 'action', 'none')
         return send(chatId, _shortUrl, trans('o'))
       } catch (error) {
@@ -3088,10 +3084,6 @@ bot?.on('message', async msg => {
       set(maskOf, shortUrl, _shortUrl)
       set(fullUrlOf, shortUrl, url)
       set(linksOf, chatId, shortUrl, url)
-      if (!(await isSubscribed(chatId))) {
-        decrement(freeShortLinksOf, chatId)
-        set(expiryOf, shortUrl, Date.now() + FREE_LINKS_TIME_SECONDS)
-      }
       set(state, chatId, 'action', 'none')
       return send(chatId, _shortUrl, trans('o'))
     } catch (error) {
@@ -3179,10 +3171,6 @@ bot?.on('message', async msg => {
     set(fullUrlOf, shortUrlSanitized, url)
     set(linksOf, chatId, shortUrlSanitized, url)
     send(chatId, t.yourShortendUrl(shortUrl), trans('o'))
-    if (adminDomains.includes(domain)) {
-      decrement(freeShortLinksOf, chatId)
-      set(expiryOf, shortUrlSanitized, Date.now() + FREE_LINKS_TIME_SECONDS)
-    }
     return
   }
   if (action === 'shorten-custom') {
@@ -3201,10 +3189,6 @@ bot?.on('message', async msg => {
     set(fullUrlOf, shortUrlSanitized, url)
     set(linksOf, chatId, shortUrlSanitized, url)
     send(chatId, `Your shortened URL is: ${shortUrl}`, trans('o'))
-    if (adminDomains.includes(domain)) {
-      decrement(freeShortLinksOf, chatId)
-      set(expiryOf, shortUrlSanitized, Date.now() + FREE_LINKS_TIME_SECONDS)
-    }
     return
   }
   //
