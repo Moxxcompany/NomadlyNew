@@ -3,7 +3,7 @@ const fs = require('fs')
 require('dotenv').config()
 const axios = require('axios')
 const QRCode = require('qrcode')
-const { timeOf, freeDomainsOf } = require('./config')
+const { timeOf, freeDomainsOf, freeValidationsOf } = require('./config')
 const { getAll, get, set } = require('./db')
 const { log } = require('console')
 const resolveDns = require('./resolve-cname.js')
@@ -392,10 +392,13 @@ const getBalance = async (walletOf, chatId) => {
   return { usdBal, ngnBal: ngnIn - ngnOut }
 }
 
-const subscribePlan = async (planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang) => {
+const subscribePlan = async (planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang, freeValidationsAvailableFor) => {
   set(planOf, chatId, plan)
   set(planEndingTime, chatId, Date.now() + timeOf[plan])
   set(freeDomainNamesAvailableFor, chatId, freeDomainsOf[plan])
+  if (freeValidationsAvailableFor) {
+    set(freeValidationsAvailableFor, chatId, freeValidationsOf[plan])
+  }
   const t = translation('t', lang)
 
   sendMessage(chatId, t.planSubscribed.replace('{{plan}}', plan))
