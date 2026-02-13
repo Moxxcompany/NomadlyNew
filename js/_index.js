@@ -3225,7 +3225,7 @@ bot?.on('message', async msg => {
     if (!yesNo.includes(message)) return send(chatId, t.what)
     saveInfo('askDomainToUseWithShortener', message === yesNo[0])
 
-    if (info?.originalPrice <= 2 && (await isSubscribed(chatId))) {
+    if ((info?.domain?.endsWith('.sbs') || info?.domain?.endsWith('.xyz')) && (await isSubscribed(chatId))) {
       const available = (await get(freeDomainNamesAvailableFor, chatId)) || 0
       if (available > 0) return goto['get-free-domain']()
     }
