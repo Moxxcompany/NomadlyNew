@@ -181,6 +181,9 @@ setDefault('PRICE_MONTHLY_SUBSCRIPTION', '0.05');
 setDefault('DAILY_PLAN_FREE_DOMAINS', '1');
 setDefault('WEEKLY_PLAN_FREE_DOMAINS', '3');
 setDefault('MONTHLY_PLAN_FREE_DOMAINS', '5');
+setDefault('DAILY_PLAN_FREE_VALIDATIONS', '5000');
+setDefault('WEEKLY_PLAN_FREE_VALIDATIONS', '10000');
+setDefault('MONTHLY_PLAN_FREE_VALIDATIONS', '15000');
 
 // Support defaults
 setDefault('SUPPORT_USERNAME', '@nomadly_support');

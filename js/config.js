@@ -26,6 +26,9 @@ const DAILY_PLAN_FREE_DOMAINS = Number(process.env.DAILY_PLAN_FREE_DOMAINS)
 const WEEKLY_PLAN_FREE_DOMAINS = Number(process.env.WEEKLY_PLAN_FREE_DOMAINS)
 const FREE_LINKS_HOURS = Number(process.env.FREE_LINKS_TIME_SECONDS) / 60 / 60
 const MONTHLY_PLAN_FREE_DOMAINS = Number(process.env.MONTHLY_PLAN_FREE_DOMAINS)
+const DAILY_PLAN_FREE_VALIDATIONS = Number(process.env.DAILY_PLAN_FREE_VALIDATIONS)
+const WEEKLY_PLAN_FREE_VALIDATIONS = Number(process.env.WEEKLY_PLAN_FREE_VALIDATIONS)
+const MONTHLY_PLAN_FREE_VALIDATIONS = Number(process.env.MONTHLY_PLAN_FREE_VALIDATIONS)
 
 const discountOn = {}
 discountOn['SA0'] = 10 // Percent
@@ -677,6 +680,12 @@ const freeDomainsOf = {
   Monthly: MONTHLY_PLAN_FREE_DOMAINS,
 }
 
+const freeValidationsOf = {
+  Daily: DAILY_PLAN_FREE_VALIDATIONS,
+  Weekly: WEEKLY_PLAN_FREE_VALIDATIONS,
+  Monthly: MONTHLY_PLAN_FREE_VALIDATIONS,
+}
+
 const timeOf = {
   Daily: 86400 * 1000,
   Weekly: 7 * 86400 * 1000,
@@ -813,6 +822,7 @@ module.exports = {
   tickerViewOf,
   dnsRecordType,
   freeDomainsOf,
+  freeValidationsOf,
   o: userKeyboard,
   phoneNumberLeads,
   aO: adminKeyboard,
