@@ -4812,7 +4812,7 @@ const addFundsTo = async (walletOf, chatId, coin, valueIn, lang) => {
   if (!['usd', 'ngn'].includes(coin)) throw Error('Dev Please Debug')
 
   const key = `${coin}In`
-  await increment(walletOf, chatId, key, valueIn)
+  await atomicIncrement(walletOf, chatId, key, valueIn)
   const { usdBal, ngnBal } = await getBalance(walletOf, chatId)
   sendMessage(chatId, translation('t.showWallet', lang, usdBal, ngnBal))
 }
