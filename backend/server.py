@@ -55,6 +55,23 @@ app = FastAPI(lifespan=lifespan)
 client = httpx.AsyncClient(base_url=NODE_BASE, timeout=60.0)
 
 
+@app.get("/api/health")
+async def health():
+    """Quick health check for the proxy + Node.js status."""
+    node_ok = False
+    try:
+        r = await client.get("/", timeout=3)
+        node_ok = r.status_code < 500
+    except Exception:
+        pass
+    return {
+        "status": "ok",
+        "proxy": "running",
+        "node": "running" if node_ok else "starting",
+        "db": "connected" if node_ok else "unknown",
+    }
+
+
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"])
 async def proxy(path: str, request: Request):
     body = await request.body()
