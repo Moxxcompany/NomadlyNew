@@ -3200,7 +3200,7 @@ bot?.on('message', async msg => {
           const remaining = (await get(freeShortLinksOf, chatId)) || 0
           set(state, chatId, 'action', 'none')
           send(chatId, _shortUrl, trans('o'))
-          return send(chatId, t.linksRemaining(remaining))
+          return send(chatId, t.linksRemaining(remaining, FREE_LINKS))
         }
 
         set(state, chatId, 'action', 'none')
