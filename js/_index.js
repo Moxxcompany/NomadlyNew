@@ -5262,7 +5262,7 @@ app.get('/crypto-pay-plan', auth, async (req, res) => {
 
   // Subscribe Plan
   subscribePlan(planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang, freeValidationsAvailableFor)
-  notifyGroup(`💎 <b>New Subscription!</b>\nUser ${maskName(name)} subscribed to the ${plan} Plan.\nAnother member leveling up! 🔥`)
+  notifyGroup(`💎 <b>New Subscription!</b>\nUser ${maskName(name)} just upgraded to the <b>${plan} Plan</b> — unlocking ${freeDomainsOf[plan]} free domains + ${(freeValidationsOf[plan] || 0).toLocaleString()} phone validations.\nDon't miss out — /start`)
   res.send(html())
 })
 app.get('/crypto-pay-domain', auth, async (req, res) => {
@@ -5293,7 +5293,7 @@ app.get('/crypto-pay-domain', auth, async (req, res) => {
   // Buy Domain
   const error = await buyDomainFullProcess(chatId, lang, domain)
   if (error) return res.send(html(error))
-  notifyGroup(`🌐 <b>Domain Purchased!</b>\nUser ${maskName(name)} just registered a new domain.\nBuilding their online presence! 🏗️`)
+  notifyGroup(`🌐 <b>Domain Registered!</b>\nUser ${maskName(name)} just claimed <b>${domain}</b> — your dream domain could be next.\nGrab yours before it's taken — /start`)
   res.send(html())
 })
 
@@ -5433,7 +5433,7 @@ app.get('/crypto-wallet', auth, async (req, res) => {
   del(chatIdOfPayment, ref)
   const name = await get(nameOf, chatId)
   set(payments, ref, `Crypto,Wallet,wallet,$${usdIn},${chatId},${name},${new Date()},${value} ${coin}`)
-  notifyGroup(`💰 <b>Wallet Funded!</b>\nUser ${maskName(name)} added funds to their wallet.\nReady to roll! 💪`)
+  notifyGroup(`💰 <b>Wallet Top-Up!</b>\nUser ${maskName(name)} just loaded their wallet and is ready to buy domains, leads & more.\nFund yours in seconds — /start`)
 })
 
 // Dynopay Pay plan
@@ -5470,7 +5470,7 @@ app.post('/dynopay/crypto-pay-plan', authDyno, async (req, res) => {
 
   // Subscribe Plan
   subscribePlan(planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang, freeValidationsAvailableFor)
-  notifyGroup(`💎 <b>New Subscription!</b>\nUser ${maskName(name)} subscribed to the ${plan} Plan.\nAnother member leveling up! 🔥`)
+  notifyGroup(`💎 <b>New Subscription!</b>\nUser ${maskName(name)} just upgraded to the <b>${plan} Plan</b> — unlocking ${freeDomainsOf[plan]} free domains + ${(freeValidationsOf[plan] || 0).toLocaleString()} phone validations.\nDon't miss out — /start`)
   res.send(html())
 })
 
@@ -5508,7 +5508,7 @@ app.post('/dynopay/crypto-pay-domain', authDyno, async (req, res) => {
   // Buy Domain
   const error = await buyDomainFullProcess(chatId, lang, domain)
   if (error) return res.send(html(error))
-  notifyGroup(`🌐 <b>Domain Purchased!</b>\nUser ${maskName(name)} just registered a new domain.\nBuilding their online presence! 🏗️`)
+  notifyGroup(`🌐 <b>Domain Registered!</b>\nUser ${maskName(name)} just claimed <b>${domain}</b> — your dream domain could be next.\nGrab yours before it's taken — /start`)
   res.send(html())
 })
 
@@ -5683,7 +5683,7 @@ app.post('/dynopay/crypto-wallet', authDyno, async (req, res) => {
   del(chatIdOfDynopayPayment, ref)
   const name = await get(nameOf, chatId)
   set(payments, ref, `Crypto,Wallet,wallet,$${usdIn},${chatId},${name},${new Date()},${value} ${coin},transaction,${id}`)
-  notifyGroup(`💰 <b>Wallet Funded!</b>\nUser ${maskName(name)} added funds to their wallet.\nReady to roll! 💪`)
+  notifyGroup(`💰 <b>Wallet Top-Up!</b>\nUser ${maskName(name)} just loaded their wallet and is ready to buy domains, leads & more.\nFund yours in seconds — /start`)
   
   log('=== DYNOPAY WALLET WEBHOOK PROCESSING COMPLETE ===')
 })
