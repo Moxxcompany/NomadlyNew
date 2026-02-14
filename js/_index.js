@@ -1747,6 +1747,7 @@ bot?.on('message', async msg => {
       const { usdBal: usd, ngnBal: ngn } = await getBalance(walletOf, chatId)
       send(chatId, t.showWallet(usd, ngn), trans('o'))
       subscribePlan(planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang, freeValidationsAvailableFor)
+      notifyGroup(`💎 <b>New Subscription!</b>\nUser ${maskName(name)} subscribed to the ${plan} Plan.\nAnother member leveling up! 🔥`)
     },
 
     'domain-pay': async coin => {
