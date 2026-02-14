@@ -2181,11 +2181,6 @@ bot?.on('message', async msg => {
   if (message === '/start') {
     set(state, chatId, 'action', 'none')
 
-    // In groups, just send a brief acknowledgment
-    if (isGroupChat) {
-      return send(chatId, `${CHAT_BOT_NAME} is active! DM me directly for full features.`)
-    }
-
     // Keep original admin behavior
     if (isAdmin(chatId)) return send(chatId, 'Hello, Admin! Please select an option:', aO)
 
@@ -2193,11 +2188,8 @@ bot?.on('message', async msg => {
     return send(chatId, 'Welcome! Please select an option:', trans('o'))
   }
 
-  // /help command - brief response in groups
+  // /help command
   if (message === '/help') {
-    if (isGroupChat) {
-      return send(chatId, `${CHAT_BOT_NAME} - URL shortening, domains, phone leads & more.\n\nDM me @${process.env.BOT_USERNAME || CHAT_BOT_NAME} for full features!`)
-    }
     return send(chatId, `${CHAT_BOT_NAME} Help:\n• URL Shortener\n• Domain Names\n• Phone Leads\n• Wallet & Payments\n• Web Hosting\n\nUse the menu below to get started!`, trans('o'))
   }
 
