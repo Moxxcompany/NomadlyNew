@@ -3088,7 +3088,14 @@ bot?.on('message', async msg => {
     if (!redSelectRandomCustom.includes(message)) return send(chatId, t.what)
     saveInfo('format', message)
 
-    // random
+    // Check if Bitly (paid) provider was selected — route through wallet payment
+    const redSelectProviderOptions = trans('redSelectProvider')
+    if (info.provider === redSelectProviderOptions[0]) {
+      await saveInfo('price', PRICE_BITLY_LINK)
+      return goto.askCoupon(a.redSelectProvider)
+    }
+
+    // random (free provider)
     if (redSelectRandomCustom[0] === message) {
 
       try {
