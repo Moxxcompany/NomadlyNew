@@ -497,12 +497,12 @@ Hebergement cPanel & domaines pays ?
     shortener: [
       `<b>RACCOURCISSEZ. PERSONNALISEZ. ANALYSEZ.</b>
 
-Arretez les liens generiques !
+Commencez avec <b>5 liens gratuits</b> — aucun paiement requis !
 
 - URLs personnalisees avec VOTRE domaine
 - Analyse des clics en temps reel
-- Liens Shortit gratuits pour tous
 - Integration Bit.ly disponible
+- Liens illimites avec abonnement
 
 Appuyez sur <b>Raccourcisseur d'URL</b> !
 
@@ -510,13 +510,13 @@ Appuyez sur <b>Raccourcisseur d'URL</b> !
 Hebergement cPanel ou domaines pays ?
 Visitez @hostbay_bot`,
 
-      `<b>VOS LIENS TRAVAILLENT-ILS POUR VOUS ?</b>
+      `<b>5 LIENS COURTS GRATUITS — SANS ENGAGEMENT</b>
 
-Chaque clic raconte une histoire.
+Chaque nouvel utilisateur recoit 5 liens Shortit gratuits.
 
 + Personnalisez avec VOTRE domaine
 + Suivez chaque clic
-+ Liens Shortit illimites avec abonnement
++ Passez a l'illimite a tout moment
 
 Appuyez sur <b>Raccourcisseur d'URL</b> !
 
@@ -528,9 +528,9 @@ Domaines pays (.ng .za .ke .gh) ?
 
 <code>bit.ly/3xK9mQ2</code> vs <code>votremarque.com/offres</code>
 
+- 5 liens d'essai gratuits pour commencer
 - Utilisez votre propre domaine
 - Voyez qui clique, quand et ou
-- Extension aleatoire ou personnalisee
 
 <b>Raccourcisseur d'URL</b> — essayez Shortit gratuitement !
 
@@ -539,7 +539,7 @@ Besoin d'hebergement ? @hostbay_bot`,
 
       `<b>RACCOURCISSEMENT DE LIENS PUISSANT</b>
 
-Le marketing sans suivi = conduire a l'aveugle.
+Commencez GRATUITEMENT avec 5 liens Shortit !
 
 - Redirigez & raccourcissez n'importe quelle URL
 - Raccourcisseur domaine personnalise
@@ -553,9 +553,11 @@ Hebergement cPanel & domaines pays ?
 
       `<b>LIENS PERSONNALISES = 34% DE CLICS EN PLUS</b>
 
+Commencez avec 5 liens d'essai GRATUITS !
+
 + Utilisez votre domaine comme raccourcisseur
 + Suivez la performance en temps reel
-+ Liens Shortit illimites avec les plans Quotidien/Hebdo/Mensuel
++ Liens Shortit illimites avec les plans
 
 Appuyez sur <b>Raccourcisseur d'URL</b>
 
