@@ -73,7 +73,7 @@ const user = {
   cPanelWebHostingPlans: '俄罗斯 cPanel 托管计划 🔒',
   pleskWebHostingPlans: '俄罗斯 Plesk 托管计划 🔒',
   joinChannel: '📢 加入频道',
-  phoneNumberLeads: '📲 HQ 短信线索',
+  phoneNumberLeads: '📲 电话线索与验证',
   hostingDomainsRedirect: '🌐 托管和域名',
   wallet: '👛 我的钱包',
   urlShortenerMain: `🔗✂️ URL 缩短器 - ${FREE_LINKS}次试用`,
@@ -192,6 +192,7 @@ ${CHAT_BOT_BRAND}团队
   resetLoginDeny: '好的，不需要进一步操作。',
   resetLogin: `${CHAT_BOT_BRAND} SMS: 您是否试图从之前的设备上注销？`,
   select: `请选择一个选项：`,
+  urlShortenerSelect: `缩短、品牌化或追踪您的链接：`,
 
   // cPanel/Plesk Plans initial select plan text
   selectPlan: `请选择一个计划：`,
@@ -228,7 +229,7 @@ ${CHAT_BOT_BRAND}团队
   trialPlanActivationConfirmation: `谢谢！您的免费试用计划将很快激活。请注意，此计划仅在 12 小时内有效。`,
   trialPlanActivationInProgress: `您的免费试用计划正在激活。这可能需要一些时间……`,
 
-  what: `请从键盘中选择一个选项。`,
+  what: `该选项目前不可用。请从下方按钮中选择。`,
   whatNum: `请选择一个有效的数字。`,
   phoneGenTimeout: `超时。`,
   phoneGenNoGoodHits: `请联系支持 ${SUPPORT_HANDLE} 或选择其他区号。`,
@@ -289,7 +290,10 @@ ${CHAT_BOT_NAME}`,
   blockUser: `请分享需要被封锁的用户的用户名。`,
   unblockUser: `请分享需要解封的用户的用户名。`,
   blockedUser: `你目前被封锁，无法使用机器人。请联系支持 ${SUPPORT_USERNAME}。更多信息 ${TG_HANDLE}。`,
-  greet: `请留意这个空间！我们正在准备推出一个将使您的链接简短、清晰和直观的URL简化应用程序。请关注我们的大揭示！
+  greet: `${CHAT_BOT_BRAND} — 缩短URL、注册域名、购买电话线索，从Telegram发展您的业务。
+
+使用${FREE_LINKS}次Shortit试用链接开始 — /start
+支持: ${SUPPORT_USERNAME}`,
 
 支持 ${SUPPORT_USERNAME} 在Telegram中。`,
   linkExpired: `您的 ${CHAT_BOT_BRAND} 测试期已结束，您的短链接已停用。我们邀请您订阅以继续访问我们的URL服务和免费域名。选择适当的计划并按照说明订阅。请联系我们的任何问题。
@@ -383,7 +387,7 @@ ${
   dnsRecordDeleted: `记录已删除`,
   dnsRecordUpdated: `记录已更新`,
   provideLink: `请输入有效的 URL。例如：https://google.com`,
-  comingSoonWithdraw: `提现即将上线。请联系支持 ${SUPPORT_USERNAME}。更多信息请访问 ${TG_HANDLE}。`,
+  comingSoonWithdraw: `提现功能暂未开放。需要帮助？请联系 ${SUPPORT_USERNAME}。`,
   promoOptOut: `您已取消订阅促销消息。输入 /start_promos 随时重新订阅。`,
   promoOptIn: `您已重新订阅促销消息。您将收到我们最新的优惠和活动！`,
   selectCurrencyToDeposit: `请选择要存入的货币`,
@@ -428,7 +432,7 @@ ${CHAT_BOT_NAME}`,
 
   walletSelectCurrency: (usd, ngn) => `请选择从钱包余额中支付的货币:\n\n${bal(usd, ngn)}`,
 
-  walletBalanceLow: `请为继续充值您的钱包`,
+  walletBalanceLow: `您的钱包余额不足。点击"👛 我的钱包" → "➕💵 充值"进行充值。`,
 
   sentLessMoney: (expected, got) =>
     `您发送的金额少于预期，所以我们将收到的金额存入您的钱包。我们预期 ${expected} 但收到 ${got}`,
@@ -487,9 +491,9 @@ ${CHAT_BOT_NAME}`,
 
   redValidUrl: `请提供一个有效的 URL，例如 https://google.com`,
   redTakeUrl: url => `您的缩短后的 URL 是: ${url}`,
-  redIssueUrlBitly: `问题，您的钱包未收费`,
+  redIssueUrlBitly: `链接缩短失败。您的钱包未被扣费。请重试或联系 ${SUPPORT_USERNAME}。`,
   redIssueSlugCuttly: `您选择的链接名称已被使用，请尝试另一个`,
-  redIssueUrlCuttly: `问题`,
+  redIssueUrlCuttly: `链接缩短失败。请重试或联系 ${SUPPORT_USERNAME}。`,
   freeLinksExhausted: `您已用完全部${FREE_LINKS}次Shortit试用链接！订阅可获得无限Shortit链接、免费".sbs/.xyz"域名等更多功能。点击"🔔 订阅"选择计划。`,
   linksRemaining: (count, total) => `您还剩 ${count}/${total || FREE_LINKS} 次Shortit试用链接。`,
   redNewPrice: (price, newPrice) => `价格现在为 $${view(newPrice)} <s>($${price})</s>。请选择支付方式。`,
@@ -692,16 +696,14 @@ const adminKeyboard = {
 const userKeyboard = {
   reply_markup: {
     keyboard: [
-      // [user.cPanelWebHostingPlans],
-      // [user.pleskWebHostingPlans],
-      // [user.vpsPlans],
-      [user.joinChannel, user.wallet],
+      [user.urlShortenerMain],
+      [user.hostingDomainsRedirect],
       [user.phoneNumberLeads],
       HIDE_SMS_APP === 'true' ? [user.domainNames] : [user.freeTrialAvailable, user.domainNames],
-      [user.urlShortenerMain],
-      [user.buyPlan, user.viewPlan],
+      [user.wallet, user.viewPlan],
+      [user.buyPlan],
       HIDE_BECOME_RESELLER === 'true'
-        ? [user.changeSetting, user.getSupport]
+        ? [user.changeSetting, user.getSupport, user.joinChannel]
         : [user.changeSetting, user.becomeReseller, user.getSupport],
     ],
   },
