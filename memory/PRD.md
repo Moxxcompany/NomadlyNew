@@ -44,6 +44,22 @@ Setup repo, configure environment, verify RapidAPI URL shortener, rebrand to "Sh
 - `/app/js/lang/zh.js` — `freeLinksExhausted` message
 - `/app/js/lang/hi.js` — `freeLinksExhausted` message
 
+### 2026-02-14: Remaining Free Links Counter
+- Added `linksRemaining` message function to all 4 language files (en, fr, zh, hi)
+- Modified both random and custom link flows in `_index.js` to:
+  1. `await decrement()` the counter
+  2. Read remaining count via `get()`
+  3. Send the shortened URL
+  4. Send the remaining links message (e.g., "You have 1 free Shortit link remaining.")
+- Subscribed users bypass this entirely and only receive the short URL
+
+### Files Modified
+- `/app/js/_index.js` — Added remaining count display in both shortening flows
+- `/app/js/lang/en.js` — Added `linksRemaining` function
+- `/app/js/lang/fr.js` — Added `linksRemaining` function
+- `/app/js/lang/zh.js` — Added `linksRemaining` function
+- `/app/js/lang/hi.js` — Added `linksRemaining` function
+
 ## Prioritized Backlog
 ### P0 - None
 ### P1
