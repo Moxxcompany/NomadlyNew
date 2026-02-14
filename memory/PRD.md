@@ -1,7 +1,7 @@
 # NomadlyBot - PRD & Project Status
 
 ## Original Problem Statement
-Set up the repo code for NomadlyBot. Verify group auto-detection/registration. Ensure all event notifications include the bot username. Rewrite all notification copy to be persuasive marketing messages.
+Set up the repo code for NomadlyBot. Verify group auto-detection/registration. Ensure all event notifications include the bot username. Rewrite notifications to be persuasive. Fix AutoPromo 400 "chat not found" errors.
 
 ## Architecture
 - **Node.js Backend** (Express + Telegram Bot API + MongoDB) — `/app/js/`
@@ -11,44 +11,38 @@ Set up the repo code for NomadlyBot. Verify group auto-detection/registration. E
 
 ## What's Been Implemented
 
-### Session 1 (Feb 14, 2026) — Repo Setup
-- [x] Installed Node.js dependencies, created `.env`, all services running
-- [x] 100% test pass (backend, frontend, integration)
+### Session 1 — Repo Setup
+- [x] Installed Node.js deps, created `.env`, all services running
 
-### Session 2 (Feb 14, 2026) — Group Notifications + Bot Username
-- [x] Fixed `notifyGroup()` to auto-append `CHAT_BOT_NAME` to every message
-- [x] Fixed hardcoded "NomadlyBot" → dynamic `${CHAT_BOT_NAME}` everywhere
+### Session 2 — Group Notifications + Bot Username
+- [x] `notifyGroup()` auto-appends `CHAT_BOT_NAME` to every message
+- [x] All hardcoded "NomadlyBot" → dynamic `${CHAT_BOT_NAME}`
 
-### Session 3 (Feb 14, 2026) — Persuasive Marketing Rewrite
-- [x] Rewrote all 15 notification messages with persuasive copy:
-  - **Subscriptions (4x):** Shows specific plan value — "unlocking X free domains + Y phone validations"
-  - **Domains (4x):** Shows actual domain name — "just claimed example.com — yours could be next"
-  - **Wallet (3x):** Value-driven — "loaded their wallet, ready to buy domains, leads & more"
-  - **Leads (2x):** Shows quantity — "just got 5,000 verified phone leads"
-  - **Short Links (1x):** Feature-driven — "branded a link with a custom domain"
-  - **New Member (1x):** Service overview — "domains, leads, hosting & more at your fingertips"
-- [x] Every notification now includes `/start` CTA for conversion
-- [x] Imported `freeDomainsOf` + `freeValidationsOf` from config.js for dynamic plan values
-- [x] Fixed bot group welcome message to use dynamic `CHAT_BOT_NAME`
-- [x] Removed all generic filler copy ("Another member leveling up", "Ready to roll", etc.)
-- [x] All 52 tests passing (100%)
+### Session 3 — Persuasive Marketing Rewrite
+- [x] Rewrote all 15 notifications: social proof, FOMO, value props, /start CTA
+- [x] Imported `freeDomainsOf` + `freeValidationsOf` from config.js
 
-## Group Auto-Registration Flow
-1. Add bot to any Telegram group/supergroup with messaging permission
-2. `my_chat_member` handler fires → registers group in `notifyGroups` MongoDB collection
-3. Bot sends welcome message: "{BotName} is now active in this group!"
-4. All subsequent events broadcast to every registered group with bot username signature
-5. If bot is removed/kicked → group auto-unregistered
+### Session 4 — AutoPromo "chat not found" Fix
+- [x] Added `isUnreachableError()` helper: detects "chat not found", "user is deactivated", "bot was blocked", "have no rights to send"
+- [x] Photo fallback now bails immediately for unreachable users (no more wasteful text retry)
+- [x] HTML parse retry bails immediately for unreachable users
+- [x] Auto-opts-out on 400 "chat not found" (was only 403 before)
+- [x] Eliminates retry cascade: was 4 failed API calls per user, now just 1
 
-## P0 — Critical (Requires User Action)
+## Test Status
+- 52/52 group notification tests passing
+- All AutoPromo unreachable error tests passing
+- Backend health: proxy=running, node=running, db=connected
+
+## P0 — Requires User Action
 - [ ] Set `TELEGRAM_BOT_TOKEN` to activate bot
 - [ ] Configure `SELF_URL` for webhooks
 
 ## P1 — Important
 - [ ] ConnectReseller IP whitelist
-- [ ] Payment gateway API keys (BlockBee/Fincra/DynoPay)
+- [ ] Payment gateway API keys
 - [ ] RapidAPI key for URL shortening
 
 ## Next Tasks
-1. Provide Telegram Bot Token to test group registration live
-2. Configure external API keys for full functionality
+1. Provide Telegram Bot Token to test live
+2. Configure external API keys
