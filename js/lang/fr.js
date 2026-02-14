@@ -591,7 +591,7 @@ const selectFormatOf = {
 
 const redSelectRandomCustom = ['Lien court aléatoire']
 
-const redSelectProvider = ['Bit.ly 10 $', 'Ap1s.net (Gratuit)']
+const redSelectProvider = ['Bit.ly 10 $', 'Shortit (Gratuit)']
 
 const tickerOf = {
   BTC: 'btc',
