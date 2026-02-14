@@ -259,16 +259,16 @@ ${CHAT_BOT_NAME}`,
     HIDE_SMS_APP === 'true'
       ? `<b>Elevate Your Brand with Our Subscription Plans!</b>
 
-- <b>Daily:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domain + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations.
-- <b>Weekly:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations.
-- <b>Monthly:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations.
+- <b>Daily:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domain + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited Shortit links.
+- <b>Weekly:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited Shortit links.
+- <b>Monthly:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited Shortit links.
 
 (Free domains exclusive to ".sbs" and ".xyz" extensions.)`
       : `<b>Elevate Your Brand with Our Subscription Plans!</b>
 
-- <b>Daily:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domain + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited BulkSMS.
-- <b>Weekly:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited BulkSMS.
-- <b>Monthly:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited BulkSMS.
+- <b>Daily:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domain + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited Shortit links + unlimited BulkSMS.
+- <b>Weekly:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited Shortit links + unlimited BulkSMS.
+- <b>Monthly:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited Shortit links + unlimited BulkSMS.
 
 (Free domains exclusive to ".sbs" and ".xyz" extensions.)`,
 
@@ -294,8 +294,8 @@ ${CHAT_BOT_NAME}`,
 
   planSubscribed:
     HIDE_SMS_APP === 'true'
-      ? `You have successfully subscribed to our {{plan}} plan! Enjoy free ".sbs/.xyz" domains and free USA phone number validations. Need E-sim card? contact ${SUPPORT_HANDLE}`
-      : `You have successfully subscribed to our {{plan}} plan! Enjoy free ".sbs/.xyz" domains, free USA phone validations, and ${SMS_APP_NAME}. Please download the app here: ${SMS_APP_LINK}. Need E-sim card? contact ${SUPPORT_HANDLE}`,
+      ? `You have successfully subscribed to our {{plan}} plan! Enjoy free ".sbs/.xyz" domains, unlimited Shortit links, and free USA phone number validations. Need E-sim card? contact ${SUPPORT_HANDLE}`
+      : `You have successfully subscribed to our {{plan}} plan! Enjoy free ".sbs/.xyz" domains, unlimited Shortit links, free USA phone validations, and ${SMS_APP_NAME}. Please download the app here: ${SMS_APP_LINK}. Need E-sim card? contact ${SUPPORT_HANDLE}`,
 
   alreadySubscribedPlan: days => `Your subscription is active and expires in ${days}`,
 
@@ -322,7 +322,7 @@ Discover more: ${TG_CHANNEL}`,
   successPayment: `Payment Processed Successfully! You can now close this window.`,
 
   welcome: `Thank you for choosing ${CHAT_BOT_NAME}! Please choose an option below:`,
-  welcomeFreeTrial: `Welcome to ${CHAT_BOT_BRAND}! URL shortening is free for all users. Subscribe for free ".sbs/.xyz" domains and free USA phone validations. Experience the ${CHAT_BOT_BRAND} difference!`,
+  welcomeFreeTrial: `Welcome to ${CHAT_BOT_BRAND}! Shorten URLs for free with Shortit. Subscribe for unlimited Shortit links, free ".sbs/.xyz" domains and free USA phone validations. Experience the ${CHAT_BOT_BRAND} difference!`,
 
   unknownCommand: `Command not found. Press /start or Please contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
 
