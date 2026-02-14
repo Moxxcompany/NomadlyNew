@@ -504,6 +504,7 @@ ${CHAT_BOT_NAME}`,
   redIssueUrlBitly: `Problème, votre portefeuille n'est pas facturé.`,
   redIssueSlugCuttly: `Le nom de lien préféré est déjà pris, essayez un autre.`,
   redIssueUrlCuttly: `Problème`,
+  freeLinksExhausted: `Vous avez utilisé tous vos liens Shortit gratuits ! Abonnez-vous pour obtenir des liens Shortit illimités, des domaines ".sbs/.xyz" gratuits et plus encore. Appuyez sur "🔔 S'abonner" pour choisir un plan.`,
   redNewPrice: (price, newPrice) =>
     `Le prix est maintenant de $${view(newPrice)} <s>($${price})</s>. Veuillez choisir la méthode de paiement.`,
   customLink: 'Lien personnalisé',
