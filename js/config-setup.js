@@ -209,6 +209,7 @@ setDefault('HOSTING_BUSINESS_PLAN_PRICE', '19.99');
 setDefault('HOSTING_PRO_PLAN_PRICE', '39.99');
 setDefault('VPS_HOURLY_PLAN_MINIMUM_AMOUNT_PAYABLE', '1.00');
 setDefault('HOSTING_TRIAL_PLAN_ON', 'true');
+setDefault('OFFSHORE_HOSTING_ON', 'false');
 
 // Admin config (use defaults if not set)
 setDefault('TELEGRAM_ADMIN_CHAT_ID', '123456789');
