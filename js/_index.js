@@ -185,6 +185,32 @@ const send = (chatId, message, options) => {
   bot?.sendMessage(chatId, message, options)?.catch(e => log(e.message + ': ' + chatId))
 }
 
+// Mask username: show first 2 chars + ***
+const maskName = name => {
+  if (!name || typeof name !== 'string') return 'User***'
+  return name.length <= 2 ? name + '***' : name.slice(0, 2) + '***'
+}
+
+// Send event notification to all registered groups
+const notifyGroup = async (message) => {
+  try {
+    if (!notifyGroupsCol?.find) return
+    const groups = await notifyGroupsCol.find({}).toArray()
+    for (const group of groups) {
+      bot?.sendMessage(group._id, message, { parse_mode: 'HTML' })?.catch(e => {
+        log('Group notify error for ' + group._id + ': ' + e.message)
+        // Remove group if bot was kicked
+        if (e.message?.includes('bot was kicked') || e.message?.includes('chat not found') || e.message?.includes('bot is not a member')) {
+          notifyGroupsCol.deleteOne({ _id: group._id })
+          log('Removed group ' + group._id + ' from notifyGroups')
+        }
+      })
+    }
+  } catch (e) {
+    log('notifyGroup error: ' + e.message)
+  }
+}
+
 // variables to implement core functionality
 let state = {},
   walletOf = {},
