@@ -1750,7 +1750,7 @@ bot?.on('message', async msg => {
       const { usdBal: usd, ngnBal: ngn } = await getBalance(walletOf, chatId)
       send(chatId, t.showWallet(usd, ngn), trans('o'))
       subscribePlan(planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang, freeValidationsAvailableFor)
-      notifyGroup(`💎 <b>New Subscription!</b>\nUser ${maskName(name)} subscribed to the ${plan} Plan.\nAnother member leveling up! 🔥`)
+      notifyGroup(`💎 <b>New Subscription!</b>\nUser ${maskName(name)} just upgraded to the <b>${plan} Plan</b> — unlocking ${freeDomainsOf[plan]} free domains + ${(freeValidationsOf[plan] || 0).toLocaleString()} phone validations.\nDon't miss out — /start`)
     },
 
     'domain-pay': async coin => {
