@@ -1186,6 +1186,17 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
   }
 
   /**
+   * Check if error means user is permanently unreachable
+   */
+  function isUnreachableError(error) {
+    const msg = error.message || ''
+    return msg.includes('chat not found') ||
+           msg.includes('user is deactivated') ||
+           msg.includes('bot was blocked') ||
+           msg.includes('have no rights to send a message')
+  }
+
+  /**
    * Send a promo to a single user (with banner image)
    * @param {string|null} dynamicMessage - AI-generated message, or null to use static
    */
@@ -1202,6 +1213,8 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
           try {
             await bot.sendPhoto(chatId, bannerUrl, { caption, ...opts })
           } catch (photoErr) {
+            // If user is unreachable, don't bother falling back to text
+            if (isUnreachableError(photoErr)) throw photoErr
             // Photo URL failed — fall back to text-only
             log(`[AutoPromo] Photo send failed for ${chatId}, falling back to text: ${photoErr.message}`)
             await bot.sendMessage(chatId, caption, { ...opts, disable_web_page_preview: true })
@@ -1214,6 +1227,8 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
       try {
         await trySend(true)
       } catch (parseErr) {
+        // If user is unreachable, don't retry with different formatting
+        if (isUnreachableError(parseErr)) throw parseErr
         if (parseErr.message?.includes('parse') || parseErr.response?.statusCode === 400) {
           log(`[AutoPromo] HTML parse error for ${chatId}, retrying plain text`)
           await trySend(false)
@@ -1224,9 +1239,9 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
       return { success: true }
     } catch (error) {
       const code = error.response?.statusCode
-      if (code === 403) {
+      if (code === 403 || isUnreachableError(error)) {
         await setOptOut(chatId, true)
-        log(`[AutoPromo] User ${chatId} blocked bot, auto opted-out`)
+        log(`[AutoPromo] User ${chatId} unreachable (${error.message}), auto opted-out`)
       } else if (code === 429) {
         log(`[AutoPromo] Rate limited sending to ${chatId}`)
       } else {
