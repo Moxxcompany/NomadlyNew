@@ -3230,10 +3230,13 @@ bot?.on('message', async msg => {
       const __shortUrl = `${SELF_URL}/${slug}`
       const _shortUrl = await createCustomShortUrlCuttly(__shortUrl, message)
       const shortUrl = __shortUrl.replaceAll('.', '@').replace('https://', '')
-      increment(totalShortLinks)
+      increment(totalShortLinks, 'total')
       set(maskOf, shortUrl, _shortUrl)
       set(fullUrlOf, shortUrl, url)
       set(linksOf, chatId, shortUrl, url)
+
+      const name = await get(nameOf, chatId)
+      notifyGroup(`🔗 <b>Custom Short Link Created!</b>\nUser ${maskName(name)} just branded a link with a custom domain.\nShorten yours with analytics — /start`)
 
       // Decrement free links counter for non-subscribed users
       if (!(await isSubscribed(chatId))) {
