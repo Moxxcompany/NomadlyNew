@@ -514,18 +514,35 @@ schedule.scheduleJob('*/5 * * * *', function() {
 
 bot?.on('message', async msg => {
   const chatId = msg?.chat?.id
-  const message = msg?.text || ''
   const chatType = msg?.chat?.type
   const isGroupChat = chatType === 'group' || chatType === 'supergroup'
+  let message = msg?.text || ''
   
-  // In group chats, only respond to commands that start with /
-  // Also ignore messages without text (photos, stickers, etc.) in groups
+  // In group chats, only respond to specific commands
   if (isGroupChat) {
-    if (!msg?.text || !message.startsWith('/')) {
-      return // Silently ignore non-command messages in groups
+    // Ignore messages without text (photos, stickers, etc.)
+    if (!msg?.text) return
+    
+    // Only respond to / commands
+    if (!message.startsWith('/')) return
+    
+    // Strip bot username from command (e.g., /start@MyBot -> /start)
+    const botUsername = process.env.BOT_USERNAME || ''
+    if (botUsername && message.includes('@')) {
+      const [cmd, target] = message.split('@')
+      // If command is for another bot, ignore it
+      if (target && target.toLowerCase() !== botUsername.toLowerCase()) {
+        return
+      }
+      message = cmd // Use just the command without @botname
     }
-    // Strip bot username from command if present (e.g., /start@BotName -> /start)
-    // This prevents responding to commands meant for other bots
+    
+    // In groups, only allow these commands
+    const allowedGroupCommands = ['/start', '/help', '/stop_promos', '/start_promos']
+    const baseCommand = message.split(' ')[0].toLowerCase()
+    if (!allowedGroupCommands.includes(baseCommand)) {
+      return // Ignore other commands in groups
+    }
   }
   
   log('message: ' + message + '\tfrom: ' + chatId + ' ' + msg?.from?.username)
