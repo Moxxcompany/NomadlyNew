@@ -5990,26 +5990,14 @@ const setupTelegramWebhook = async () => {
   }
 }
 
-const startServer = () => {
-  const port = process.env.PORT || 5000
+const startServer = async () => {
+  // Server already started early for health checks
+  // Just mark app as ready and set up webhook
+  appReady = true
+  log(`✅ Main application ready! Server already listening on port ${PORT}`)
   
-  // Try to start server with error handling for port conflicts
-  const server = app.listen(port, '0.0.0.0', async () => {
-    log(`Server ran away! ${new Date()}`)
-    log(`🌐 Server listening on port ${port}`)
-    
-    // Set up Telegram webhook after server starts
-    await setupTelegramWebhook()
-  })
-  
-  server.on('error', (error) => {
-    if (error.code === 'EADDRINUSE') {
-      log(`❌ Port ${port} is already in use`)
-      log('💡 Tip: Stop the production deployment or use a different port for development')
-    } else {
-      log('❌ Server error:', error.message)
-    }
-  })
+  // Set up Telegram webhook
+  await setupTelegramWebhook()
 }
 
 const tryConnectReseller = async () => {
