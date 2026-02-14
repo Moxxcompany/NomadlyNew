@@ -30,6 +30,7 @@ Set up and maintain the NomadlyBot Telegram bot platform, fixing bugs and enhanc
 #### HIGH IMPACT
 - **Main Menu Keyboard Reorder** (config.js + all 4 lang files): URL Shortener first (free hook), then Hosting/Domains, Phone Leads, Wallet/Plan, Subscribe, Settings/Support
 - **Confusing Labels**: phoneNumberLeads text → "Buy verified phone leads or validate your own numbers:" (all 5 files)
+- **Dynamic Trial Links Counter**: URL Shortener button now shows user's actual remaining free links (e.g., "3 Links Left") instead of static "5 Trial Links". Updates after each link creation. Uses `startsWith` matching for button routing.
 
 #### MEDIUM
 - **Submenu Text**: Added `urlShortenerSelect: "Shorten, brand, or track your links:"` in config.js
