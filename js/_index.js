@@ -3161,7 +3161,7 @@ bot?.on('message', async msg => {
     if (message === t.back) return goto.submenu1()
     if (!isValidUrl(message)) return send(chatId, t.redValidUrl, bc)
     saveInfo('url', message)
-    return goto.redSelectProvider()
+    return goto.redSelectRandomCustom()
   }
 
   if (action === a.redSelectProvider) {
