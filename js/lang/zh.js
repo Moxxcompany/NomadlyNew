@@ -295,7 +295,6 @@ ${CHAT_BOT_NAME}`,
 使用${FREE_LINKS}次Shortit试用链接开始 — /start
 支持: ${SUPPORT_USERNAME}`,
 
-支持 ${SUPPORT_USERNAME} 在Telegram中。`,
   linkExpired: `您的 ${CHAT_BOT_BRAND} 测试期已结束，您的短链接已停用。我们邀请您订阅以继续访问我们的URL服务和免费域名。选择适当的计划并按照说明订阅。请联系我们的任何问题。
 敬启者，
 ${CHAT_BOT_BRAND}团队
