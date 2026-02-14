@@ -518,9 +518,10 @@ bot?.on('message', async msg => {
     set(chatIdOf, username, chatId)
   }
 
-  const freeLinks = await get(freeShortLinksOf, chatId)
+  let freeLinks = await get(freeShortLinksOf, chatId)
   if (freeLinks === null || freeLinks === undefined) {
     set(freeShortLinksOf, chatId, FREE_LINKS)
+    freeLinks = FREE_LINKS
   }
 
   let info = await get(state, chatId)
@@ -533,7 +534,22 @@ bot?.on('message', async msg => {
 
   const trans = (key, ...args) => {
     const lang = info?.userLanguage || 'en';
-    return translation(key, lang, ...args)
+    const result = translation(key, lang, ...args)
+    if (key === 'o' && result?.reply_markup?.keyboard) {
+      const label = freeLinks > 0
+        ? `🔗✂️ URL Shortener - ${freeLinks} Link${freeLinks !== 1 ? 's' : ''} Left`
+        : `🔗✂️ URL Shortener`
+      return {
+        ...result,
+        reply_markup: {
+          ...result.reply_markup,
+          keyboard: result.reply_markup.keyboard.map((row, i) =>
+            i === 0 ? [label] : [...row]
+          )
+        }
+      }
+    }
+    return result
   };
 
   const user = trans('user')
@@ -4114,7 +4130,7 @@ bot?.on('message', async msg => {
 
   //
   //
-  if (message === user.urlShortenerMain) {
+  if (message === user.urlShortenerMain || message.startsWith('🔗✂️ URL Shortener')) {
     return goto.submenu1()
   }
   if (message === user.domainNames) {
