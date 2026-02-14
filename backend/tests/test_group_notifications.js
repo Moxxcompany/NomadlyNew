@@ -362,8 +362,81 @@ test('New User Joined notification uses dynamic CHAT_BOT_NAME not hardcoded', ()
 
 test('New User Joined notification uses CHAT_BOT_NAME variable', () => {
   assert(
-    indexJsContent.includes('just signed up on ${CHAT_BOT_NAME}'),
+    indexJsContent.includes('just joined ${CHAT_BOT_NAME}'),
     'New User Joined notification should use CHAT_BOT_NAME variable'
+  );
+});
+
+test('Bot group welcome message uses dynamic CHAT_BOT_NAME not hardcoded', () => {
+  assert(
+    !indexJsContent.includes("'NomadlyBot is now active in this group"),
+    'Bot welcome message should NOT have hardcoded NomadlyBot'
+  );
+  assert(
+    indexJsContent.includes('${CHAT_BOT_NAME} is now active in this group'),
+    'Bot welcome message should use dynamic CHAT_BOT_NAME'
+  );
+});
+
+// ============ TESTS FOR PERSUASIVE MARKETING COPY ============
+
+test('All notifications include a /start CTA', () => {
+  const notifyGroupCalls = indexJsContent.match(/notifyGroup\(`[^`]*`\)/g) || [];
+  const callsWithCTA = notifyGroupCalls.filter(call => call.includes('/start'));
+  assert(
+    callsWithCTA.length === notifyGroupCalls.length,
+    `All ${notifyGroupCalls.length} notifyGroup calls should include /start CTA. Found ${callsWithCTA.length}`
+  );
+});
+
+test('Subscription notifications show specific plan value (free domains + validations)', () => {
+  assert(
+    indexJsContent.includes('freeDomainsOf[plan]') && indexJsContent.includes('freeValidationsOf[plan]'),
+    'Subscription notifications should include specific plan benefits (freeDomainsOf + freeValidationsOf)'
+  );
+});
+
+test('Domain notifications include the actual domain name for social proof', () => {
+  const domainCalls = (indexJsContent.match(/notifyGroup\(`[^`]*Domain Registered[^`]*`\)/g) || []);
+  const callsWithDomain = domainCalls.filter(call => call.includes('${domain}'));
+  assert(
+    callsWithDomain.length === domainCalls.length,
+    `All domain notifications should include the actual domain name. Found ${callsWithDomain.length} of ${domainCalls.length}`
+  );
+});
+
+test('Leads notifications show the actual quantity purchased', () => {
+  const leadsCalls = (indexJsContent.match(/notifyGroup\(`[^`]*Leads Acquired[^`]*`\)/g) || []);
+  const callsWithAmount = leadsCalls.filter(call => call.includes('leadsAmount'));
+  assert(
+    callsWithAmount.length === leadsCalls.length,
+    `All leads notifications should show the quantity. Found ${callsWithAmount.length} of ${leadsCalls.length}`
+  );
+});
+
+test('No old generic filler copy remains in notifications', () => {
+  const oldPhrases = [
+    'Another member leveling up',
+    'Building their online presence',
+    'Ready to roll',
+    'Powering up their links',
+    'Growing their business',
+    'Welcome aboard',
+  ];
+  for (const phrase of oldPhrases) {
+    const notifyGroupCalls = indexJsContent.match(/notifyGroup\(`[^`]*`\)/g) || [];
+    const callsWithOld = notifyGroupCalls.filter(call => call.includes(phrase));
+    assert(
+      callsWithOld.length === 0,
+      `Old generic phrase "${phrase}" should not appear in any notifyGroup call`
+    );
+  }
+});
+
+test('freeDomainsOf and freeValidationsOf are imported from config.js', () => {
+  assert(
+    indexJsContent.includes('freeDomainsOf,') && indexJsContent.includes('freeValidationsOf,'),
+    'freeDomainsOf and freeValidationsOf should be imported from config.js'
   );
 });
 
