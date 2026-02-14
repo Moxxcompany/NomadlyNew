@@ -1,7 +1,7 @@
 # NomadlyBot - PRD & Project Status
 
 ## Original Problem Statement
-Set up the repo code for NomadlyBot. Verify group auto-detection/registration. Ensure all event notifications include the bot username. Rewrite notifications to be persuasive. Fix AutoPromo 400 "chat not found" errors.
+Set up the repo code for NomadlyBot. Fix group notifications, persuasive marketing copy, AutoPromo unreachable user errors, and Shortit free trial link bugs.
 
 ## Architecture
 - **Node.js Backend** (Express + Telegram Bot API + MongoDB) — `/app/js/`
@@ -12,26 +12,27 @@ Set up the repo code for NomadlyBot. Verify group auto-detection/registration. E
 ## What's Been Implemented
 
 ### Session 1 — Repo Setup
-- [x] Installed Node.js deps, created `.env`, all services running
+- [x] All services running
 
 ### Session 2 — Group Notifications + Bot Username
-- [x] `notifyGroup()` auto-appends `CHAT_BOT_NAME` to every message
-- [x] All hardcoded "NomadlyBot" → dynamic `${CHAT_BOT_NAME}`
+- [x] `notifyGroup()` auto-appends `CHAT_BOT_NAME`; all hardcoded refs fixed
 
 ### Session 3 — Persuasive Marketing Rewrite
-- [x] Rewrote all 15 notifications: social proof, FOMO, value props, /start CTA
-- [x] Imported `freeDomainsOf` + `freeValidationsOf` from config.js
+- [x] All 15→17 notifications rewritten with social proof, FOMO, value props, /start CTA
 
 ### Session 4 — AutoPromo "chat not found" Fix
-- [x] Added `isUnreachableError()` helper: detects "chat not found", "user is deactivated", "bot was blocked", "have no rights to send"
-- [x] Photo fallback now bails immediately for unreachable users (no more wasteful text retry)
-- [x] HTML parse retry bails immediately for unreachable users
-- [x] Auto-opts-out on 400 "chat not found" (was only 403 before)
-- [x] Eliminates retry cascade: was 4 failed API calls per user, now just 1
+- [x] `isUnreachableError()` auto-opts-out unreachable users; eliminated retry cascade
+
+### Session 5 — Shortit Free Link Bugs
+- [x] Fixed `increment(totalShortLinks)` → `increment(totalShortLinks, 'total')` across all 5 paths
+- [x] Root cause: missing key caused "Key cannot be undefined or null" error, crashing the flow before remaining links message or group notification
+- [x] Added `notifyGroup` to Shortit random + custom link paths (was only on Bitly paid path)
+- [x] Remaining links message (`t.linksRemaining`) now executes correctly after link creation
+- [x] All 52 tests passing
 
 ## Test Status
 - 52/52 group notification tests passing
-- All AutoPromo unreachable error tests passing
+- All increment calls verified with 'total' key
 - Backend health: proxy=running, node=running, db=connected
 
 ## P0 — Requires User Action
