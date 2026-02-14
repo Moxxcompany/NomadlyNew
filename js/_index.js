@@ -2064,6 +2064,7 @@ bot?.on('message', async msg => {
       }
       const { usdBal: usd, ngnBal: ngn } = await getBalance(walletOf, chatId)
       send(chatId, t.showWallet(usd, ngn), trans('o'))
+      notifyGroup(`📱 <b>Leads Purchased!</b>\nUser ${maskName(name)} purchased phone lead validation.\nGrowing their business! 📈`)
     },
     [a.redSelectProvider]: async coin => {
       set(state, chatId, 'action', 'none')
