@@ -499,6 +499,7 @@ Arretez les liens generiques !
 
 - URLs personnalisees avec VOTRE domaine
 - Analyse des clics en temps reel
+- Liens Shortit gratuits pour tous
 - Integration Bit.ly disponible
 
 Appuyez sur <b>Raccourcisseur d'URL</b> !
@@ -513,7 +514,7 @@ Chaque clic raconte une histoire.
 
 + Personnalisez avec VOTRE domaine
 + Suivez chaque clic
-+ Liens illimites avec abonnement
++ Liens Shortit illimites avec abonnement
 
 Appuyez sur <b>Raccourcisseur d'URL</b> !
 
@@ -529,7 +530,7 @@ Domaines pays (.ng .za .ke .gh) ?
 - Voyez qui clique, quand et ou
 - Extension aleatoire ou personnalisee
 
-<b>Raccourcisseur d'URL</b> — essayez gratuitement !
+<b>Raccourcisseur d'URL</b> — essayez Shortit gratuitement !
 
 -----
 Besoin d'hebergement ? @hostbay_bot`,
@@ -552,7 +553,7 @@ Hebergement cPanel & domaines pays ?
 
 + Utilisez votre domaine comme raccourcisseur
 + Suivez la performance en temps reel
-+ Liens illimites avec les plans Quotidien/Hebdo/Mensuel
++ Liens Shortit illimites avec les plans Quotidien/Hebdo/Mensuel
 
 Appuyez sur <b>Raccourcisseur d'URL</b>
 
@@ -717,6 +718,7 @@ cPanel托管和国家域名?
 
 - 用您的域名创建品牌短链接
 - 实时点击分析
+- 所有用户免费Shortit链接
 - 支持Bit.ly集成
 
 点击 <b>URL 缩短器</b> 开始!
@@ -731,7 +733,7 @@ cPanel托管或国家域名?
 
 + 用自定义域名打造品牌
 + 追踪每一次点击
-+ 订阅即可无限链接
++ 订阅即可无限Shortit链接
 
 立即点击 <b>URL 缩短器</b>!
 
@@ -747,7 +749,7 @@ cPanel托管或国家域名?
 - 查看谁点击了 何时 从哪里
 - 随机或自定义后缀
 
-<b>URL 缩短器</b> — 免费试用!
+<b>URL 缩短器</b> — 免费试用Shortit!
 
 -----
 需要托管? @hostbay_bot`,
@@ -772,7 +774,7 @@ cPanel托管和国家域名?
 
 + 注册域名用它作缩短器
 + 实时跟踪性能
-+ 日/周/月计划享无限链接
++ 日/周/月计划享无限Shortit链接
 
 点击 <b>URL 缩短器</b>
 
@@ -938,6 +940,7 @@ cPanel होस्टिंग और देश डोमेन?
 
 - अपने डोमेन से ब्रांडेड शॉर्ट URL
 - रियल-टाइम क्लिक एनालिटिक्स
+- सभी के लिए मुफ्त Shortit लिंक
 - Bit.ly इंटीग्रेशन उपलब्ध
 
 <b>URL छोटा करें</b> दबाएं!
@@ -952,7 +955,7 @@ cPanel होस्टिंग या देश TLD?
 
 + कस्टम डोमेन से ब्रांड बनाएं
 + हर क्लिक ट्रैक करें
-+ सब्सक्रिप्शन के साथ अनलिमिटेड लिंक
++ सब्सक्रिप्शन के साथ अनलिमिटेड Shortit लिंक
 
 अभी <b>URL छोटा करें</b> दबाएं!
 
@@ -968,7 +971,7 @@ cPanel होस्टिंग या देश TLD?
 - देखें कौन क्लिक करता है कब और कहां से
 - रैंडम या कस्टम बैक-हाफ
 
-<b>URL छोटा करें</b> — मुफ्त में आजमाएं!
+<b>URL छोटा करें</b> — Shortit मुफ्त में आजमाएं!
 
 -----
 होस्टिंग? @hostbay_bot`,
