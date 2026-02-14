@@ -200,7 +200,7 @@ bot?.on('my_chat_member', async update => {
           { upsert: true }
         )
         log('Registered group for notifications: ' + chat.title + ' (' + chat.id + ')')
-        bot?.sendMessage(chat.id, 'NomadlyBot is now active in this group! You will receive event notifications here.')?.catch(() => {})
+        bot?.sendMessage(chat.id, `${CHAT_BOT_NAME} is now active in this group! You will receive live event notifications here.`)?.catch(() => {})
       }
     } else if (newStatus === 'left' || newStatus === 'kicked') {
       // Bot was removed from a group — unregister it
