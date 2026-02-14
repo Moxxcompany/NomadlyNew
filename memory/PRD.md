@@ -1,90 +1,55 @@
-# NomadlyBot - Project Requirements Document
+# NomadlyBot - PRD & Project Status
 
 ## Original Problem Statement
-Setup repo, configure environment, verify RapidAPI URL shortener, rebrand to "Shortit", fix free trial flow, clear free trial data.
+Set up the repo code for NomadlyBot - an existing Telegram Bot Admin platform.
 
 ## Architecture
-- **Node.js Backend**: Telegram bot + Express REST API server (`/app/js/`)
-- **FastAPI Proxy**: Python proxy (`/app/backend/server.py`) proxies to port 5000
-- **React Frontend**: Admin dashboard (`/app/frontend/`)
-- **MongoDB**: External database
+- **Node.js Backend** (Express + Telegram Bot API + MongoDB) — `/app/js/`
+- **FastAPI Proxy** (`/app/backend/server.py`) — starts Node.js subprocess, proxies requests
+- **React Frontend** (`/app/frontend/`) — Admin dashboard with health monitoring
+- **MongoDB** — Local instance at `mongodb://127.0.0.1:27017`
 
-## Free Trial Flow (URL Shortener)
-1. User starts bot → `freeShortLinksOf` initialized to `FREE_LINKS` (2)
-2. User accepts terms → sees `welcomeFreeTrial` if free links available
-3. User goes to URL Shortener → enters URL → selects provider
-4. If "Shortit (Free)" selected:
-   - Check `isSubscribed()` OR `freeLinksAvailable()` 
-   - If neither → show `freeLinksExhausted` message prompting subscription
-   - If OK → shorten URL via RapidAPI → decrement `freeShortLinksOf` counter (unless subscribed)
-5. Subscribe prompt: "🔔 Subscribe Here" button always visible on provider keyboard + exhausted message
+## Core Services (Node.js Bot)
+1. **URL Shortener** — Custom domain shortening with Bit.ly/Cutt.ly integration
+2. **Domain Names** — Buy/manage domains via ConnectReseller API, DNS management
+3. **Phone Leads** — SMS & Voice lead generation/validation with carrier filtering
+4. **Wallet System** — USD/NGN deposits via crypto (BlockBee/DynoPay) & bank (Fincra)
+5. **Web Hosting** — cPanel & Plesk plans with free trial (12hr Freedom Plan)
+6. **VPS Plans** — Virtual private servers on demand (NameWord API)
 
-## What's Been Implemented
+## User Personas
+- **Bot Admin** — Monitors bot health, manages users, broadcasts messages
+- **Bot Users (Telegram)** — URL shortening, buy domains, phone leads, deposits, hosting
 
-### 2026-02-14: Initial Setup
-- Installed deps, created root `.env`, all services running
+## What's Been Implemented (Feb 14, 2026)
+- [x] Installed Node.js dependencies (`npm install`)
+- [x] Created root `.env` with local MongoDB config
+- [x] Updated backend `.env` to use local MongoDB
+- [x] All services running: FastAPI proxy, Node.js bot, MongoDB, React frontend
+- [x] Health endpoint verified: proxy=running, node=running, db=connected
+- [x] Frontend dashboard showing all status cards and feature cards
+- [x] Testing: 100% pass rate (backend, frontend, integration)
 
-### 2026-02-14: Shortit Rebranding
-- Renamed "Ap1s.net" → "Shortit" across all 4 languages + config + auto-promo
-- Fixed keyboard to show both Bit.ly and Shortit options
-- Updated subscription text, planSubscribed, welcomeFreeTrial
+## Current Configuration
+- `TELEGRAM_BOT_ON=false` (no bot token provided)
+- `REST_APIS_ON=true` (Express API server active)
+- Local MongoDB: `nomadly_bot` database
 
-### 2026-02-14: Free Trial Fix + Data Clear
-**Bug found**: `decrement(freeShortLinksOf, chatId)` was MISSING from URL shortening flow — users got unlimited free links instead of 2
-**Fix applied**:
-- Added `freeLinksAvailable()` + `isSubscribed()` check BEFORE shortening (both random and custom flows)
-- Added `decrement(freeShortLinksOf, chatId)` AFTER successful shortening for non-subscribed users
-- Added `freeLinksExhausted` message in all 4 languages prompting subscription
-- **Cleared 3,104 records** from `freeShortLinksOf` collection — all users get fresh 2 free links on next interaction
+## P0 - Critical (Requires User Action)
+- [ ] Set `TELEGRAM_BOT_TOKEN` to enable Telegram bot functionality
+- [ ] Configure `SELF_URL` for webhook support in production
 
-### Files Modified
-- `/app/js/_index.js` — Free links check + decrement in random and custom shortening flows
-- `/app/js/lang/en.js` — `freeLinksExhausted` message
-- `/app/js/lang/fr.js` — `freeLinksExhausted` message
-- `/app/js/lang/zh.js` — `freeLinksExhausted` message
-- `/app/js/lang/hi.js` — `freeLinksExhausted` message
+## P1 - Important
+- [ ] ConnectReseller API IP whitelist (34.16.56.64 needs whitelisting)
+- [ ] Configure payment gateways (BlockBee/Fincra/DynoPay API keys)
+- [ ] Set up Bit.ly API token for URL shortening
 
-### 2026-02-14: Remaining Free Links Counter
-- Added `linksRemaining` message function to all 4 language files (en, fr, zh, hi)
-- Modified both random and custom link flows in `_index.js` to:
-  1. `await decrement()` the counter
-  2. Read remaining count via `get()`
-  3. Send the shortened URL
-  4. Send the remaining links message (e.g., "You have 1 free Shortit link remaining.")
-- Subscribed users bypass this entirely and only receive the short URL
+## P2 - Nice to Have
+- [ ] Configure production MongoDB (external Railway instance)
+- [ ] Set up Telegram broadcast/promo features
+- [ ] Enable VPS management (NameWord integration)
 
-### Files Modified
-- `/app/js/_index.js` — Added remaining count display in both shortening flows
-- `/app/js/lang/en.js` — Added `linksRemaining` function
-- `/app/js/lang/fr.js` — Added `linksRemaining` function
-- `/app/js/lang/zh.js` — Added `linksRemaining` function
-- `/app/js/lang/hi.js` — Added `linksRemaining` function
-
-### 2026-02-14: Group Event Notifications
-- Added `notifyGroups` MongoDB collection to track registered Telegram groups
-- Implemented `my_chat_member` event handler for auto-registering/unregistering groups when bot is added/removed
-- Created `maskName()` helper (first 2 chars + ***) and `notifyGroup()` broadcaster (HTML, auto-cleanup of kicked groups)
-- Added 15 notification hooks across 6 event types:
-  - Onboarding (1): when user accepts terms
-  - Plan subscriptions (4): wallet, bank, crypto (blockbee), crypto (dynopay)
-  - Domain purchases (4): wallet, bank, crypto (blockbee), crypto (dynopay)
-  - Wallet top-ups (3): bank, crypto (blockbee), crypto (dynopay)
-  - Bit.ly paid links (1): wallet payment
-  - Phone leads/validation (2): leads + validation wallet payments
-
-### 2026-02-14: customCuttly.js Migration to RapidAPI
-- Replaced legacy cutt.ly/api/api.php endpoint with RapidAPI url-shortener42
-- Updated to use `RAPIDAPI_KEY` env var instead of `API_CUTTLY`
-- Matches same pattern as `cuttly.js` for consistency
-
-### Files Modified
-- `/app/js/_index.js` — Group detection, notification system, 15 event hooks
-- `/app/js/customCuttly.js` — Migrated from Cutt.ly to RapidAPI
-
-## Prioritized Backlog
-### P0 - None
-### P1
-- Configure Connect Reseller API IP whitelist
-### P2
-- Admin dashboard analytics
-- Payment gateway testing
+## Next Tasks
+1. Provide Telegram Bot Token to activate bot features
+2. Configure external API keys for full functionality
+3. Set up webhook URL for Telegram notifications
