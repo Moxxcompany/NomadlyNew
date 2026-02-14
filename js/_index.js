@@ -351,8 +351,6 @@ const loadData = async () => {
   clicksOn = db.collection('clicksOn')
   chatIdOf = db.collection('chatIdOf')
 
-  if (REST_APIS_ON === 'true') startServer()
-
   log(`DB Connected lala. May peace be with you and Lord's mercy and blessings.`)
 
   //
@@ -453,6 +451,9 @@ const connectWithRetry = async (retryCount = 0) => {
     }
   }
 }
+
+// Start Express server immediately so Railway health check passes while DB connects
+if (REST_APIS_ON === 'true') startServer()
 
 connectWithRetry()
 
