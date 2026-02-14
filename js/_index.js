@@ -2152,7 +2152,7 @@ bot?.on('message', async msg => {
       }
       const { usdBal: usd, ngnBal: ngn } = await getBalance(walletOf, chatId)
       send(chatId, t.showWallet(usd, ngn), trans('o'))
-      notifyGroup(`🔗 <b>Custom Short Link Created!</b>\nUser ${maskName(name)} just branded a link with a custom domain.\nShorten yours with analytics — /start`)
+      notifyGroup(`🔗 <b>Short Link Created!</b>\nUser ${maskName(name)} just shortened a link.\n${FREE_LINKS} free trial links for everyone — try it now — /start`)
     },
   }
 
@@ -3245,7 +3245,7 @@ bot?.on('message', async msg => {
         set(fullUrlOf, shortUrl, url)
 
         const name = await get(nameOf, chatId)
-        notifyGroup(`🔗 <b>Custom Short Link Created!</b>\nUser ${maskName(name)} just branded a link with a custom domain.\nShorten yours with analytics — /start`)
+        notifyGroup(`🔗 <b>Short Link Created!</b>\nUser ${maskName(name)} just shortened a link.\n${FREE_LINKS} free trial links for everyone — try it now — /start`)
 
         // Decrement free links counter for non-subscribed users
         if (!(await isSubscribed(chatId))) {
@@ -3290,7 +3290,7 @@ bot?.on('message', async msg => {
       set(linksOf, chatId, shortUrl, url)
 
       const name = await get(nameOf, chatId)
-      notifyGroup(`🔗 <b>Custom Short Link Created!</b>\nUser ${maskName(name)} just branded a link with a custom domain.\nShorten yours with analytics — /start`)
+      notifyGroup(`🔗 <b>Short Link Created!</b>\nUser ${maskName(name)} just shortened a link.\n${FREE_LINKS} free trial links for everyone — try it now — /start`)
 
       // Decrement free links counter for non-subscribed users
       if (!(await isSubscribed(chatId))) {
