@@ -1,17 +1,29 @@
 /* global process */
 require('dotenv').config()
 const axios = require('axios')
-const apiKey = process.env.API_CUTTLY
+const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY
 
 const createCustomShortUrlCuttly = async (longUrl, name) => {
-  const cuttlyApiUrl = `https://cutt.ly/api/api.php?key=${apiKey}&short=${encodeURIComponent(longUrl)}&name=${name}`
+  const response = await axios.post(
+    'https://url-shortener42.p.rapidapi.com/shorten/',
+    {
+      url: longUrl,
+      validity_duration: 12,
+    },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-rapidapi-host': 'url-shortener42.p.rapidapi.com',
+        'x-rapidapi-key': RAPIDAPI_KEY,
+      },
+    },
+  )
 
-  const response = await axios.get(cuttlyApiUrl)
-  const { status, shortLink } = response.data.url
-    if (status === 7) {
+  const shortLink = response.data.url
+  if (response.status === 200 || response.status === 201) {
     return shortLink
   } else {
-    console.error('createCustomShortUrlCuttly Error creating short URL:', response.data.url.msg)
+    console.error('createCustomShortUrlCuttly Error creating short URL, Code:', response?.status)
   }
 }
 
