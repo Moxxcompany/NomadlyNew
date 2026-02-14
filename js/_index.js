@@ -3214,6 +3214,7 @@ bot?.on('message', async msg => {
         if (!(await isSubscribed(chatId))) {
           await decrement(freeShortLinksOf, chatId)
           const remaining = (await get(freeShortLinksOf, chatId)) || 0
+          freeLinks = remaining
           set(state, chatId, 'action', 'none')
           send(chatId, _shortUrl, trans('o'))
           return send(chatId, t.linksRemaining(remaining, FREE_LINKS))
@@ -3258,6 +3259,7 @@ bot?.on('message', async msg => {
       if (!(await isSubscribed(chatId))) {
         await decrement(freeShortLinksOf, chatId)
         const remaining = (await get(freeShortLinksOf, chatId)) || 0
+        freeLinks = remaining
         set(state, chatId, 'action', 'none')
         send(chatId, _shortUrl, trans('o'))
         return send(chatId, t.linksRemaining(remaining, FREE_LINKS))
