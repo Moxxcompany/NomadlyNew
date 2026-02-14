@@ -1,53 +1,53 @@
-# NomadlyBot - Product Requirements Document
+# NomadlyBot - PRD & Architecture Document
 
 ## Original Problem Statement
-Set up and maintain the NomadlyBot Telegram bot platform, fixing bugs and enhancing features.
+Setup the existing codebase - analyze and get it running.
 
-## Architecture
-- **Frontend**: React admin dashboard
-- **Backend**: Node.js Telegram Bot (core logic in `js/_index.js`), managed by FastAPI proxy (`backend/server.py`)
-- **Database**: MongoDB (Railway-hosted)
-- **Key Files**: `js/_index.js` (bot logic), `js/config.js` (config), `js/config-setup.js` (env defaults), `js/db.js` (DB helpers)
-- **Language Files**: `js/lang/en.js`, `js/lang/fr.js`, `js/lang/zh.js`, `js/lang/hi.js`
+## Architecture Overview
+- **Frontend**: React 18 admin dashboard (port 3000) - shows bot status, DB connection, feature cards
+- **Backend**: FastAPI (Python, port 8001) - acts as reverse proxy to Node.js server
+- **Node.js Core**: Express server (port 5000) - Telegram bot engine with REST APIs
+- **Database**: MongoDB (remote, Railway hosted)
 
-## Completed Work
+## Tech Stack
+- React 18 + Tailwind CSS + Craco (frontend)
+- FastAPI + httpx (Python backend proxy)
+- Node.js 20 + Express + node-telegram-bot-api (core bot logic)
+- MongoDB 5.x (via mongodb driver)
 
-### Session 1
-- Initial project setup (Node.js bot + FastAPI proxy + React frontend)
-- Rewrote 15+ bot notification messages for persuasive marketing
-- Fixed auto-promo infinite retry bug (`sendPromoToUser`)
-- Fixed 3 bugs in Shortit link flow (crash, missing message, missing group notification)
+## Core Features
+1. **URL Shortener** - Bitly integration, custom domain shortening with analytics
+2. **Domain Names** - Buy via Connect Reseller API, DNS management
+3. **Phone Leads** - SMS & Voice leads with carrier filtering, bulk validation
+4. **Wallet System** - USD & NGN deposits via crypto (BlockBee/Dynopay) & bank (Fincra)
+5. **Web Hosting** - cPanel & Plesk plans with free trials
+6. **VPS Plans** - Virtual private server management
+7. **Telegram Bot** - Full bot interface for all features
+8. **Multi-language** - English, Chinese, and other language support
 
-### Session 2 (Feb 2026)
-- **P0 Fix**: FREE_LINKS env variable confirmed set to 5 (was incorrectly 2)
-- Verified bot runtime loads `FREE_LINKS=5` correctly
-- All 28 static tests pass; integration test confirms 5 free links flow
+## What's Been Implemented (Setup - Feb 14, 2026)
+- Installed Node.js dependencies (`npm install`)
+- Fixed syntax error in `/app/js/lang/zh.js` (stray template literal on line 298)
+- Created root `.env` file with MONGO_URL, DB_NAME, and service flags
+- Bot set to TELEGRAM_BOT_ON=false (no token provided yet)
+- All services running: FastAPI proxy, Node.js Express server, React frontend
+- Health check passing: Bot Running, DB Connected, REST APIs Active
 
-### Session 3 (Feb 2026) - UX Trial Labeling
-- **Provider button**: Changed from "Shortit (Free)" to "Shortit (Trial 5)" — dynamic from .env
-- **Main menu button**: Changed from "URL Shortener" to "URL Shortener - 5 Trial Links" — trial visible upfront
-- **Remaining message**: Changed from "You have 3 free Shortit links remaining" to "You have 3 of 5 trial Shortit links remaining" — shows used/total context
-- **Exhausted message**: Changed from "all your free" to "all 5 trial" — specific count
-- **Welcome message**: Updated to say "You have 5 trial Shortit links" instead of "free"
-- **All 4 languages updated**: EN, FR, ZH, HI — all labels consistent
-- All values dynamic from FREE_LINKS env variable
-- All 28 tests passing
+## Environment Variables Needed (for full functionality)
+- `TELEGRAM_BOT_TOKEN` - Telegram bot API token
+- Connect Reseller API credentials
+- BlockBee/Dynopay crypto payment API keys
+- Fincra bank payment API keys
+- Bitly API key
 
-## P0/P1/P2 Backlog
+## Prioritized Backlog
+### P0 (Critical)
+- Provide TELEGRAM_BOT_TOKEN to enable Telegram bot functionality
 
-### P0 (None remaining)
-All critical bugs resolved.
+### P1 (High)
+- Connect Reseller IP whitelisting (IP: 34.16.56.64)
+- Configure payment provider API keys
 
-### P1
-- None identified.
-
-### P2 (Future)
-- Refactor `js/_index.js` monolith into modular feature files
-- Add end-to-end Telegram bot test automation
-
-## 3rd Party Integrations
-Telegram Bot API, MongoDB, Bit.ly, Cutt.ly, DynoPay, Fincra, Blockbee, ResellerClub, Brevo SMTP, OpenAI, Neutrino API, Railway, Render
-
-## Test Files
-- `/app/js/tests/test_shortit_links_remaining.js` - Static/code review tests (28 tests)
-- `/app/js/tests/test_free_links_integration.js` - MongoDB integration test for FREE_LINKS=5 flow
+### P2 (Nice to have)
+- Admin dashboard enhancements (real-time stats, user management UI)
+- Webhook configuration for Telegram bot
