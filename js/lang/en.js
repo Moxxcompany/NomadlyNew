@@ -73,7 +73,7 @@ const user = {
   cPanelWebHostingPlans: 'Russia cPanel Hosting Plans 🔒',
   pleskWebHostingPlans: 'Russia Plesk Hosting Plans 🔒',
   joinChannel: '📢 Join Channel',
-  phoneNumberLeads: '📲 HQ SMS Lead',
+  phoneNumberLeads: '📲 Phone Leads & Validation',
   hostingDomainsRedirect: '🌐 Hosting & Domains',
   wallet: '👛 My Wallet',
   urlShortenerMain: `🔗✂️ URL Shortener - ${FREE_LINKS} Trial Links`,
@@ -191,6 +191,7 @@ ${CHAT_BOT_BRAND} Team
   resetLoginDeny: 'Ok sure. No further action required.',
   resetLogin: `${CHAT_BOT_BRAND}SMS: Are you trying to log out of your previous device?`,
   select: `Please select an option:`,
+  urlShortenerSelect: `Shorten, brand, or track your links:`,
 
   // cPanel/Plesk Plans initial select plan text
   selectPlan: `Please select a plan:`,
@@ -234,7 +235,7 @@ To continue using our services, please buy one of our premium plans.`,
   trialPlanActivationConfirmation: `Thank you! Your free trial plan will be activated shortly. Please note, this plan will be active for 12 hours only.`,
   trialPlanActivationInProgress: `Your free trial plan is being activated. This may take a few moments…`,
 
-  what: `Please choose option from keyboard`,
+  what: `That option isn't available right now. Please pick from the buttons below.`,
   whatNum: `Please choose valid number`,
   phoneGenTimeout: 'Timeout',
   phoneGenNoGoodHits: `Please contact support ${SUPPORT_HANDLE} or select another area code`,
@@ -310,9 +311,10 @@ ${CHAT_BOT_NAME}`,
   unblockUser: `Please share the username of the user that needs to be unblocked.`,
   blockedUser: `You are currently blocked from using the bot. Please contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
 
-  greet: `Keep your eyes on this space! We're gearing up to launch our URL shortening application that will make your links short, sweet, and to the point. Stay tuned for our big reveal!
+  greet: `${CHAT_BOT_BRAND} — shorten URLs, register domains, buy phone leads, and grow your business. All from Telegram.
 
-Support ${SUPPORT_USERNAME} at Telegram.`,
+Get started with ${FREE_LINKS} trial Shortit links — /start
+Support: ${SUPPORT_USERNAME}`,
 
   linkExpired: `This short link has expired and is no longer active. Please contact us for any queries.
 Best,
@@ -420,7 +422,7 @@ ${
 
   provideLink: 'Please provide a valid URL. e.g https://google.com',
 
-  comingSoonWithdraw: `Withdraw coming soon. Contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
+  comingSoonWithdraw: `Withdrawals are not available yet. Need help? Contact ${SUPPORT_USERNAME}.`,
   promoOptOut: `You have been unsubscribed from promotional messages. Type /start_promos to re-subscribe anytime.`,
   promoOptIn: `You have been re-subscribed to promotional messages. You will receive our latest offers and deals!`,
 
@@ -493,7 +495,7 @@ Select wallet option:`,
 
 ${bal(usd, ngn)}`,
 
-  walletBalanceLow: `Please top up your wallet to continue`,
+  walletBalanceLow: `Your wallet balance is too low. Tap "👛 My Wallet" → "➕💵 Deposit" to top up.`,
 
   sentLessMoney: (expected, got) =>
     `You sent less money than expected so we credited amount received into your wallet. We expected ${expected} but received ${got}`,
@@ -551,15 +553,15 @@ ${bal(usd, ngn)}`,
 
   redValidUrl: 'Please provide a valid URL. e.g https://google.com',
   redTakeUrl: url => `Your shortened URL is: ${url}`,
-  redIssueUrlBitly: `Some issue, your wallet is not charged.`,
+  redIssueUrlBitly: `Link shortening failed. Your wallet was not charged. Please try again or contact ${SUPPORT_USERNAME}.`,
   redIssueSlugCuttly: `The preferred link name is already taken, try another.`,
-  redIssueUrlCuttly: `Some issue`,
+  redIssueUrlCuttly: `Link shortening failed. Please try again or contact ${SUPPORT_USERNAME}.`,
   freeLinksExhausted: `You've used all ${FREE_LINKS} trial Shortit links! Subscribe to get unlimited Shortit links, free ".sbs/.xyz" domains, and more. Tap "🔔 Subscribe Here" to choose a plan.`,
   linksRemaining: (count, total) => `You have ${count} of ${total || FREE_LINKS} trial Shortit link${count !== 1 ? 's' : ''} remaining.`,
   redNewPrice: (price, newPrice) => `Price is now $${view(newPrice)} <s>($${price})</s> Please choose payment method.`,
   customLink: 'Custom Link',
   randomLink: 'Random Link',
-  askShortLinkExtension: 'Please tell your us preferred short link extension: e.g payer',
+  askShortLinkExtension: 'Please tell us your preferred short link extension: e.g payer',
   linkAlreadyExist: `Link already exists. Please type 'ok' to try another.`,
   yourShortendUrl: shortUrl => `Your shortened URL is: ${shortUrl}`,
 
