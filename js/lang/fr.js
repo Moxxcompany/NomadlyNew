@@ -505,6 +505,7 @@ ${CHAT_BOT_NAME}`,
   redIssueSlugCuttly: `Le nom de lien préféré est déjà pris, essayez un autre.`,
   redIssueUrlCuttly: `Problème`,
   freeLinksExhausted: `Vous avez utilisé tous vos liens Shortit gratuits ! Abonnez-vous pour obtenir des liens Shortit illimités, des domaines ".sbs/.xyz" gratuits et plus encore. Appuyez sur "🔔 S'abonner" pour choisir un plan.`,
+  linksRemaining: count => `Il vous reste ${count} lien${count !== 1 ? 's' : ''} Shortit gratuit${count !== 1 ? 's' : ''}.`,
   redNewPrice: (price, newPrice) =>
     `Le prix est maintenant de $${view(newPrice)} <s>($${price})</s>. Veuillez choisir la méthode de paiement.`,
   customLink: 'Lien personnalisé',
