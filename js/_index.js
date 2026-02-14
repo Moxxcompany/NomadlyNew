@@ -2519,7 +2519,21 @@ bot?.on('message', async msg => {
     if (message === t.iHaveSentThePayment) return goto.iHaveSentThePayment()
   }
 
-  // shortURL
+  // shortURL — Bit.ly (paid)
+  if (message === user.redBitly) {
+    const redSelectProviderOptions = trans('redSelectProvider')
+    saveInfo('provider', redSelectProviderOptions[0])
+    return goto.redSelectUrl()
+  }
+
+  // shortURL — Shortit (trial/free)
+  if (message === user.redShortit) {
+    const redSelectProviderOptions = trans('redSelectProvider')
+    saveInfo('provider', redSelectProviderOptions[1])
+    return goto.redSelectUrl()
+  }
+
+  // shortURL (legacy)
   if (message === user.redSelectUrl) {
     return goto.redSelectUrl()
   }
