@@ -141,43 +141,33 @@ class URLShortenerAPITester:
             return False, f"Node.js server request failed: {str(e)}"
 
 def main():
-    """Main testing function"""
-    print("🚀 Starting NomadlyBot Backend API Tests")
-    print("=" * 50)
+    """Main test runner"""
+    tester = URLShortenerAPITester()
     
-    # Setup
-    tester = NomadlyBotAPITester()
+    print("🚀 Starting URL Shortener API Testing")
+    print(f"⚡ Base URL: {tester.base_url}")
+    print(f"🔑 Bitly API Key: {tester.bitly_api_key[:20]}...")
+    print("=" * 60)
     
-    # Track service status
-    health_passed = False
-    node_passed = False
-    ok_passed = False
-    
-    # Run tests
-    print("\n📡 Testing Backend Services...")
-    health_passed = tester.test_health_endpoint()
-    
-    print("\n🌐 Testing Node.js Express Server...")
-    node_passed = tester.test_root_endpoint()
-    ok_passed = tester.test_node_ok_endpoint()
+    # Run all tests based on review request
+    tester.run_test("GET /api/health returns status ok with all services running", tester.test_health_endpoint)
+    tester.run_test("Bitly API is accessible and can shorten URLs", tester.test_bitly_api_direct)  
+    tester.run_test("Frontend dashboard still loads and shows System Online", tester.test_frontend_dashboard)
+    tester.run_test("Telegram webhook endpoint at /telegram/webhook returns 200", tester.test_telegram_webhook_endpoint)
+    tester.run_test("Node.js Express server is running on port 5000 via proxy", tester.test_node_server_port_5000)
     
     # Print summary
-    print("\n" + "=" * 50)
-    print(f"📊 Test Results: {tester.tests_passed}/{tester.tests_run} passed")
+    print("\n" + "=" * 60)
+    print(f"📊 Test Results: {tester.tests_passed}/{tester.tests_run} tests passed")
     
-    # Service status summary
-    print("\n🔧 Service Status Summary:")
-    print(f"   FastAPI Proxy: {'✅ Running' if health_passed else '❌ Issues'}")
-    print(f"   Node.js Server: {'✅ Running' if node_passed else '❌ Issues'}")
-    print(f"   Health Checks: {'✅ Passing' if ok_passed else '❌ Issues'}")
+    success_rate = (tester.tests_passed / tester.tests_run * 100) if tester.tests_run > 0 else 0
+    print(f"📈 Success Rate: {success_rate:.1f}%")
     
-    # Overall assessment
-    all_services_ok = health_passed and node_passed and ok_passed
-    if all_services_ok:
-        print("\n🎉 All backend services are operational!")
+    if tester.tests_passed == tester.tests_run:
+        print("🎉 All tests passed!")
         return 0
     else:
-        print("\n⚠️ Some backend services have issues - check logs")
+        print("⚠️  Some tests failed - see details above")
         return 1
 
 if __name__ == "__main__":
