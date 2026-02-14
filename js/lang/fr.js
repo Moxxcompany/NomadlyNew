@@ -89,6 +89,8 @@ const user = {
 
   // Sub Menu 1: urlShortenerMain
   redSelectUrl: '🔀✂️ Rediriger et raccourcir',
+  redBitly: '✂️ Bit.ly',
+  redShortit: '✂️ Shortit (Essai)',
   urlShortener: '✂️🌐 Raccourcisseur de domaine personnalisé',
   viewShortLinks: '📊 Voir les analyses des raccourcis',
 

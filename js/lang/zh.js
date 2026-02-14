@@ -88,6 +88,8 @@ const user = {
 
   // Sub Menu 1: urlShortenerMain
   redSelectUrl: '🔀✂️ 重定向并缩短',
+  redBitly: '✂️ Bit.ly',
+  redShortit: '✂️ Shortit (试用)',
   urlShortener: '✂️🌐 自定义域名缩短器',
   viewShortLinks: '📊 查看短链接分析',
 
