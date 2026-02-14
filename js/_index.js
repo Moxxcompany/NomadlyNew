@@ -5108,7 +5108,7 @@ const bankApis = {
     del(chatIdOfPayment, ref)
     const name = await get(nameOf, chatId)
     set(payments, ref, `Bank,Wallet,wallet,$${usdIn},${chatId},${name},${new Date()},${ngnIn} NGN`)
-    notifyGroup(`💰 <b>Wallet Funded!</b>\nUser ${maskName(name)} added funds to their wallet.\nReady to roll! 💪`)
+    notifyGroup(`💰 <b>Wallet Top-Up!</b>\nUser ${maskName(name)} just loaded their wallet and is ready to buy domains, leads & more.\nFund yours in seconds — /start`)
   },
 }
 //
