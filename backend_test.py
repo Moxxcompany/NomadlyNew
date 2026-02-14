@@ -11,57 +11,22 @@ class URLShortenerAPITester:
         self.tests_passed = 0
         self.bitly_api_key = "9f982ab6a9786a1f2e123dab3be3d12ae0bac4b7"
 
-    def run_test(self, name, method, endpoint, expected_status, expected_content=None):
-        """Run a single API test"""
-        url = f"{self.base_url}/{endpoint}" if endpoint else self.base_url
-        headers = {'Content-Type': 'application/json'}
-
+    def run_test(self, name, test_func):
+        """Run a single test and track results"""
         self.tests_run += 1
         print(f"\n🔍 Testing {name}...")
         
         try:
-            if method == 'GET':
-                response = requests.get(url, headers=headers, timeout=10)
-            elif method == 'POST':
-                response = requests.post(url, headers=headers, timeout=10)
-
-            success = response.status_code == expected_status
-            
+            success, details = test_func()
             if success:
                 self.tests_passed += 1
-                print(f"✅ Passed - Status: {response.status_code}")
-                
-                # Check response content if expected
-                if expected_content:
-                    try:
-                        response_data = response.json()
-                        for key, expected_value in expected_content.items():
-                            if key in response_data:
-                                if expected_value is None or response_data[key] == expected_value:
-                                    print(f"   ✓ {key}: {response_data[key]}")
-                                else:
-                                    print(f"   ⚠️ {key}: expected {expected_value}, got {response_data[key]}")
-                            else:
-                                print(f"   ❌ Missing key: {key}")
-                    except json.JSONDecodeError:
-                        print(f"   📄 Response content: {response.text[:200]}...")
-                        
-                return success, response.json() if 'json' in response.headers.get('content-type', '').lower() else response.text
-
+                print(f"✅ PASS - {details}")
             else:
-                print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
-                print(f"   Response: {response.text[:200]}...")
-                return False, {}
-
-        except requests.exceptions.ConnectionError:
-            print(f"❌ Failed - Connection error to {url}")
-            return False, {}
-        except requests.exceptions.Timeout:
-            print(f"❌ Failed - Request timeout")
-            return False, {}
+                print(f"❌ FAIL - {details}")
+            return success
         except Exception as e:
-            print(f"❌ Failed - Error: {str(e)}")
-            return False, {}
+            print(f"❌ FAIL - Exception: {str(e)}")
+            return False
 
     def test_health_endpoint(self):
         """Test the health endpoint"""
