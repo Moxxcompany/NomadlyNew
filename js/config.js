@@ -77,7 +77,7 @@ const user = {
   joinChannel: '📢 Join Channel',
   phoneNumberLeads: '📲 HQ SMS Lead',
   wallet: '👛 My Wallet',
-  urlShortenerMain: '🔗✂️ URL Shortener',
+  urlShortenerMain: `🔗✂️ URL Shortener - ${FREE_LINKS} Trial Links`,
   buyPlan: '🔔 Subscribe Here',
   domainNames: '🌐 Domain Names',
   viewPlan: '🔔 My Plan',
@@ -299,7 +299,7 @@ Discover more: ${TG_CHANNEL}`,
   successPayment: `Payment Processed Successfully! You can now close this window.`,
 
   welcome: `Thank you for choosing ${CHAT_BOT_NAME}! Please choose an option below:`,
-  welcomeFreeTrial: `Welcome to ${CHAT_BOT_BRAND}! URL shortening is free for all users. Subscribe for free ".sbs/.xyz" domains and free USA phone validations. Experience the ${CHAT_BOT_BRAND} difference!`,
+  welcomeFreeTrial: `Welcome to ${CHAT_BOT_BRAND}! You have ${FREE_LINKS} trial Shortit links to shorten URLs. Subscribe for unlimited Shortit links, free ".sbs/.xyz" domains and free USA phone validations. Experience the ${CHAT_BOT_BRAND} difference!`,
 
   unknownCommand: `Command not found. Press /start or Please contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
 
@@ -529,7 +529,7 @@ const validatorSelectFormat = ['Local Format', 'International Format']
 
 const redSelectRandomCustom = ['Random Short Link']
 
-const redSelectProvider = ['Bit.ly $10', 'Shortit (Free)']
+const redSelectProvider = ['Bit.ly $10', `Shortit (Trial ${FREE_LINKS})`]
 
 const tickerOf = {
   BTC: 'btc',
