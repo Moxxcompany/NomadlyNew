@@ -309,7 +309,7 @@ L'équipe ${CHAT_BOT_BRAND}
 Découvrez plus : ${TG_CHANNEL}`,
   successPayment: `Paiement traité avec succès ! Vous pouvez maintenant fermer cette fenêtre.`,
   welcome: `Merci d'avoir choisi ${CHAT_BOT_NAME} ! Veuillez choisir une option ci-dessous :`,
-  welcomeFreeTrial: `Bienvenue sur ${CHAT_BOT_BRAND} ! Le raccourcissement d’URL est gratuit pour tous. Abonnez-vous pour des domaines ".sbs/.xyz" gratuits et des validations de numéros USA gratuites. Découvrez la différence ${CHAT_BOT_BRAND} !`,
+  welcomeFreeTrial: `Bienvenue sur ${CHAT_BOT_BRAND} ! Vous avez ${FREE_LINKS} liens Shortit d'essai pour raccourcir vos URLs. Abonnez-vous pour des liens Shortit illimites, des domaines ".sbs/.xyz" gratuits et des validations de numeros USA gratuites. Decouvrez la difference ${CHAT_BOT_BRAND} !`,
   unknownCommand: `Commande introuvable. Appuyez sur /start ou veuillez contacter le support ${SUPPORT_USERNAME}. Découvrez plus ${TG_HANDLE}.`,
   support: `Veuillez contacter le support ${SUPPORT_USERNAME}. Découvrez plus ${TG_HANDLE}.`,
   joinChannel: `Veuillez rejoindre la chaîne ${TG_CHANNEL}.`,
