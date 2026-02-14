@@ -104,6 +104,127 @@ class NomadlyBotAPITester:
         except Exception as e:
             return False, f"Proxy forwarding test failed: {str(e)}"
 
+    def test_node_syntax_validation(self):
+        """Test Node.js syntax validation: node --check js/_index.js passes"""
+        try:
+            result = subprocess.run(['node', '--check', 'js/_index.js'], 
+                                  capture_output=True, text=True, cwd='/app')
+            if result.returncode == 0:
+                return True, "Node.js syntax validation passed"
+            else:
+                return False, f"Syntax errors: {result.stderr}"
+        except Exception as e:
+            return False, f"Syntax check failed: {str(e)}"
+
+    def test_frelinks_is_let_variable(self):
+        """Test that freeLinks is declared as let (not const) at line ~521"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+                
+            # Check for 'let freeLinks' around line 521
+            lines = content.split('\n')
+            for i, line in enumerate(lines[515:530], 516):  # Check lines 516-530
+                if 'freeLinks' in line and 'await get(freeShortLinksOf' in line:
+                    if line.strip().startswith('let freeLinks'):
+                        return True, f"Found 'let freeLinks' at line {i}"
+                    elif line.strip().startswith('const freeLinks'):
+                        return False, f"Found 'const freeLinks' at line {i}, should be 'let'"
+                        
+            return False, "Could not find freeLinks declaration around line 521"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_freelinks_set_for_new_users(self):
+        """Test that freeLinks is set to FREE_LINKS for new users (null/undefined case)"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+                
+            # Look for the pattern where freeLinks is set to FREE_LINKS for new users
+            if 'if (freeLinks === null || freeLinks === undefined)' in content and \
+               'freeLinks = FREE_LINKS' in content:
+                return True, "freeLinks correctly set to FREE_LINKS for new users"
+            else:
+                return False, "freeLinks not properly set for new users"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_trans_function_dynamic_keyboard(self):
+        """Test that trans function intercepts key 'o' and returns dynamic keyboard"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+                
+            # Check for the trans function with key 'o' handling
+            if "if (key === 'o' && result?.reply_markup?.keyboard)" in content:
+                return True, "trans function correctly intercepts key 'o' for dynamic keyboard"
+            else:
+                return False, "trans function doesn't handle key 'o' properly"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_dynamic_label_format(self):
+        """Test dynamic label format with correct plural handling"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+                
+            # Check for correct dynamic label format
+            expected_pattern = r"freeLinks > 0.*?`🔗✂️ URL Shortener - \$\{freeLinks\} Link\$\{freeLinks !== 1 \? 's' : ''\} Left`.*?`🔗✂️ URL Shortener`"
+            
+            if re.search(expected_pattern, content, re.DOTALL):
+                return True, "Dynamic label format with plural handling found"
+            else:
+                return False, "Dynamic label format not found or incorrect"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_url_shortener_button_matching(self):
+        """Test URL shortener button matching uses startsWith"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+                
+            # Check for startsWith usage for button matching
+            if "message.startsWith('🔗✂️ URL Shortener')" in content:
+                return True, "URL shortener button matching uses startsWith correctly"
+            else:
+                return False, "URL shortener button matching doesn't use startsWith"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_decrement_updates_freelinks(self):
+        """Test that both decrement points update freeLinks = remaining"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+                
+            # Count occurrences of freeLinks = remaining
+            matches = re.findall(r'freeLinks = remaining', content)
+            
+            if len(matches) >= 2:
+                return True, f"Found {len(matches)} instances of 'freeLinks = remaining'"
+            else:
+                return False, f"Found only {len(matches)} instances of 'freeLinks = remaining', expected at least 2"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_keyboard_structure_preserved(self):
+        """Test that keyboard structure returned by trans('o') has same shape"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+                
+            # Check that the keyboard structure is preserved with reply_markup.keyboard
+            if "reply_markup: {" in content and \
+               "keyboard: result.reply_markup.keyboard.map((row, i) =>" in content:
+                return True, "Keyboard structure preserved in trans('o') function"
+            else:
+                return False, "Keyboard structure not properly preserved"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
     def test_node_server_port_5000(self):
         """Test Node.js Express server running on port 5000 via proxy"""
         try:
