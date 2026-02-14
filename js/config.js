@@ -212,7 +212,8 @@ To continue using our services, please buy one of our premium plans.`,
   trialPlanActivationInProgress: `Your free trial plan is being activated. This may take a few moments…`,
 
   what: `That option isn't available right now. Please pick from the buttons below.`,
-  whatNum: `Please choose valid number`,
+  urlShortenerSelect: `Shorten, brand, or track your links:`,
+  whatNum: `That doesn't look right. Please enter a valid number.`,
   phoneGenTimeout: 'Timeout',
   phoneGenNoGoodHits: `Please contact support ${SUPPORT_HANDLE} or select another area code`,
 
@@ -440,7 +441,7 @@ Select wallet option:`,
 
 ${bal(usd, ngn)}`,
 
-  walletBalanceLow: `Please top up your wallet to continue`,
+  walletBalanceLow: `Your wallet balance is too low. Tap "👛 My Wallet" → "➕💵 Deposit" to top up.`,
 
   sentLessMoney: (expected, got) =>
     `You sent less money than expected so we credited amount received into your wallet. We expected ${expected} but received ${got}`,
@@ -450,7 +451,7 @@ ${bal(usd, ngn)}`,
   buyLeadsError: 'Unfortunately the selected area code is unavailable and your wallet has not been charged',
   buyLeadsProgress: (i, total) => `${((i * 100) / total).toFixed()}% leads downloaded. Please wait.`,
 
-  phoneNumberLeads: 'Please select an option',
+  phoneNumberLeads: 'Buy verified phone leads or validate your own numbers:',
 
   buyLeadsSelectCountry: 'Please select country',
   buyLeadsSelectSmsVoice: 'Please select SMS / Voice',
@@ -498,9 +499,9 @@ ${bal(usd, ngn)}`,
 
   redValidUrl: 'Please provide a valid URL. e.g https://google.com',
   redTakeUrl: url => `Your shortened URL is: ${url}`,
-  redIssueUrlBitly: `Some issue, your wallet is not charged.`,
+  redIssueUrlBitly: `Link shortening failed. Your wallet was not charged. Please try again or contact ${SUPPORT_USERNAME}.`,
   redIssueSlugCuttly: `The preferred link name is already taken, try another.`,
-  redIssueUrlCuttly: `Some issue`,
+  redIssueUrlCuttly: `Link shortening failed. Please try again or contact ${SUPPORT_USERNAME}.`,
   redNewPrice: (price, newPrice) => `Price is now $${view(newPrice)} <s>($${price})</s> Please choose payment method.`,
 }
 
@@ -659,10 +660,14 @@ const adminKeyboard = {
 const userKeyboard = {
   reply_markup: {
     keyboard: [
-      [user.phoneNumberLeads],
+      [user.urlShortenerMain],
       [user.hostingDomainsRedirect],
-      [user.wallet],
-      [user.changeSetting, user.getSupport],
+      [user.phoneNumberLeads],
+      [user.wallet, user.viewPlan],
+      [user.buyPlan],
+      HIDE_BECOME_RESELLER === 'true'
+        ? [user.changeSetting, user.getSupport, user.joinChannel]
+        : [user.changeSetting, user.becomeReseller, user.getSupport],
     ],
   },
   parse_mode: 'HTML',
