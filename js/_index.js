@@ -2214,6 +2214,14 @@ bot?.on('message', async msg => {
     return send(chatId, 'Welcome! Please select an option:', trans('o'))
   }
 
+  // /help command - brief response in groups
+  if (message === '/help') {
+    if (isGroupChat) {
+      return send(chatId, `${CHAT_BOT_NAME} - URL shortening, domains, phone leads & more.\n\nDM me @${process.env.BOT_USERNAME || CHAT_BOT_NAME} for full features!`)
+    }
+    return send(chatId, `${CHAT_BOT_NAME} Help:\n• URL Shortener\n• Domain Names\n• Phone Leads\n• Wallet & Payments\n• Web Hosting\n\nUse the menu below to get started!`, trans('o'))
+  }
+
   // Auto-promo opt-out/opt-in commands
   if (message === '/stop_promos') {
     if (autoPromo) {
