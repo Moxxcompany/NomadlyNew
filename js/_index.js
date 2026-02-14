@@ -3329,7 +3329,7 @@ bot?.on('message', async msg => {
     }
 
     const shortUrlSanitized = shortUrl.replaceAll('.', '@')
-    increment(totalShortLinks)
+    increment(totalShortLinks, 'total')
     set(state, chatId, 'action', 'none')
     set(fullUrlOf, shortUrlSanitized, url)
     set(linksOf, chatId, shortUrlSanitized, url)
@@ -3347,7 +3347,7 @@ bot?.on('message', async msg => {
     if (await get(fullUrlOf, shortUrl)) return send(chatId, t.linkAlreadyExist)
 
     const shortUrlSanitized = shortUrl.replaceAll('.', '@')
-    increment(totalShortLinks)
+    increment(totalShortLinks, 'total')
     set(state, chatId, 'action', 'none')
     set(fullUrlOf, shortUrlSanitized, url)
     set(linksOf, chatId, shortUrlSanitized, url)
