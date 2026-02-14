@@ -211,7 +211,7 @@ To continue using our services, please buy one of our premium plans.`,
   trialPlanActivationConfirmation: `Thank you! Your free trial plan will be activated shortly. Please note, this plan will be active for 12 hours only.`,
   trialPlanActivationInProgress: `Your free trial plan is being activated. This may take a few moments…`,
 
-  what: `Please choose option from keyboard`,
+  what: `That option isn't available right now. Please pick from the buttons below.`,
   whatNum: `Please choose valid number`,
   phoneGenTimeout: 'Timeout',
   phoneGenNoGoodHits: `Please contact support ${SUPPORT_HANDLE} or select another area code`,
@@ -368,7 +368,7 @@ ${CHAT_BOT_NAME}`,
 
   provideLink: 'Please provide a valid URL. e.g https://google.com',
 
-  comingSoonWithdraw: `Withdraw coming soon. Contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
+  comingSoonWithdraw: `Withdrawals are not available yet. Need help? Contact ${SUPPORT_USERNAME}.`,
 
   selectCurrencyToDeposit: `Please select currency to deposit`,
 
