@@ -1,7 +1,7 @@
 # NomadlyBot - PRD & Project Status
 
 ## Original Problem Statement
-Set up the repo code for NomadlyBot - an existing Telegram Bot Admin platform.
+Set up the repo code for NomadlyBot - an existing Telegram Bot Admin platform. Then verify and complete group auto-detection/registration and ensure all event notifications include the bot username.
 
 ## Architecture
 - **Node.js Backend** (Express + Telegram Bot API + MongoDB) — `/app/js/`
@@ -10,7 +10,7 @@ Set up the repo code for NomadlyBot - an existing Telegram Bot Admin platform.
 - **MongoDB** — Local instance at `mongodb://127.0.0.1:27017`
 
 ## Core Services (Node.js Bot)
-1. **URL Shortener** — Custom domain shortening with Bit.ly/Cutt.ly integration
+1. **URL Shortener** — Custom domain shortening with RapidAPI (migrated from Cutt.ly)
 2. **Domain Names** — Buy/manage domains via ConnectReseller API, DNS management
 3. **Phone Leads** — SMS & Voice lead generation/validation with carrier filtering
 4. **Wallet System** — USD/NGN deposits via crypto (BlockBee/DynoPay) & bank (Fincra)
@@ -21,19 +21,27 @@ Set up the repo code for NomadlyBot - an existing Telegram Bot Admin platform.
 - **Bot Admin** — Monitors bot health, manages users, broadcasts messages
 - **Bot Users (Telegram)** — URL shortening, buy domains, phone leads, deposits, hosting
 
-## What's Been Implemented (Feb 14, 2026)
+## What's Been Implemented
+
+### Session 1 (Feb 14, 2026) — Repo Setup
 - [x] Installed Node.js dependencies (`npm install`)
 - [x] Created root `.env` with local MongoDB config
 - [x] Updated backend `.env` to use local MongoDB
 - [x] All services running: FastAPI proxy, Node.js bot, MongoDB, React frontend
-- [x] Health endpoint verified: proxy=running, node=running, db=connected
-- [x] Frontend dashboard showing all status cards and feature cards
-- [x] Testing: 100% pass rate (backend, frontend, integration)
+- [x] Testing: 100% pass (backend, frontend, integration)
 
-## Current Configuration
-- `TELEGRAM_BOT_ON=false` (no bot token provided)
-- `REST_APIS_ON=true` (Express API server active)
-- Local MongoDB: `nomadly_bot` database
+### Session 2 (Feb 14, 2026) — Group Notifications & Bot Username
+- [x] Fixed `notifyGroup()` to always append bot username (`CHAT_BOT_NAME`) to every message
+- [x] Fixed hardcoded "NomadlyBot" in New User Joined notification → uses dynamic `${CHAT_BOT_NAME}`
+- [x] Verified group auto-detection via `my_chat_member` handler (registers on add, unregisters on remove)
+- [x] Added 5 new tests for bot username inclusion
+- [x] All 45 tests passing (group notifications + customCuttly migration)
+- [x] Node.js syntax validation passed
+
+### Recent Commits (Pre-existing)
+- Group notification system: `my_chat_member` handler, `notifyGroup()`, `maskName()`
+- 15 notification hooks across all event types (onboarding, subscription, domain, wallet, bitly, leads)
+- `customCuttly.js` migrated from Cutt.ly API to RapidAPI `url-shortener42`
 
 ## P0 - Critical (Requires User Action)
 - [ ] Set `TELEGRAM_BOT_TOKEN` to enable Telegram bot functionality
@@ -42,7 +50,7 @@ Set up the repo code for NomadlyBot - an existing Telegram Bot Admin platform.
 ## P1 - Important
 - [ ] ConnectReseller API IP whitelist (34.16.56.64 needs whitelisting)
 - [ ] Configure payment gateways (BlockBee/Fincra/DynoPay API keys)
-- [ ] Set up Bit.ly API token for URL shortening
+- [ ] Set up RapidAPI key for URL shortening
 
 ## P2 - Nice to Have
 - [ ] Configure production MongoDB (external Railway instance)
@@ -50,6 +58,6 @@ Set up the repo code for NomadlyBot - an existing Telegram Bot Admin platform.
 - [ ] Enable VPS management (NameWord integration)
 
 ## Next Tasks
-1. Provide Telegram Bot Token to activate bot features
+1. Provide Telegram Bot Token to activate bot & test group registration live
 2. Configure external API keys for full functionality
 3. Set up webhook URL for Telegram notifications
