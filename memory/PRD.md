@@ -1,57 +1,54 @@
 # NomadlyBot - Project Requirements Document
 
 ## Original Problem Statement
-Setup repo, configure environment, verify RapidAPI URL shortener integration, rebrand "Ap1s.net" to "Shortit", include Shortit in subscription plans, update bot UI keyboard and promo ads.
+Setup repo, configure environment, verify RapidAPI URL shortener, rebrand to "Shortit", fix free trial flow, clear free trial data.
 
 ## Architecture
 - **Node.js Backend**: Telegram bot + Express REST API server (`/app/js/`)
-- **FastAPI Proxy**: Python proxy (`/app/backend/server.py`) that starts Node.js bot as subprocess, proxies requests to port 5000
+- **FastAPI Proxy**: Python proxy (`/app/backend/server.py`) proxies to port 5000
 - **React Frontend**: Admin dashboard (`/app/frontend/`)
 - **MongoDB**: External database
 
-## Tech Stack
-Node.js (Express), Python (FastAPI), React 18, MongoDB, Telegram Bot API, RapidAPI URL Shortener42
+## Free Trial Flow (URL Shortener)
+1. User starts bot → `freeShortLinksOf` initialized to `FREE_LINKS` (2)
+2. User accepts terms → sees `welcomeFreeTrial` if free links available
+3. User goes to URL Shortener → enters URL → selects provider
+4. If "Shortit (Free)" selected:
+   - Check `isSubscribed()` OR `freeLinksAvailable()` 
+   - If neither → show `freeLinksExhausted` message prompting subscription
+   - If OK → shorten URL via RapidAPI → decrement `freeShortLinksOf` counter (unless subscribed)
+5. Subscribe prompt: "🔔 Subscribe Here" button always visible on provider keyboard + exhausted message
 
 ## What's Been Implemented
 
 ### 2026-02-14: Initial Setup
-- Installed Node.js deps, created root `.env` with full config, all services running
+- Installed deps, created root `.env`, all services running
 
-### 2026-02-14: .env Update
-- Updated root `.env` with all 90+ production environment variables
-- Set `SELF_URL` and `SELF_URL_PROD` to pod URL
-- Enabled Telegram bot (`TELEGRAM_BOT_ON=true`)
+### 2026-02-14: Shortit Rebranding
+- Renamed "Ap1s.net" → "Shortit" across all 4 languages + config + auto-promo
+- Fixed keyboard to show both Bit.ly and Shortit options
+- Updated subscription text, planSubscribed, welcomeFreeTrial
 
-### 2026-02-14: Shortit Rebranding & Subscription Integration
-- **Verified** RapidAPI URL Shortener42 integration working (returns short URLs, redirects work)
-- **Renamed** "Ap1s.net (Free)" → "Shortit (Free)" across all 4 languages (EN/FR/ZH/HI) + config.js
-- **Fixed keyboard**: `k.redSelectProvider` now shows BOTH options (Bit.ly + Shortit) — previously only showed Bit.ly, hiding the free option
-- **Updated subscription text** (`chooseSubscription`): All plans now mention "unlimited Shortit links" in all 4 languages
-- **Updated `planSubscribed`**: Success message now mentions "unlimited Shortit links" in all 4 languages
-- **Updated `welcomeFreeTrial`**: Now mentions "Shortit" by name in all 4 languages
-- **Updated auto-promo ads**: All shortener promos now reference "Shortit" across EN/FR/ZH/HI
+### 2026-02-14: Free Trial Fix + Data Clear
+**Bug found**: `decrement(freeShortLinksOf, chatId)` was MISSING from URL shortening flow — users got unlimited free links instead of 2
+**Fix applied**:
+- Added `freeLinksAvailable()` + `isSubscribed()` check BEFORE shortening (both random and custom flows)
+- Added `decrement(freeShortLinksOf, chatId)` AFTER successful shortening for non-subscribed users
+- Added `freeLinksExhausted` message in all 4 languages prompting subscription
+- **Cleared 3,104 records** from `freeShortLinksOf` collection — all users get fresh 2 free links on next interaction
 
 ### Files Modified
-- `/app/.env` - Full production config
-- `/app/js/config.js` - redSelectProvider label + keyboard
-- `/app/js/lang/en.js` - Labels, subscription, planSubscribed, welcomeFreeTrial
-- `/app/js/lang/fr.js` - Same
-- `/app/js/lang/zh.js` - Same
-- `/app/js/lang/hi.js` - Same
-- `/app/js/auto-promo.js` - Shortit branding in all promo ads
+- `/app/js/_index.js` — Free links check + decrement in random and custom shortening flows
+- `/app/js/lang/en.js` — `freeLinksExhausted` message
+- `/app/js/lang/fr.js` — `freeLinksExhausted` message
+- `/app/js/lang/zh.js` — `freeLinksExhausted` message
+- `/app/js/lang/hi.js` — `freeLinksExhausted` message
 
 ## Prioritized Backlog
-### P0
-- None
-
+### P0 - None
 ### P1
-- Migrate `customCuttly.js` (custom back-half links) from legacy Cutt.ly API to RapidAPI
+- Migrate `customCuttly.js` from legacy Cutt.ly API to RapidAPI
 - Configure Connect Reseller API IP whitelist
-
 ### P2
-- Enhanced admin dashboard with analytics
-- Payment gateway testing (BlockBee, Fincra, DynoPay)
-
-## Next Tasks
-- Test bot flow end-to-end via Telegram to confirm keyboard shows "Shortit (Free)" and "Bit.ly $10"
-- Migrate custom short URL feature to RapidAPI if legacy Cutt.ly API is deprecated
+- Admin dashboard analytics
+- Payment gateway testing
