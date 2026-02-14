@@ -60,10 +60,30 @@ Setup repo, configure environment, verify RapidAPI URL shortener, rebrand to "Sh
 - `/app/js/lang/zh.js` — Added `linksRemaining` function
 - `/app/js/lang/hi.js` — Added `linksRemaining` function
 
+### 2026-02-14: Group Event Notifications
+- Added `notifyGroups` MongoDB collection to track registered Telegram groups
+- Implemented `my_chat_member` event handler for auto-registering/unregistering groups when bot is added/removed
+- Created `maskName()` helper (first 2 chars + ***) and `notifyGroup()` broadcaster (HTML, auto-cleanup of kicked groups)
+- Added 15 notification hooks across 6 event types:
+  - Onboarding (1): when user accepts terms
+  - Plan subscriptions (4): wallet, bank, crypto (blockbee), crypto (dynopay)
+  - Domain purchases (4): wallet, bank, crypto (blockbee), crypto (dynopay)
+  - Wallet top-ups (3): bank, crypto (blockbee), crypto (dynopay)
+  - Bit.ly paid links (1): wallet payment
+  - Phone leads/validation (2): leads + validation wallet payments
+
+### 2026-02-14: customCuttly.js Migration to RapidAPI
+- Replaced legacy cutt.ly/api/api.php endpoint with RapidAPI url-shortener42
+- Updated to use `RAPIDAPI_KEY` env var instead of `API_CUTTLY`
+- Matches same pattern as `cuttly.js` for consistency
+
+### Files Modified
+- `/app/js/_index.js` — Group detection, notification system, 15 event hooks
+- `/app/js/customCuttly.js` — Migrated from Cutt.ly to RapidAPI
+
 ## Prioritized Backlog
 ### P0 - None
 ### P1
-- Migrate `customCuttly.js` from legacy Cutt.ly API to RapidAPI
 - Configure Connect Reseller API IP whitelist
 ### P2
 - Admin dashboard analytics
