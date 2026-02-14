@@ -228,8 +228,9 @@ const notifyGroup = async (message) => {
   try {
     if (!notifyGroupsCol?.find) return
     const groups = await notifyGroupsCol.find({}).toArray()
+    const taggedMessage = message + `\n— <b>${CHAT_BOT_NAME}</b>`
     for (const group of groups) {
-      bot?.sendMessage(group._id, message, { parse_mode: 'HTML' })?.catch(e => {
+      bot?.sendMessage(group._id, taggedMessage, { parse_mode: 'HTML' })?.catch(e => {
         log('Group notify error for ' + group._id + ': ' + e.message)
         // Remove group if bot was kicked
         if (e.message?.includes('bot was kicked') || e.message?.includes('chat not found') || e.message?.includes('bot is not a member')) {
@@ -2289,7 +2290,7 @@ bot?.on('message', async msg => {
     if (message === trans('l.acceptTermButton')) {
       set(state, chatId, 'hasAcceptedTerms', true)
       send(chatId, trans('l.acceptedTermsMsg'))
-      notifyGroup(`🎉 <b>New User Joined!</b>\nUser ${maskName(username)} just signed up on NomadlyBot.\nWelcome aboard! 🚀`)
+      notifyGroup(`🎉 <b>New User Joined!</b>\nUser ${maskName(username)} just signed up on ${CHAT_BOT_NAME}.\nWelcome aboard! 🚀`)
       setTimeout(async () => {
         const freeLinks = await get(freeShortLinksOf, chatId)
         set(state, chatId, 'action', 'none')
