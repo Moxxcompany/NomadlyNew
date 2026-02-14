@@ -5430,6 +5430,7 @@ app.get('/crypto-wallet', auth, async (req, res) => {
   del(chatIdOfPayment, ref)
   const name = await get(nameOf, chatId)
   set(payments, ref, `Crypto,Wallet,wallet,$${usdIn},${chatId},${name},${new Date()},${value} ${coin}`)
+  notifyGroup(`💰 <b>Wallet Funded!</b>\nUser ${maskName(name)} added funds to their wallet.\nReady to roll! 💪`)
 })
 
 // Dynopay Pay plan
