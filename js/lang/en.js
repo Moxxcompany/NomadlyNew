@@ -74,7 +74,7 @@ const user = {
   pleskWebHostingPlans: 'Russia Plesk Hosting Plans 🔒',
   joinChannel: '📢 Join Channel',
   phoneNumberLeads: '📲 Phone Leads & Validation',
-  hostingDomainsRedirect: '🌐 Hosting & Domains',
+  hostingDomainsRedirect: '🌐 Offshore Hosting',
   wallet: '👛 My Wallet',
   urlShortenerMain: `🔗✂️ URL Shortener - ${FREE_LINKS} Trial Links`,
   vpsPlans: 'Buy Bulletproof VPS🛡️ - Hourly/Monthly',
@@ -88,6 +88,8 @@ const user = {
 
   // Sub Menu 1: urlShortenerMain
   redSelectUrl: '🔀✂️ Redirect & Shorten',
+  redBitly: '✂️ Bit.ly',
+  redShortit: '✂️ Shortit (Trial)',
   urlShortener: '✂️🌐 Custom Domain Shortener',
   viewShortLinks: '📊 View Shortlink Analytics',
 

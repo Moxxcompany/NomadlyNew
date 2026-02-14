@@ -85,10 +85,12 @@ const user = {
   getSupport: '💬 Get Support',
   freeTrialAvailable: '📧🆓 BulkSMS -Trial',
   changeSetting: '🌍 Change Settings',
-  hostingDomainsRedirect: '🌐 Hosting & Domains',
+  hostingDomainsRedirect: '🌐 Offshore Hosting',
 
   // Sub Menu 1: urlShortenerMain
   redSelectUrl: '🔀✂️ Redirect & Shorten',
+  redBitly: '✂️ Bit.ly',
+  redShortit: '✂️ Shortit (Trial)',
   urlShortener: '✂️🌐 Custom Domain Shortener',
   viewShortLinks: '📊 View Shortlink Analytics',
 
