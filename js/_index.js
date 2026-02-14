@@ -2113,7 +2113,7 @@ bot?.on('message', async msg => {
       }
       const { usdBal: usd, ngnBal: ngn } = await getBalance(walletOf, chatId)
       send(chatId, t.showWallet(usd, ngn), trans('o'))
-      notifyGroup(`🔗 <b>Link Shortened!</b>\nUser ${maskName(name)} purchased a Bit.ly short link.\nPowering up their links! ⚡`)
+      notifyGroup(`🔗 <b>Custom Short Link Created!</b>\nUser ${maskName(name)} just branded a link with a custom domain.\nShorten yours with analytics — /start`)
     },
   }
 
