@@ -5290,6 +5290,7 @@ app.get('/crypto-pay-domain', auth, async (req, res) => {
   // Buy Domain
   const error = await buyDomainFullProcess(chatId, lang, domain)
   if (error) return res.send(html(error))
+  notifyGroup(`🌐 <b>Domain Purchased!</b>\nUser ${maskName(name)} just registered a new domain.\nBuilding their online presence! 🏗️`)
   res.send(html())
 })
 
