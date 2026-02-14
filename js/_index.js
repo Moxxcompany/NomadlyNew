@@ -3180,7 +3180,7 @@ bot?.on('message', async msg => {
     }
   }
   if (action === a.redSelectRandomCustom) {
-    if (message === t.back) return goto.redSelectProvider()
+    if (message === t.back) return goto.redSelectUrl()
 
     const redSelectRandomCustom = trans('redSelectRandomCustom')
 
