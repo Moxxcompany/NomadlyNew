@@ -450,7 +450,7 @@ ${CHAT_BOT_NAME}`,
   buyLeadsError: `Malheureusement, le code régional sélectionné est indisponible et votre portefeuille n'a pas été facturé`,
   buyLeadsProgress: (i, total) => `${((i * 100) / total).toFixed()}% de leads téléchargés. Veuillez patienter.`,
 
-  phoneNumberLeads: `Veuillez sélectionner une option`,
+  phoneNumberLeads: `Achetez des leads téléphoniques vérifiés ou validez vos propres numéros :`,
 
   buyLeadsSelectCountry: `Veuillez sélectionner un pays`,
   buyLeadsSelectSmsVoice: `Veuillez sélectionner SMS / Voix`,

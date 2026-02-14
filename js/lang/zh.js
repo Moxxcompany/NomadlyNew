@@ -442,7 +442,7 @@ ${CHAT_BOT_NAME}`,
   buyLeadsError: `抱歉，选择的区号不可用，并且您的钱包未收费`,
   buyLeadsProgress: (i, total) => `${((i * 100) / total).toFixed()}% leads 下载中。请稍候。`,
 
-  phoneNumberLeads: `请选择一个选项`,
+  phoneNumberLeads: `购买经验证的电话线索或验证您自己的号码：`,
 
   buyLeadsSelectCountry: `请选择国家`,
   buyLeadsSelectSmsVoice: `请选择短信/语音`,

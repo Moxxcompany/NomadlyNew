@@ -445,7 +445,7 @@ ${
   buyLeadsProgress: (i, total) =>
     `${((i * 100) / total).toFixed()}% लीड्स डाउनलोड किए जा रहे हैं। कृपया प्रतीक्षा करें.`,
 
-  phoneNumberLeads: `कृपया एक विकल्प चुनें`,
+  phoneNumberLeads: `सत्यापित फ़ोन लीड खरीदें या अपने नंबर मान्य करें:`,
 
   buyLeadsSelectCountry: `कृपया देश का चयन करें`,
   buyLeadsSelectSmsVoice: `कृपया एसएमएस / वॉयस चुनें`,
