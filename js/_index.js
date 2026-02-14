@@ -3098,6 +3098,11 @@ bot?.on('message', async msg => {
     // random (free provider)
     if (redSelectRandomCustom[0] === message) {
 
+      // Check if user has free links or is subscribed
+      if (!(await isSubscribed(chatId)) && !(await freeLinksAvailable(chatId))) {
+        return send(chatId, t.freeLinksExhausted, trans('o'))
+      }
+
       try {
         const { url } = info
         let _shortUrl, shortUrl
@@ -3116,6 +3121,11 @@ bot?.on('message', async msg => {
         increment(totalShortLinks)
         set(maskOf, shortUrl, _shortUrl)
         set(fullUrlOf, shortUrl, url)
+
+        // Decrement free links counter for non-subscribed users
+        if (!(await isSubscribed(chatId))) {
+          decrement(freeShortLinksOf, chatId)
+        }
 
         set(state, chatId, 'action', 'none')
         return send(chatId, _shortUrl, trans('o'))
