@@ -4,12 +4,11 @@ import sys
 import json
 from datetime import datetime
 
-class URLShortenerAPITester:
+class NomadlyBotAPITester:
     def __init__(self, base_url="https://setup-code.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
-        self.bitly_api_key = "9f982ab6a9786a1f2e123dab3be3d12ae0bac4b7"
 
     def run_test(self, name, test_func):
         """Run a single test and track results"""
