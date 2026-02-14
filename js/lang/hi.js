@@ -254,16 +254,16 @@ ${CHAT_BOT_NAME}`,
     HIDE_SMS_APP === 'true'
       ? `<b>हमारी सब्सक्रिप्शन योजनाओं के साथ अपनी ब्रांड को बढ़ावा दें!</b>
 
-- <b>दैनिक:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन।
-- <b>साप्ताहिक:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन।
-- <b>मासिक:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन।
+- <b>दैनिक:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन + असीमित Shortit लिंक।
+- <b>साप्ताहिक:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन + असीमित Shortit लिंक।
+- <b>मासिक:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन + असीमित Shortit लिंक।
 
 (मुफ्त डोमेन ".sbs" और ".xyz" एक्सटेंशन के लिए।)`
       : `<b>हमारी सब्सक्रिप्शन योजनाओं के साथ अपनी ब्रांड को बढ़ावा दें!</b>
 
-- <b>दैनिक:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन + असीमित BulkSMS।
-- <b>साप्ताहिक:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन + असीमित BulkSMS।
-- <b>मासिक:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन + असीमित BulkSMS।
+- <b>दैनिक:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन + असीमित Shortit लिंक + असीमित BulkSMS।
+- <b>साप्ताहिक:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन + असीमित Shortit लिंक + असीमित BulkSMS।
+- <b>मासिक:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन + असीमित Shortit लिंक + असीमित BulkSMS।
 
 (मुफ्त डोमेन ".sbs" और ".xyz" एक्सटेंशन के लिए।)`,
 
@@ -283,8 +283,8 @@ ${CHAT_BOT_NAME}`,
   freeTrialNotAvailable: `आप पहले ही नि:शुल्क परीक्षण का उपयोग कर चुके हैं।`,
   planSubscribed:
     HIDE_SMS_APP === 'true'
-      ? `आपने {{plan}} प्लान को सफलतापूर्वक सब्सक्राइब कर लिया है! मुफ्त ".sbs/.xyz" डोमेन और मुफ्त USA फोन वैलिडेशन का आनंद लें। E-sim चाहिए? ${SUPPORT_HANDLE} से संपर्क करें।`
-      : `आपने {{plan}} प्लान को सफलतापूर्वक सब्सक्राइब कर लिया है! मुफ्त ".sbs/.xyz" डोमेन, मुफ्त USA वैलिडेशन और ${SMS_APP_NAME} का आनंद लें। एप्लिकेशन यहाँ डाउनलोड करें: ${SMS_APP_LINK}। E-sim चाहिए? ${SUPPORT_HANDLE} से संपर्क करें।`,
+      ? `आपने {{plan}} प्लान को सफलतापूर्वक सब्सक्राइब कर लिया है! मुफ्त ".sbs/.xyz" डोमेन, असीमित Shortit लिंक और मुफ्त USA फोन वैलिडेशन का आनंद लें। E-sim चाहिए? ${SUPPORT_HANDLE} से संपर्क करें।`
+      : `आपने {{plan}} प्लान को सफलतापूर्वक सब्सक्राइब कर लिया है! मुफ्त ".sbs/.xyz" डोमेन, असीमित Shortit लिंक, मुफ्त USA वैलिडेशन और ${SMS_APP_NAME} का आनंद लें। एप्लिकेशन यहाँ डाउनलोड करें: ${SMS_APP_LINK}। E-sim चाहिए? ${SUPPORT_HANDLE} से संपर्क करें।`,
   alreadySubscribedPlan: days => `आपकी सदस्यता सक्रिय है और ${days} दिनों में समाप्त होगी।`,
   payError: `भुगतान सत्र नहीं मिला। कृपया पुनः प्रयास करें या सहायता ${SUPPORT_USERNAME} से संपर्क करें। अधिक जानकारी ${TG_HANDLE} पर प्राप्त करें।`,
   chooseFreeDomainText: `<b>शानदार खबर!</b> यह डोमेन आपके सब्सक्रिप्शन के साथ मुफ्त में उपलब्ध है। क्या आप इसे दावा करना चाहेंगे?`,

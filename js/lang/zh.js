@@ -250,16 +250,16 @@ ${CHAT_BOT_NAME}`,
     HIDE_SMS_APP === 'true'
       ? `<b>通过我们的订阅计划提升您的品牌！</b>
 
-- <b>每日:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证。
-- <b>每周:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证。
-- <b>每月:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证。
+- <b>每日:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限Shortit链接。
+- <b>每周:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限Shortit链接。
+- <b>每月:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限Shortit链接。
 
 (免费域名仅限 ".sbs" 和 ".xyz" 扩展名。)`
       : `<b>通过我们的订阅计划提升您的品牌！</b>
 
-- <b>每日:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限BulkSMS。
-- <b>每周:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限BulkSMS。
-- <b>每月:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限BulkSMS。
+- <b>每日:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限Shortit链接 + 无限BulkSMS。
+- <b>每周:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限Shortit链接 + 无限BulkSMS。
+- <b>每月:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限Shortit链接 + 无限BulkSMS。
 
 (免费域名仅限 ".sbs" 和 ".xyz" 扩展名。)`,
 
@@ -278,8 +278,8 @@ ${CHAT_BOT_NAME}`,
   freeTrialNotAvailable: `您已使用过免费试用。`,
   planSubscribed:
     HIDE_SMS_APP === 'true'
-      ? `您已成功订阅 {{plan}} 计划！享受免费 ".sbs/.xyz" 域名和免费USA电话号码验证。需要 E-sim 卡？请联系 ${SUPPORT_HANDLE}。`
-      : `您已成功订阅 {{plan}} 计划！享受免费 ".sbs/.xyz" 域名、免费USA验证和 ${SMS_APP_NAME}。请在此下载应用: ${SMS_APP_LINK}。需要 E-sim 卡？请联系 ${SUPPORT_HANDLE}。`,
+      ? `您已成功订阅 {{plan}} 计划！享受免费 ".sbs/.xyz" 域名、无限Shortit链接和免费USA电话号码验证。需要 E-sim 卡？请联系 ${SUPPORT_HANDLE}。`
+      : `您已成功订阅 {{plan}} 计划！享受免费 ".sbs/.xyz" 域名、无限Shortit链接、免费USA验证和 ${SMS_APP_NAME}。请在此下载应用: ${SMS_APP_LINK}。需要 E-sim 卡？请联系 ${SUPPORT_HANDLE}。`,
   alreadySubscribedPlan: days => `您的订阅已激活，并将在 ${days} 天后到期。`,
   payError: `未找到支付会话，请重试或联系支持 ${SUPPORT_USERNAME}。了解更多信息，请访问 ${TG_HANDLE}。`,
   chooseFreeDomainText: `<b>好消息！</b> 此域名可随您的订阅免费提供。您想领取吗？`,

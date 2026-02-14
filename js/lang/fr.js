@@ -253,16 +253,16 @@ ${CHAT_BOT_NAME}`,
     HIDE_SMS_APP === 'true'
       ? `<b>Élevez votre marque avec nos plans d'abonnement !</b>
 
-- <b>Quotidien :</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} domaine gratuit ".sbs/.xyz" + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA.
-- <b>Hebdomadaire :</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA.
-- <b>Mensuel :</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA.
+- <b>Quotidien :</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} domaine gratuit ".sbs/.xyz" + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + liens Shortit illimités.
+- <b>Hebdomadaire :</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + liens Shortit illimités.
+- <b>Mensuel :</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + liens Shortit illimités.
 
 (Domaines gratuits exclusifs aux extensions ".sbs" et ".xyz".)`
       : `<b>Élevez votre marque avec nos plans d'abonnement !</b>
 
-- <b>Quotidien :</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} domaine gratuit ".sbs/.xyz" + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + SMS en masse illimités.
-- <b>Hebdomadaire :</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + SMS en masse illimités.
-- <b>Mensuel :</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + SMS en masse illimités.
+- <b>Quotidien :</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} domaine gratuit ".sbs/.xyz" + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + liens Shortit illimités + SMS en masse illimités.
+- <b>Hebdomadaire :</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + liens Shortit illimités + SMS en masse illimités.
+- <b>Mensuel :</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + liens Shortit illimités + SMS en masse illimités.
 
 (Domaines gratuits exclusifs aux extensions ".sbs" et ".xyz".)`,
 
@@ -288,8 +288,8 @@ ${CHAT_BOT_NAME}`,
   freeTrialNotAvailable: `Vous avez déjà utilisé l'essai gratuit.`,
   planSubscribed:
     HIDE_SMS_APP === 'true'
-      ? `Vous vous êtes abonné avec succès au plan {{plan}} ! Profitez de domaines ".sbs/.xyz" gratuits et de validations de numéros USA gratuites. Besoin d'une carte E-sim ? Contactez ${SUPPORT_HANDLE}.`
-      : `Vous vous êtes abonné avec succès au plan {{plan}} ! Profitez de domaines ".sbs/.xyz" gratuits, de validations USA gratuites et de ${SMS_APP_NAME}. Téléchargez l'application ici : ${SMS_APP_LINK}. Besoin d'une carte E-sim ? Contactez ${SUPPORT_HANDLE}.`,
+      ? `Vous vous êtes abonné avec succès au plan {{plan}} ! Profitez de domaines ".sbs/.xyz" gratuits, de liens Shortit illimités et de validations de numéros USA gratuites. Besoin d'une carte E-sim ? Contactez ${SUPPORT_HANDLE}.`
+      : `Vous vous êtes abonné avec succès au plan {{plan}} ! Profitez de domaines ".sbs/.xyz" gratuits, de liens Shortit illimités, de validations USA gratuites et de ${SMS_APP_NAME}. Téléchargez l'application ici : ${SMS_APP_LINK}. Besoin d'une carte E-sim ? Contactez ${SUPPORT_HANDLE}.`,
   alreadySubscribedPlan: days => `Votre abonnement est actif et expire dans ${days} jours.`,
   payError: `Session de paiement introuvable. Veuillez réessayer ou contacter l'assistance ${SUPPORT_USERNAME}. Découvrez plus sur ${TG_HANDLE}.`,
   chooseFreeDomainText: `<b>Bonne nouvelle !</b> Ce domaine est disponible gratuitement avec votre abonnement. Souhaitez-vous le réclamer ?`,
