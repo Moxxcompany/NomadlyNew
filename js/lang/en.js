@@ -246,7 +246,7 @@ To continue using our services, please buy one of our premium plans.`,
     `You are unsubscribed! To subscribe again click on the <a href="${SELF_URL}/subscribe?a=b&Phone=${p}">link</a>`,
   argsErr: `dev: sent wrong args`,
   showDepositNgnInfo:
-    ngn => `Please remit ${ngn} NGN by clicking “Make Payment” below. Once the transaction has been confirmed, you will be promptly notified, and your wallet will updated.
+    ngn => `Please remit ${ngn} NGN by clicking “Make Payment” below. Once the transaction has been confirmed, you will be promptly notified, and your wallet will be updated.
 
 Best regards,
 ${CHAT_BOT_NAME}`,
