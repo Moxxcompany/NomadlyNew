@@ -301,9 +301,9 @@ ${CHAT_BOT_NAME}`,
   blockUser: `Veuillez partager le nom d'utilisateur de l'utilisateur à bloquer.`,
   unblockUser: `Veuillez partager le nom d'utilisateur de l'utilisateur à débloquer.`,
   blockedUser: `Vous êtes actuellement bloqué d'utiliser le bot. Veuillez contacter le support ${SUPPORT_USERNAME}. Découvrez plus ${TG_HANDLE}.`,
-  greet: `Gardez un œil sur cet espace ! Nous nous préparons à lancer notre application de raccourcissement d'URL qui rendra vos liens courts, sucrés et à point. Restez à l'écoute pour notre grande révélation !
-
-Support ${SUPPORT_USERNAME} sur Telegram.`,
+  greet: `${CHAT_BOT_BRAND} — raccourcissez vos URLs, enregistrez des domaines, achetez des leads et developpez votre activite. Directement depuis Telegram.
+Commencez avec ${FREE_LINKS} liens Shortit d'essai — /start
+Support: ${SUPPORT_USERNAME}`,
   linkExpired: `Votre essai ${CHAT_BOT_BRAND} a pris fin et votre lien raccourci est désactivé. Nous vous invitons à vous abonner pour maintenir l'accès à notre service d'URL et aux noms de domaine gratuits. Choisissez un plan approprié et suivez les instructions pour vous abonner. Veuillez nous contacter pour toute question.
 Cordialement,
 L'équipe ${CHAT_BOT_BRAND}
@@ -713,16 +713,14 @@ const adminKeyboard = {
 const userKeyboard = {
   reply_markup: {
     keyboard: [
-      // [user.cPanelWebHostingPlans],
-      // [user.pleskWebHostingPlans],
-      // [user.vpsPlans],
-      [user.joinChannel, user.wallet],
+      [user.urlShortenerMain],
+      [user.hostingDomainsRedirect],
       [user.phoneNumberLeads],
       HIDE_SMS_APP === 'true' ? [user.domainNames] : [user.freeTrialAvailable, user.domainNames],
-      [user.urlShortenerMain],
-      [user.buyPlan, user.viewPlan],
+      [user.wallet, user.viewPlan],
+      [user.buyPlan],
       HIDE_BECOME_RESELLER === 'true'
-        ? [user.changeSetting, user.getSupport]
+        ? [user.changeSetting, user.getSupport, user.joinChannel]
         : [user.changeSetting, user.becomeReseller, user.getSupport],
     ],
   },
