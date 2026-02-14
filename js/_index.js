@@ -1160,7 +1160,7 @@ bot?.on('message', async msg => {
 
     submenu1: () => {
       set(state, chatId, 'action', a.submenu1)
-      send(chatId, t.select, trans('k.of', [user.redSelectUrl, user.urlShortener, user.viewShortLinks]))
+      send(chatId, t.urlShortenerSelect || t.select, trans('k.of', [user.redSelectUrl, user.urlShortener, user.viewShortLinks]))
     },
     submenu2: () => {
       set(state, chatId, 'action', a.submenu2)
