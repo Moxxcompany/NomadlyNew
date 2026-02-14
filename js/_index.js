@@ -5995,3 +5995,6 @@ const tryConnectReseller = async () => {
 }
 
 tryConnectReseller()
+
+// Start Express server after all functions are defined
+if (REST_APIS_ON === 'true') startServer()
