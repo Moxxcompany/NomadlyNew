@@ -45,9 +45,10 @@ const SERVICE_CONTEXT = {
   shortener: {
     services: 'Shortit — URL shortener with custom domain branding',
     details: [
+      'FREE trial: 5 short links for every new user — no payment needed',
       'Custom branded short URLs with your own domain',
       'Real-time click analytics and tracking',
-      'Shortit free links + Bitly integration available',
+      'Bitly integration available for premium links',
       'Random or custom back-half for links',
       'Unlimited links with subscription plans (Daily/Weekly/Monthly)',
     ],
