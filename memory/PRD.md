@@ -1,7 +1,7 @@
 # NomadlyBot - PRD & Project Status
 
 ## Original Problem Statement
-Set up the repo code for NomadlyBot - an existing Telegram Bot Admin platform. Then verify and complete group auto-detection/registration and ensure all event notifications include the bot username.
+Set up the repo code for NomadlyBot. Verify group auto-detection/registration. Ensure all event notifications include the bot username. Rewrite all notification copy to be persuasive marketing messages.
 
 ## Architecture
 - **Node.js Backend** (Express + Telegram Bot API + MongoDB) — `/app/js/`
@@ -9,55 +9,46 @@ Set up the repo code for NomadlyBot - an existing Telegram Bot Admin platform. T
 - **React Frontend** (`/app/frontend/`) — Admin dashboard with health monitoring
 - **MongoDB** — Local instance at `mongodb://127.0.0.1:27017`
 
-## Core Services (Node.js Bot)
-1. **URL Shortener** — Custom domain shortening with RapidAPI (migrated from Cutt.ly)
-2. **Domain Names** — Buy/manage domains via ConnectReseller API, DNS management
-3. **Phone Leads** — SMS & Voice lead generation/validation with carrier filtering
-4. **Wallet System** — USD/NGN deposits via crypto (BlockBee/DynoPay) & bank (Fincra)
-5. **Web Hosting** — cPanel & Plesk plans with free trial (12hr Freedom Plan)
-6. **VPS Plans** — Virtual private servers on demand (NameWord API)
-
-## User Personas
-- **Bot Admin** — Monitors bot health, manages users, broadcasts messages
-- **Bot Users (Telegram)** — URL shortening, buy domains, phone leads, deposits, hosting
-
 ## What's Been Implemented
 
 ### Session 1 (Feb 14, 2026) — Repo Setup
-- [x] Installed Node.js dependencies (`npm install`)
-- [x] Created root `.env` with local MongoDB config
-- [x] Updated backend `.env` to use local MongoDB
-- [x] All services running: FastAPI proxy, Node.js bot, MongoDB, React frontend
-- [x] Testing: 100% pass (backend, frontend, integration)
+- [x] Installed Node.js dependencies, created `.env`, all services running
+- [x] 100% test pass (backend, frontend, integration)
 
-### Session 2 (Feb 14, 2026) — Group Notifications & Bot Username
-- [x] Fixed `notifyGroup()` to always append bot username (`CHAT_BOT_NAME`) to every message
-- [x] Fixed hardcoded "NomadlyBot" in New User Joined notification → uses dynamic `${CHAT_BOT_NAME}`
-- [x] Verified group auto-detection via `my_chat_member` handler (registers on add, unregisters on remove)
-- [x] Added 5 new tests for bot username inclusion
-- [x] All 45 tests passing (group notifications + customCuttly migration)
-- [x] Node.js syntax validation passed
+### Session 2 (Feb 14, 2026) — Group Notifications + Bot Username
+- [x] Fixed `notifyGroup()` to auto-append `CHAT_BOT_NAME` to every message
+- [x] Fixed hardcoded "NomadlyBot" → dynamic `${CHAT_BOT_NAME}` everywhere
 
-### Recent Commits (Pre-existing)
-- Group notification system: `my_chat_member` handler, `notifyGroup()`, `maskName()`
-- 15 notification hooks across all event types (onboarding, subscription, domain, wallet, bitly, leads)
-- `customCuttly.js` migrated from Cutt.ly API to RapidAPI `url-shortener42`
+### Session 3 (Feb 14, 2026) — Persuasive Marketing Rewrite
+- [x] Rewrote all 15 notification messages with persuasive copy:
+  - **Subscriptions (4x):** Shows specific plan value — "unlocking X free domains + Y phone validations"
+  - **Domains (4x):** Shows actual domain name — "just claimed example.com — yours could be next"
+  - **Wallet (3x):** Value-driven — "loaded their wallet, ready to buy domains, leads & more"
+  - **Leads (2x):** Shows quantity — "just got 5,000 verified phone leads"
+  - **Short Links (1x):** Feature-driven — "branded a link with a custom domain"
+  - **New Member (1x):** Service overview — "domains, leads, hosting & more at your fingertips"
+- [x] Every notification now includes `/start` CTA for conversion
+- [x] Imported `freeDomainsOf` + `freeValidationsOf` from config.js for dynamic plan values
+- [x] Fixed bot group welcome message to use dynamic `CHAT_BOT_NAME`
+- [x] Removed all generic filler copy ("Another member leveling up", "Ready to roll", etc.)
+- [x] All 52 tests passing (100%)
 
-## P0 - Critical (Requires User Action)
-- [ ] Set `TELEGRAM_BOT_TOKEN` to enable Telegram bot functionality
-- [ ] Configure `SELF_URL` for webhook support in production
+## Group Auto-Registration Flow
+1. Add bot to any Telegram group/supergroup with messaging permission
+2. `my_chat_member` handler fires → registers group in `notifyGroups` MongoDB collection
+3. Bot sends welcome message: "{BotName} is now active in this group!"
+4. All subsequent events broadcast to every registered group with bot username signature
+5. If bot is removed/kicked → group auto-unregistered
 
-## P1 - Important
-- [ ] ConnectReseller API IP whitelist (34.16.56.64 needs whitelisting)
-- [ ] Configure payment gateways (BlockBee/Fincra/DynoPay API keys)
-- [ ] Set up RapidAPI key for URL shortening
+## P0 — Critical (Requires User Action)
+- [ ] Set `TELEGRAM_BOT_TOKEN` to activate bot
+- [ ] Configure `SELF_URL` for webhooks
 
-## P2 - Nice to Have
-- [ ] Configure production MongoDB (external Railway instance)
-- [ ] Set up Telegram broadcast/promo features
-- [ ] Enable VPS management (NameWord integration)
+## P1 — Important
+- [ ] ConnectReseller IP whitelist
+- [ ] Payment gateway API keys (BlockBee/Fincra/DynoPay)
+- [ ] RapidAPI key for URL shortening
 
 ## Next Tasks
-1. Provide Telegram Bot Token to activate bot & test group registration live
+1. Provide Telegram Bot Token to test group registration live
 2. Configure external API keys for full functionality
-3. Set up webhook URL for Telegram notifications
