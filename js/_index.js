@@ -180,6 +180,38 @@ if (TELEGRAM_BOT_ON === 'true') {
   log('Bot ran away! ' + new Date())
 }
 
+// Auto-detect when bot is added to or removed from groups
+bot?.on('my_chat_member', async update => {
+  try {
+    const chat = update.chat
+    const newStatus = update.new_chat_member?.status
+    const chatType = chat?.type
+
+    if (chatType !== 'group' && chatType !== 'supergroup') return
+
+    if (newStatus === 'member' || newStatus === 'administrator') {
+      // Bot was added to a group — register it
+      if (notifyGroupsCol?.updateOne) {
+        await notifyGroupsCol.updateOne(
+          { _id: chat.id },
+          { $set: { _id: chat.id, title: chat.title, addedAt: new Date().toISOString() } },
+          { upsert: true }
+        )
+        log('Registered group for notifications: ' + chat.title + ' (' + chat.id + ')')
+        bot?.sendMessage(chat.id, 'NomadlyBot is now active in this group! You will receive event notifications here.')?.catch(() => {})
+      }
+    } else if (newStatus === 'left' || newStatus === 'kicked') {
+      // Bot was removed from a group — unregister it
+      if (notifyGroupsCol?.deleteOne) {
+        await notifyGroupsCol.deleteOne({ _id: chat.id })
+        log('Unregistered group from notifications: ' + chat.title + ' (' + chat.id + ')')
+      }
+    }
+  } catch (e) {
+    log('my_chat_member handler error: ' + e.message)
+  }
+})
+
 const send = (chatId, message, options) => {
   log('reply: ' + message + ' ' + (options?.reply_markup?.keyboard?.map(i => i) || '') + '\tto: ' + chatId + '\n')
   bot?.sendMessage(chatId, message, options)?.catch(e => log(e.message + ': ' + chatId))
