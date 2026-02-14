@@ -304,7 +304,7 @@ ${CHAT_BOT_BRAND} टीम
 ${TG_CHANNEL} पर अधिक जानें।`,
   successPayment: `भुगतान सफलतापूर्वक संसाधित हो गया! इस विंडो को अब बंद करें।`,
   welcome: `${CHAT_BOT_NAME} को चुनने के लिए धन्यवाद! कृपया नीचे एक विकल्प चुनें :`,
-  welcomeFreeTrial: `${CHAT_BOT_BRAND} में आपका स्वागत है! URL शॉर्टनिंग सभी के लिए मुफ्त है। मुफ्त ".sbs/.xyz" डोमेन और मुफ्त USA फोन वैलिडेशन के लिए सब्सक्राइब करें। ${CHAT_BOT_BRAND} का अनुभव करें!`,
+  welcomeFreeTrial: `${CHAT_BOT_BRAND} में आपका स्वागत है! Shortit के साथ मुफ्त URL शॉर्टनिंग करें। असीमित Shortit लिंक, मुफ्त ".sbs/.xyz" डोमेन और मुफ्त USA फोन वैलिडेशन के लिए सब्सक्राइब करें। ${CHAT_BOT_BRAND} का अनुभव करें!`,
   unknownCommand: `कमांड नहीं मिला। /start दबाएं या सहायता ${SUPPORT_USERNAME} से संपर्क करें। ${TG_HANDLE} पर अधिक जानें।`,
   support: `कृपया सहायता से संपर्क करें ${SUPPORT_USERNAME}. ${TG_HANDLE} पर अधिक जानें।`,
   joinChannel: `कृपया चैनल ${TG_CHANNEL} में शामिल हों।`,

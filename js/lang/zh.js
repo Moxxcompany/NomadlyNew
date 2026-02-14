@@ -298,7 +298,7 @@ ${CHAT_BOT_BRAND}团队
 了解更多： ${TG_CHANNEL}`,
   successPayment: `支付成功处理！现在可以关闭此窗口。`,
   welcome: `感谢选择 ${CHAT_BOT_NAME}！请在下面选择一个选项：`,
-  welcomeFreeTrial: `${CHAT_BOT_BRAND}欢迎您！URL缩短对所有用户免费。订阅可获得免费 ".sbs/.xyz" 域名和免费USA电话验证。体验${CHAT_BOT_BRAND}的不同！`,
+  welcomeFreeTrial: `${CHAT_BOT_BRAND}欢迎您！使用Shortit免费缩短URL。订阅可获得无限Shortit链接、免费 ".sbs/.xyz" 域名和免费USA电话验证。体验${CHAT_BOT_BRAND}的不同！`,
   unknownCommand: `找不到命令。按 /start 或联系支持 ${SUPPORT_USERNAME}。了解更多 ${TG_HANDLE}。`,
   support: `请联系支持 ${SUPPORT_USERNAME}。了解更多 ${TG_HANDLE}。`,
   joinChannel: `请加入频道 ${TG_CHANNEL}。`,
