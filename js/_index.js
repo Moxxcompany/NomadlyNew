@@ -5815,6 +5815,7 @@ app.post('/dynopay/crypto-wallet', authDyno, async (req, res) => {
 })
 
 //
+// Override the early health check routes with full functionality
 app.get('/', (req, res) => {
   // Return 200 OK for health checks even during startup
   res.status(200).send(html(translation('t.greet')))
@@ -5836,6 +5837,7 @@ app.get('/health', async (req, res) => {
   // Always return 200 for Railway health checks
   // Report actual DB status in the response body
   const dbHealthy = isDbHealthy()
+  appReady = dbHealthy // Update global appReady flag
   
   res.status(200).json({
     status: dbHealthy ? 'healthy' : 'starting',
