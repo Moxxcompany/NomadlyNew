@@ -3125,6 +3125,9 @@ bot?.on('message', async msg => {
         // Decrement free links counter for non-subscribed users
         if (!(await isSubscribed(chatId))) {
           decrement(freeShortLinksOf, chatId)
+          const remaining = ((await get(freeShortLinksOf, chatId)) || 0) - 1
+          send(chatId, _shortUrl, trans('o'))
+          return send(chatId, t.linksRemaining(Math.max(remaining, 0)))
         }
 
         set(state, chatId, 'action', 'none')
@@ -3162,6 +3165,9 @@ bot?.on('message', async msg => {
       // Decrement free links counter for non-subscribed users
       if (!(await isSubscribed(chatId))) {
         decrement(freeShortLinksOf, chatId)
+        const remaining = ((await get(freeShortLinksOf, chatId)) || 0) - 1
+        send(chatId, _shortUrl, trans('o'))
+        return send(chatId, t.linksRemaining(Math.max(remaining, 0)))
       }
 
       set(state, chatId, 'action', 'none')
