@@ -43,11 +43,11 @@ const SERVICE_CONTEXT = {
     crossPromo: '@hostbay_bot for cPanel/Plesk hosting and country TLDs (.ng .za .ke .gh .cm .tz)',
   },
   shortener: {
-    services: 'URL shortener with custom domain branding',
+    services: 'Shortit — URL shortener with custom domain branding',
     details: [
       'Custom branded short URLs with your own domain',
       'Real-time click analytics and tracking',
-      'Bitly integration available',
+      'Shortit free links + Bitly integration available',
       'Random or custom back-half for links',
       'Unlimited links with subscription plans (Daily/Weekly/Monthly)',
     ],
@@ -276,6 +276,7 @@ Stop using boring links nobody clicks!
 
 - Custom branded URLs with YOUR domain
 - Real-time click analytics
+- Free Shortit links for all users
 - Bit.ly integration available
 
 Tap <b>URL Shortener</b> to get started!
@@ -290,7 +291,7 @@ Every click tells a story.
 
 + Brand links with YOUR domain
 + Track every single click
-+ Unlimited links with subscription
++ Unlimited Shortit links with subscription
 
 Tap <b>URL Shortener</b> now!
 
@@ -306,7 +307,7 @@ Country domains (.ng .za .ke .gh)?
 - See who clicks, when, and where
 - Random or custom back-half
 
-<b>URL Shortener</b> — try it free!
+<b>URL Shortener</b> — try Shortit free!
 
 -----
 Need hosting? Visit @hostbay_bot`,
@@ -331,7 +332,7 @@ Branded short links get up to 34% more clicks.
 
 + Use your domain as a shortener
 + Track performance in real-time
-+ Unlimited links with plans
++ Unlimited Shortit links with plans
 
 Tap <b>URL Shortener</b>
 
