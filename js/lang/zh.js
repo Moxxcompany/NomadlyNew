@@ -74,7 +74,7 @@ const user = {
   pleskWebHostingPlans: '俄罗斯 Plesk 托管计划 🔒',
   joinChannel: '📢 加入频道',
   phoneNumberLeads: '📲 电话线索与验证',
-  hostingDomainsRedirect: '🌐 托管和域名',
+  hostingDomainsRedirect: '🌐 离岸托管',
   wallet: '👛 我的钱包',
   urlShortenerMain: `🔗✂️ URL 缩短器 - ${FREE_LINKS}次试用`,
   vpsPlans: '购买防弹 VPS🛡️ - 按小时/按月',

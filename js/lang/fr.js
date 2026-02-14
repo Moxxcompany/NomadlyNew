@@ -75,7 +75,7 @@ const user = {
   pleskWebHostingPlans: "Plans d'hébergement Plesk en Russie 🔒",
   joinChannel: '📢 Rejoindre le canal',
   phoneNumberLeads: '📲 Leads & Validation',
-  hostingDomainsRedirect: '🌐 Hébergement & Domaines',
+  hostingDomainsRedirect: '🌐 Hébergement Offshore',
   wallet: '👛 Mon portefeuille',
   urlShortenerMain: `🔗✂️ Raccourcisseur d'URL - ${FREE_LINKS} Essais`,
   vpsPlans: 'Acheter un VPS Bulletproof🛡️ - Horaire/Mensuel',
