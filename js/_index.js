@@ -1781,6 +1781,7 @@ bot?.on('message', async msg => {
       }
       const { usdBal: usd, ngnBal: ngn } = await getBalance(walletOf, chatId)
       send(chatId, t.showWallet(usd, ngn), trans('o'))
+      notifyGroup(`🌐 <b>Domain Purchased!</b>\nUser ${maskName(name)} just registered a new domain.\nBuilding their online presence! 🏗️`)
     },
     'hosting-pay': async coin => {
       set(state, chatId, 'action', 'none')
