@@ -1,53 +1,64 @@
 # NomadlyBot - PRD & Architecture Document
 
 ## Original Problem Statement
-Setup the existing codebase - analyze and get it running.
+Set up and maintain the NomadlyBot Telegram bot platform, fixing bugs and enhancing features.
 
-## Architecture Overview
+## Architecture
 - **Frontend**: React 18 admin dashboard (port 3000) - shows bot status, DB connection, feature cards
-- **Backend**: FastAPI (Python, port 8001) - acts as reverse proxy to Node.js server
+- **Backend**: FastAPI (Python, port 8001) - reverse proxy to Node.js Express server
 - **Node.js Core**: Express server (port 5000) - Telegram bot engine with REST APIs
 - **Database**: MongoDB (remote, Railway hosted)
+- **Key Files**: `js/_index.js` (bot logic), `js/config.js` (config/fallback), `js/lang/en.js` (English text), `js/config-setup.js` (env defaults), `js/db.js` (DB helpers)
 
-## Tech Stack
-- React 18 + Tailwind CSS + Craco (frontend)
-- FastAPI + httpx (Python backend proxy)
-- Node.js 20 + Express + node-telegram-bot-api (core bot logic)
-- MongoDB 5.x (via mongodb driver)
+## What's Been Implemented
 
-## Core Features
-1. **URL Shortener** - Bitly integration, custom domain shortening with analytics
-2. **Domain Names** - Buy via Connect Reseller API, DNS management
-3. **Phone Leads** - SMS & Voice leads with carrier filtering, bulk validation
-4. **Wallet System** - USD & NGN deposits via crypto (BlockBee/Dynopay) & bank (Fincra)
-5. **Web Hosting** - cPanel & Plesk plans with free trials
-6. **VPS Plans** - Virtual private server management
-7. **Telegram Bot** - Full bot interface for all features
-8. **Multi-language** - English, Chinese, and other language support
+### Prior Sessions (Feb 13-14, 2026)
+- Initial project setup (Node.js bot + FastAPI proxy + React frontend)
+- Rewrote 15+ bot notification messages for persuasive marketing
+- Fixed auto-promo infinite retry bug
+- Fixed 3 bugs in Shortit link flow (crash, missing message, missing group notification)
+- FREE_LINKS env confirmed at 5
+- Group auto-detection/registration system
+- 52 backend tests passing
 
-## What's Been Implemented (Setup - Feb 14, 2026)
-- Installed Node.js dependencies (`npm install`)
-- Fixed syntax error in `/app/js/lang/zh.js` (stray template literal on line 298)
-- Created root `.env` file with MONGO_URL, DB_NAME, and service flags
-- Bot set to TELEGRAM_BOT_ON=false (no token provided yet)
-- All services running: FastAPI proxy, Node.js Express server, React frontend
-- Health check passing: Bot Running, DB Connected, REST APIs Active
+### Current Session (Feb 14, 2026) — Setup & UX Fixes
+- Installed Node.js dependencies, created root `.env`, fixed zh.js syntax error
+- All services running (FastAPI proxy, Node.js Express, React dashboard)
 
-## Environment Variables Needed (for full functionality)
-- `TELEGRAM_BOT_TOKEN` - Telegram bot API token
-- Connect Reseller API credentials
-- BlockBee/Dynopay crypto payment API keys
-- Fincra bank payment API keys
-- Bitly API key
+**UX Fixes Applied (config.js + en.js + fr.js + hi.js + zh.js):**
 
-## Prioritized Backlog
-### P0 (Critical)
-- Provide TELEGRAM_BOT_TOKEN to enable Telegram bot functionality
+#### HIGH IMPACT
+- **Main Menu Keyboard Reorder** (config.js + all 4 lang files): URL Shortener first (free hook), then Hosting/Domains, Phone Leads, Wallet/Plan, Subscribe, Settings/Support
+- **Confusing Labels**: phoneNumberLeads text → "Buy verified phone leads or validate your own numbers:" (all 5 files)
 
-### P1 (High)
-- Connect Reseller IP whitelisting (IP: 34.16.56.64)
-- Configure payment provider API keys
+#### MEDIUM
+- **Submenu Text**: Added `urlShortenerSelect: "Shorten, brand, or track your links:"` in config.js
+- **Vague Errors Fixed**:
+  - `redIssueUrlBitly` → "Link shortening failed. Your wallet was not charged. Please try again or contact support."
+  - `redIssueUrlCuttly` → "Link shortening failed. Please try again or contact support."
+  - `issueGettingPrice` (en.js) → "We couldn't fetch the price right now. Please try again or contact support."
+- **Grammar Fix**: `showDepositNgnInfo` → "wallet will be updated" (was "wallet will updated")
 
-### P2 (Nice to have)
-- Admin dashboard enhancements (real-time stats, user management UI)
-- Webhook configuration for Telegram bot
+#### LOW - Polish
+- `whatNum` → "That doesn't look right. Please enter a valid number."
+- `walletBalanceLow` → "Your wallet balance is too low. Tap '👛 My Wallet' → '➕💵 Deposit' to top up."
+- `askValidAmount` → "Please enter a valid amount."
+
+## P0 — Critical (Requires User Action)
+- [ ] Set `TELEGRAM_BOT_TOKEN` to activate Telegram bot
+- [ ] Configure `SELF_URL` for webhooks
+
+## P1 — Important
+- [ ] ConnectReseller IP whitelist (IP: 34.16.56.64)
+- [ ] Payment gateway API keys (BlockBee/Fincra/DynoPay)
+
+## P2 — Future
+- [ ] Admin dashboard enhancements (real-time stats from MongoDB)
+- [ ] Refactor `js/_index.js` monolith into modular feature files
+- [ ] End-to-end Telegram bot test automation
+
+## Test Files
+- `/app/backend/tests/test_group_notifications.js` — 52 tests (all pass)
+- `/app/backend_test.py` — Backend validation
+- `/app/final_validation_test.py` — UX fixes validation
+- `/app/test_reports/iteration_9.json` — Latest test results (100% pass)
