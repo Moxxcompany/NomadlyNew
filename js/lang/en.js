@@ -760,16 +760,14 @@ const adminKeyboard = {
 const userKeyboard = {
   reply_markup: {
     keyboard: [
-      // [user.cPanelWebHostingPlans],
-      // [user.pleskWebHostingPlans],
-      // [user.vpsPlans],
-      [user.joinChannel, user.wallet],
+      [user.urlShortenerMain],
+      [user.hostingDomainsRedirect],
       [user.phoneNumberLeads],
       HIDE_SMS_APP === 'true' ? [user.domainNames] : [user.freeTrialAvailable, user.domainNames],
-      [user.urlShortenerMain],
-      [user.buyPlan, user.viewPlan],
+      [user.wallet, user.viewPlan],
+      [user.buyPlan],
       HIDE_BECOME_RESELLER === 'true'
-        ? [user.changeSetting, user.getSupport]
+        ? [user.changeSetting, user.getSupport, user.joinChannel]
         : [user.changeSetting, user.becomeReseller, user.getSupport],
     ],
   },
