@@ -560,8 +560,8 @@ bot?.on('message', async msg => {
     const result = translation(key, lang, ...args)
     if (key === 'o' && result?.reply_markup?.keyboard) {
       const label = freeLinks > 0
-        ? `🔗✂️ URL Shortener - ${freeLinks} Link${freeLinks !== 1 ? 's' : ''} Left`
-        : `🔗✂️ URL Shortener`
+        ? `🔗✂️ URL Shortener — ${freeLinks} Free Link${freeLinks !== 1 ? 's' : ''}`
+        : `🔗✂️ URL Shortener — 0 Links Left`
       return {
         ...result,
         reply_markup: {
