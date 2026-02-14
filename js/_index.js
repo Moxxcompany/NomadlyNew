@@ -4939,6 +4939,7 @@ const bankApis = {
 
     // Subscribe Plan
     subscribePlan(planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang, freeValidationsAvailableFor)
+    notifyGroup(`💎 <b>New Subscription!</b>\nUser ${maskName(name)} subscribed to the ${plan} Plan.\nAnother member leveling up! 🔥`)
 
     res.send(html())
   },
