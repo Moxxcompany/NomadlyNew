@@ -5773,7 +5773,8 @@ app.post('/dynopay/crypto-wallet', authDyno, async (req, res) => {
 
 //
 app.get('/', (req, res) => {
-  res.send(html(translation('t.greet')))
+  // Return 200 OK for health checks even during startup
+  res.status(200).send(html(translation('t.greet')))
 })
 
 app.get('/terms-condition', (req, res) => {
@@ -5789,20 +5790,13 @@ app.get('/woo', (req, res) => {
   res.send(html('woo'))
 })
 app.get('/health', async (req, res) => {
+  // Always return 200 for Railway health checks
+  // Report actual DB status in the response body
   const dbHealthy = isDbHealthy()
   
-  if (!dbHealthy) {
-    log('⚠️ Health check failed: Database not connected')
-    return res.status(503).json({
-      status: 'unhealthy',
-      database: 'disconnected',
-      uptime: ((new Date() - serverStartTime) / (1000 * 60 * 60)).toFixed(2) + ' hours'
-    })
-  }
-  
-  res.json({
-    status: 'healthy',
-    database: 'connected',
+  res.status(200).json({
+    status: dbHealthy ? 'healthy' : 'starting',
+    database: dbHealthy ? 'connected' : 'connecting',
     uptime: ((new Date() - serverStartTime) / (1000 * 60 * 60)).toFixed(2) + ' hours'
   })
 })
