@@ -8,6 +8,7 @@ const HIDE_BANK_PAYMENT = process.env.HIDE_BANK_PAYMENT
 const SELF_URL = process.env.SELF_URL
 const FREE_LINKS = Number(process.env.FREE_LINKS)
 const SUPPORT_USERNAME = process.env.SUPPORT_USERNAME
+const PRICE_BITLY_LINK = Number(process.env.PRICE_BITLY_LINK) || 0.1
 
 const HIDE_SMS_APP = process.env.HIDE_SMS_APP
 const HIDE_BECOME_RESELLER = process.env.HIDE_BECOME_RESELLER
