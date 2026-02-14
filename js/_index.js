@@ -1,4 +1,51 @@
 /*global process */
+// =====================================================
+// EARLY EXPRESS SERVER FOR RAILWAY HEALTH CHECKS
+// Start HTTP server immediately to pass health checks
+// =====================================================
+require('dotenv').config()
+const express = require('express')
+const cors = require('cors')
+
+const earlyApp = express()
+earlyApp.use(cors())
+earlyApp.use(express.json())
+
+let appReady = false
+let serverStartTime = new Date()
+
+// Health check endpoints - respond immediately
+earlyApp.get('/', (req, res) => {
+  res.status(200).send(`
+    <html>
+      <body style="background-color: white;">
+        <p style="font-family: 'system-ui';">Nomadly — shorten URLs, register domains, buy phone leads, and grow your business. All from Telegram.
+
+Get started with 5 trial Shortit links — /start
+Support: @nomadly_support</p>
+      </body>
+    </html>
+  `)
+})
+
+earlyApp.get('/health', (req, res) => {
+  res.status(200).json({
+    status: appReady ? 'healthy' : 'starting',
+    database: appReady ? 'connected' : 'connecting',
+    uptime: ((new Date() - serverStartTime) / (1000 * 60 * 60)).toFixed(2) + ' hours'
+  })
+})
+
+// Start early server immediately
+const PORT = process.env.PORT || 5000
+const earlyServer = earlyApp.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Early health check server started on port ${PORT}`)
+})
+
+// =====================================================
+// MAIN APPLICATION CODE CONTINUES BELOW
+// =====================================================
+
 const {
   rem,
   html,
@@ -57,9 +104,7 @@ const {
   date,
 } = require('./utils.js')
 const fs = require('fs')
-const cors = require('cors')
 const axios = require('axios')
-const express = require('express')
 const { log } = require('console')
 const { MongoClient, ServerApiVersion } = require('mongodb')
 const { customAlphabet } = require('nanoid')
