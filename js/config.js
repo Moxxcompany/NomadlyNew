@@ -213,7 +213,6 @@ To continue using our services, please buy one of our premium plans.`,
   trialPlanActivationInProgress: `Your free trial plan is being activated. This may take a few moments…`,
 
   what: `That option isn't available right now. Please pick from the buttons below.`,
-  urlShortenerSelect: `Shorten, brand, or track your links:`,
   whatNum: `That doesn't look right. Please enter a valid number.`,
   phoneGenTimeout: 'Timeout',
   phoneGenNoGoodHits: `Please contact support ${SUPPORT_HANDLE} or select another area code`,
