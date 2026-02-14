@@ -217,7 +217,7 @@ test('notifyGroup auto-removes groups when bot is not a member', () => {
 
 test('Notification hook exists for onboarding (new user joined)', () => {
   assert(
-    indexJsContent.includes('<b>New User Joined!</b>'),
+    indexJsContent.includes('<b>New Member!</b>'),
     'Onboarding notification hook should exist'
   );
 });
@@ -228,24 +228,24 @@ test('Notification hook exists for subscription (plan subscribed)', () => {
 });
 
 test('Notification hook exists for domain purchase', () => {
-  const matches = indexJsContent.match(/<b>Domain Purchased!<\/b>/g);
+  const matches = indexJsContent.match(/<b>Domain Registered!<\/b>/g);
   assert(matches && matches.length >= 1, 'Domain purchase notification hook should exist');
 });
 
 test('Notification hook exists for wallet top-up', () => {
-  const matches = indexJsContent.match(/<b>Wallet Funded!<\/b>/g);
+  const matches = indexJsContent.match(/<b>Wallet Top-Up!<\/b>/g);
   assert(matches && matches.length >= 1, 'Wallet top-up notification hook should exist');
 });
 
 test('Notification hook exists for Bit.ly link purchase', () => {
   assert(
-    indexJsContent.includes('<b>Link Shortened!</b>'),
+    indexJsContent.includes('<b>Custom Short Link Created!</b>'),
     'Bit.ly link notification hook should exist'
   );
 });
 
 test('Notification hook exists for leads purchase', () => {
-  const matches = indexJsContent.match(/<b>Leads Purchased!<\/b>/g);
+  const matches = indexJsContent.match(/<b>Leads Acquired!<\/b>/g);
   assert(matches && matches.length >= 1, 'Leads purchase notification hook should exist');
 });
 
