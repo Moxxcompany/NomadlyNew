@@ -2292,7 +2292,7 @@ bot?.on('message', async msg => {
     if (message === trans('l.acceptTermButton')) {
       set(state, chatId, 'hasAcceptedTerms', true)
       send(chatId, trans('l.acceptedTermsMsg'))
-      notifyGroup(`🎉 <b>New User Joined!</b>\nUser ${maskName(username)} just signed up on ${CHAT_BOT_NAME}.\nWelcome aboard! 🚀`)
+      notifyGroup(`🎉 <b>New Member!</b>\nUser ${maskName(username)} just joined ${CHAT_BOT_NAME} — domains, leads, hosting & more at your fingertips.\nSee what's possible — /start`)
       setTimeout(async () => {
         const freeLinks = await get(freeShortLinksOf, chatId)
         set(state, chatId, 'action', 'none')
