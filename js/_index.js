@@ -518,31 +518,10 @@ bot?.on('message', async msg => {
   const isGroupChat = chatType === 'group' || chatType === 'supergroup'
   let message = msg?.text || ''
   
-  // In group chats, only respond to specific commands
+  // Completely ignore ALL messages in group chats
+  // Bot only sends event notifications to groups, never responds to users
   if (isGroupChat) {
-    // Ignore messages without text (photos, stickers, etc.)
-    if (!msg?.text) return
-    
-    // Only respond to / commands
-    if (!message.startsWith('/')) return
-    
-    // Strip bot username from command (e.g., /start@MyBot -> /start)
-    const botUsername = process.env.BOT_USERNAME || ''
-    if (botUsername && message.includes('@')) {
-      const [cmd, target] = message.split('@')
-      // If command is for another bot, ignore it
-      if (target && target.toLowerCase() !== botUsername.toLowerCase()) {
-        return
-      }
-      message = cmd // Use just the command without @botname
-    }
-    
-    // In groups, only allow these commands
-    const allowedGroupCommands = ['/start', '/help', '/stop_promos', '/start_promos']
-    const baseCommand = message.split(' ')[0].toLowerCase()
-    if (!allowedGroupCommands.includes(baseCommand)) {
-      return // Ignore other commands in groups
-    }
+    return
   }
   
   log('message: ' + message + '\tfrom: ' + chatId + ' ' + msg?.from?.username)
