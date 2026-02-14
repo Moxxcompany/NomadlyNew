@@ -287,9 +287,10 @@ ${CHAT_BOT_NAME}`,
   unblockUser: `Please share the username of the user that needs to be unblocked.`,
   blockedUser: `You are currently blocked from using the bot. Please contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
 
-  greet: `Keep your eyes on this space! We're gearing up to launch our URL shortening application that will make your links short, sweet, and to the point. Stay tuned for our big reveal!
+  greet: `${CHAT_BOT_BRAND} — shorten URLs, register domains, buy phone leads, and grow your business. All from Telegram.
 
-Support ${SUPPORT_USERNAME} at Telegram.`,
+Get started with ${FREE_LINKS} trial Shortit links — /start
+Support: ${SUPPORT_USERNAME}`,
 
   linkExpired: `Your ${CHAT_BOT_BRAND} trial has ended and your short link is deactivated. We invite you to subscribe to maintain access to our URL service and free domain names. Choose a suitable plan and follow the instructions to subscribe. Please Contact us for any queries.
 Best,
