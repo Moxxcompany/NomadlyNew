@@ -5018,9 +5018,8 @@ const authDyno = async (req, res, next) => {
   next()
 }
 
-const app = express()
-app.use(express.json())
-app.use(cors())
+// Use the early app that's already listening
+const app = earlyApp
 // Strip /api prefix from incoming requests (Emergent ingress sends /api/* to port 8001 without stripping)
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/')) {
@@ -5029,7 +5028,6 @@ app.use((req, res, next) => {
   next()
 })
 app.set('json spaces', 2)
-let serverStartTime = new Date()
 
 const addFundsTo = async (walletOf, chatId, coin, valueIn, lang) => {
   if (!['usd', 'ngn'].includes(coin)) throw Error('Dev Please Debug')
