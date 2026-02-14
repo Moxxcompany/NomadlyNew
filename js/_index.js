@@ -2089,7 +2089,7 @@ bot?.on('message', async msg => {
         const __shortUrl = `${SELF_URL}/${slug}`
         _shortUrl = await createShortBitly(__shortUrl)
         const shortUrl = __shortUrl.replaceAll('.', '@').replace('https://', '')
-        increment(totalShortLinks)
+        increment(totalShortLinks, 'total')
         set(maskOf, shortUrl, _shortUrl)
         set(fullUrlOf, shortUrl, url)
         set(linksOf, chatId, shortUrl, url)
