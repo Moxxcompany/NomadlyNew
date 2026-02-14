@@ -1,0 +1,40 @@
+{
+  "summary": "Completed comprehensive testing of AutoPromo 400 'chat not found' error fixes. All functionality is working correctly including isUnreachableError helper, retry cascade skipping, and auto opt-out mechanisms.",
+  "backend_issues": {
+    "critical_bugs": [],
+    "flaky_endpoints": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "isUnreachableError helper function exists and detects all specified error messages ('chat not found', 'user is deactivated', 'bot was blocked', 'have no rights to send a message')",
+    "sendPromoToUser immediately throws and skips retry cascade when isUnreachableError is true in photo fallback",
+    "sendPromoToUser immediately throws and skips retry cascade when isUnreachableError is true in HTML parse retry", 
+    "400 'chat not found' errors trigger auto opt-out (setOptOut) same as 403 blocked",
+    "403 errors still trigger auto opt-out as before",
+    "Opt-out check happens before sending (isOptedOut called first in sendPromoToUser)",
+    "auto-promo.js has no syntax errors (node --check passes)",
+    "_index.js has no syntax errors (node --check passes)",
+    "All 52 tests in test_group_notifications.js pass (100% success rate)",
+    "GET /api/health returns ok with all services running",
+    "Backend API health check shows proxy: running, node: running, db: connected",
+    "Frontend dashboard loads successfully via FastAPI proxy",
+    "FastAPI proxy correctly forwards requests to Node.js backend",
+    "Node.js Express server accessible via proxy"
+  ],
+  "test_report_links": [
+    "/app/backend_test.py",
+    "/app/backend/tests/test_group_notifications.js",
+    "/app/test_unreachable_error.js"
+  ],
+  "action_item_for_main_agent": "",
+  "updated_files": [
+    "/app/test_unreachable_error.js"
+  ],
+  "success_percentage": "backend: 100%, testing: 100%",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_test_itself": true
+}
