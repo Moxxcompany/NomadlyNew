@@ -453,7 +453,7 @@ const connectWithRetry = async (retryCount = 0) => {
 }
 
 // Start Express server immediately so Railway health check passes while DB connects
-if (REST_APIS_ON === 'true') startServer()
+// Note: startServer() will be called after all functions are defined at end of file
 
 connectWithRetry()
 
