@@ -89,7 +89,7 @@ const user = {
 
   // Sub Menu 1: urlShortenerMain
   redSelectUrl: '🔀✂️ Redirect & Shorten',
-  redBitly: '✂️ Bit.ly',
+  redBitly: `✂️ Bit.ly $${PRICE_BITLY_LINK}`,
   redShortit: '✂️ Shortit (Trial)',
   urlShortener: '✂️🌐 Custom Domain Shortener',
   viewShortLinks: '📊 View Shortlink Analytics',
