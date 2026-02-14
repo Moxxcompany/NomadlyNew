@@ -29,26 +29,27 @@ async function testLanguageFilesLinksRemaining() {
   console.log('\n📋 Testing Language Files - linksRemaining function');
   
   const languages = [
-    { file: 'en', path: '../lang/en.js' },
-    { file: 'fr', path: '../lang/fr.js' },
-    { file: 'zh', path: '../lang/zh.js' },
-    { file: 'hi', path: '../lang/hi.js' }
+    { file: 'en', path: '../lang/en.js', key: 'en' },
+    { file: 'fr', path: '../lang/fr.js', key: 'fr' },
+    { file: 'zh', path: '../lang/zh.js', key: 'zh' },
+    { file: 'hi', path: '../lang/hi.js', key: 'hi' }
   ];
   
   for (const lang of languages) {
     try {
       const langModule = require(lang.path);
+      const langObj = langModule[lang.key];
       
-      // Check if linksRemaining exists
-      if (typeof langModule.linksRemaining !== 'function') {
-        logResult(`${lang.file}.js - linksRemaining function exists`, false, 'linksRemaining is not a function');
+      // Check if linksRemaining exists in the t object
+      if (typeof langObj?.t?.linksRemaining !== 'function') {
+        logResult(`${lang.file}.js - linksRemaining function exists`, false, 'linksRemaining is not a function in t object');
         continue;
       }
       
       // Test with different values
-      const result0 = langModule.linksRemaining(0);
-      const result1 = langModule.linksRemaining(1);
-      const result2 = langModule.linksRemaining(2);
+      const result0 = langObj.t.linksRemaining(0);
+      const result1 = langObj.t.linksRemaining(1);
+      const result2 = langObj.t.linksRemaining(2);
       
       // Validate returns valid strings
       if (typeof result0 !== 'string' || result0.length === 0) {
@@ -86,10 +87,10 @@ async function testEnglishPluralHandling() {
   console.log('\n📋 Testing English Plural/Singular Handling');
   
   try {
-    const en = require('../lang/en.js');
+    const { en } = require('../lang/en.js');
     
-    const singular = en.linksRemaining(1);
-    const plural = en.linksRemaining(2);
+    const singular = en.t.linksRemaining(1);
+    const plural = en.t.linksRemaining(2);
     
     // Check that 1 uses singular "link" not "links"
     const singularCorrect = singular.includes('link') && !singular.includes('links');
@@ -321,17 +322,19 @@ async function testFreeLinksExhaustedMessage() {
   console.log('\n📋 Testing freeLinksExhausted message exists in all language files');
   
   const languages = [
-    { file: 'en', path: '../lang/en.js' },
-    { file: 'fr', path: '../lang/fr.js' },
-    { file: 'zh', path: '../lang/zh.js' },
-    { file: 'hi', path: '../lang/hi.js' }
+    { file: 'en', path: '../lang/en.js', key: 'en' },
+    { file: 'fr', path: '../lang/fr.js', key: 'fr' },
+    { file: 'zh', path: '../lang/zh.js', key: 'zh' },
+    { file: 'hi', path: '../lang/hi.js', key: 'hi' }
   ];
   
   for (const lang of languages) {
     try {
       const langModule = require(lang.path);
+      const langObj = langModule[lang.key];
       
-      if (typeof langModule.freeLinksExhausted === 'string' && langModule.freeLinksExhausted.length > 0) {
+      if (typeof langObj?.t?.freeLinksExhausted === 'string' && langObj.t.freeLinksExhausted.length > 0) {
+        console.log(`  ${lang.file}.js freeLinksExhausted: "${langObj.t.freeLinksExhausted.substring(0, 60)}..."`);
         logResult(`${lang.file}.js - freeLinksExhausted message exists`, true);
       } else {
         logResult(`${lang.file}.js - freeLinksExhausted message exists`, false, 'Not found or empty');
@@ -339,6 +342,43 @@ async function testFreeLinksExhaustedMessage() {
     } catch (error) {
       logResult(`${lang.file}.js - freeLinksExhausted message`, false, error.message);
     }
+  }
+}
+
+// ============================================
+// Test 9: Verify decrement logic correctness (static code analysis)
+// ============================================
+
+async function testDecrementLogicCorrectness() {
+  console.log('\n📋 Testing db.js - decrement logic correctness (code analysis)');
+  
+  const fs = require('fs');
+  const path = require('path');
+  
+  try {
+    const dbPath = path.join(__dirname, '../db.js');
+    const content = fs.readFileSync(dbPath, 'utf8');
+    
+    // Check decrement function pattern
+    const decrementPattern = /const decrement = async \(c, key\) => \{[\s\S]*?const count = \(await get\(c, key\)\) \|\| 0[\s\S]*?await set\(c, key, count - 1\)/;
+    
+    if (decrementPattern.test(content)) {
+      logResult('decrement function: gets current value, subtracts 1, sets new value', true);
+    } else {
+      logResult('decrement function: gets current value, subtracts 1, sets new value', false, 'Pattern not found');
+    }
+    
+    // Check get function returns the value properly
+    const getPattern = /async function get\(c, key\) \{[\s\S]*?const result = await c\.findOne\(\{ _id: key \}\)[\s\S]*?return result\?\.val/;
+    
+    if (getPattern.test(content)) {
+      logResult('get function: finds document by _id and returns val field', true);
+    } else {
+      logResult('get function: finds document by _id and returns val field', false, 'Pattern not found');
+    }
+    
+  } catch (error) {
+    logResult('decrement logic correctness', false, error.message);
   }
 }
 
@@ -359,6 +399,7 @@ async function runAllTests() {
   await testSubscribedUsersBypass();
   await testSyntaxValidation();
   await testFreeLinksExhaustedMessage();
+  await testDecrementLogicCorrectness();
   
   console.log('\n' + '='.repeat(60));
   console.log('📊 Test Summary');
@@ -377,13 +418,22 @@ async function runAllTests() {
   const successRate = ((testResults.passed.length / totalTests) * 100).toFixed(1);
   console.log(`\n📈 Success Rate: ${successRate}%`);
   
-  // Exit with error code if any tests failed
-  if (testResults.failed.length > 0) {
-    process.exit(1);
-  }
+  // Return results for reporting
+  return {
+    passed: testResults.passed.length,
+    failed: testResults.failed.length,
+    total: totalTests,
+    successRate,
+    failures: testResults.failed
+  };
 }
 
-runAllTests().catch(err => {
+runAllTests().then(results => {
+  console.log('\n📄 Test Complete');
+  if (results.failed > 0) {
+    process.exit(1);
+  }
+}).catch(err => {
   console.error('Test runner error:', err);
   process.exit(1);
 });
