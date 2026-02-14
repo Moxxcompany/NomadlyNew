@@ -8,7 +8,7 @@ const createShortUrlApi = async longUrl => {
     'https://url-shortener42.p.rapidapi.com/shorten/',
     {
       url: longUrl,
-      validity_duration: 0,
+      validity_duration: 12,
     },
     {
       headers: {
