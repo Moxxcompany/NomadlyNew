@@ -5467,6 +5467,7 @@ app.post('/dynopay/crypto-pay-plan', authDyno, async (req, res) => {
 
   // Subscribe Plan
   subscribePlan(planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang, freeValidationsAvailableFor)
+  notifyGroup(`💎 <b>New Subscription!</b>\nUser ${maskName(name)} subscribed to the ${plan} Plan.\nAnother member leveling up! 🔥`)
   res.send(html())
 })
 
