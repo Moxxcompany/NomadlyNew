@@ -334,6 +334,39 @@ test('customCuttly.js uses POST method with JSON body', () => {
   );
 });
 
+// ============ TESTS FOR BOT USERNAME IN NOTIFICATIONS ============
+
+test('notifyGroup function appends CHAT_BOT_NAME to every message', () => {
+  assert(
+    indexJsContent.includes('const taggedMessage = message + `\\n— <b>${CHAT_BOT_NAME}</b>`'),
+    'notifyGroup should append CHAT_BOT_NAME as a tag line to every message'
+  );
+});
+
+test('notifyGroup sends taggedMessage (not raw message) to groups', () => {
+  assert(
+    indexJsContent.includes("bot?.sendMessage(group._id, taggedMessage, { parse_mode: 'HTML' })"),
+    'notifyGroup should send taggedMessage to groups, not the raw message'
+  );
+});
+
+test('New User Joined notification uses dynamic CHAT_BOT_NAME not hardcoded', () => {
+  // Check there is no hardcoded "NomadlyBot" in notifyGroup calls
+  const notifyGroupCalls = indexJsContent.match(/notifyGroup\(`[^`]*`\)/g) || [];
+  const hardcodedCalls = notifyGroupCalls.filter(call => call.includes('NomadlyBot'));
+  assert(
+    hardcodedCalls.length === 0,
+    `No notifyGroup calls should hardcode "NomadlyBot". Found ${hardcodedCalls.length} hardcoded calls`
+  );
+});
+
+test('New User Joined notification uses CHAT_BOT_NAME variable', () => {
+  assert(
+    indexJsContent.includes('just signed up on ${CHAT_BOT_NAME}'),
+    'New User Joined notification should use CHAT_BOT_NAME variable'
+  );
+});
+
 // ============ SYNTAX VALIDATION TESTS ============
 
 test('_index.js has no syntax errors (already checked via node --check)', () => {
