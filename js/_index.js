@@ -2185,6 +2185,11 @@ bot?.on('message', async msg => {
   if (message === '/start') {
     set(state, chatId, 'action', 'none')
 
+    // In groups, just send a brief acknowledgment
+    if (isGroupChat) {
+      return send(chatId, `${CHAT_BOT_NAME} is active! DM me directly for full features.`)
+    }
+
     // Keep original admin behavior
     if (isAdmin(chatId)) return send(chatId, 'Hello, Admin! Please select an option:', aO)
 
