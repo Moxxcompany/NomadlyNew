@@ -1,48 +1,50 @@
-# NomadlyBot - PRD & Architecture
+# NomadlyBot - Telegram Bot Admin Panel
 
-## Original Problem Statement
-Analyze and set up the existing NomadlyBot codebase — a Telegram bot platform for URL shortening, domain sales, phone leads, crypto payments, and web hosting.
+## Overview
+Multi-service Telegram bot for URL shortening, domain sales, phone leads, crypto payments, and web hosting.
 
 ## Architecture
-- **Frontend**: React 18 admin dashboard (port 3000) showing bot health status
-- **Backend**: FastAPI (port 8001) acting as a reverse proxy to Node.js Express server (port 5000)
-- **Node.js Bot**: Telegram bot (`js/start-bot.js`) with Express REST APIs
-- **Database**: MongoDB (Railway-hosted)
+- **Frontend**: React (port 3000) - Admin dashboard displaying bot status, features
+- **Backend**: FastAPI proxy (port 8001) → Node.js Express (port 5000)
+- **Database**: MongoDB (external via MONGO_URL)
+- **Bot**: Telegram Bot API (currently disabled, needs valid TELEGRAM_BOT_TOKEN)
 
 ## Tech Stack
-- React 18 + Tailwind CSS (frontend)
-- FastAPI + Python (backend proxy)
-- Node.js + Express (bot engine & REST APIs)
-- MongoDB (data storage)
-- Telegram Bot API
+- React 18 + Tailwind CSS (Frontend)
+- FastAPI + httpx (Python proxy)
+- Express.js + MongoDB driver (Node.js backend)
+- node-telegram-bot-api (Telegram integration)
 
 ## Core Features
-1. URL Shortening (Bit.ly, custom domain shortener)
-2. Domain Name Registration & DNS Management
-3. Phone Number Leads (buy & validate)
-4. Wallet System (USD/NGN, crypto deposits)
-5. Web Hosting (cPanel/Plesk plans, free trials)
-6. VPS Plans management
-7. Auto-promo system
-8. Multi-language support
+1. URL Shortener (Bit.ly, Custom domains, Shortit trial)
+2. Domain Names (Buy, DNS management)
+3. Phone Leads & Validation (SMS, Voice, Carrier filtering)
+4. Wallet System (USD & NGN, Crypto, Bank deposits)
+5. Web Hosting (cPanel, Plesk plans with trials)
+6. VPS Plans (Virtual private servers)
 
-## What's Been Implemented (Setup - Feb 2026)
-- Installed Node.js dependencies (`npm install`)
-- Created root `.env` with MongoDB URL and service config
-- Telegram bot set to `false` (no token provided)
-- REST APIs enabled and running on port 5000
-- All 3 services running: Frontend, Backend proxy, Node.js Express server
-- Health endpoint confirms: proxy=running, node=running, db=connected
+## What's Been Implemented (Feb 14, 2026)
+- [x] Installed Node.js dependencies
+- [x] Created `/app/.env` with required environment variables
+- [x] Fixed `config.js` missing PRICE_BITLY_LINK variable
+- [x] Fixed `_index.js` startServer() hoisting issue
+- [x] Backend proxy + Node.js server running
+- [x] MongoDB connected
+- [x] Frontend dashboard displaying live status
 
-## Missing / Required from User
-- **TELEGRAM_BOT_TOKEN** — Required to enable the Telegram bot
-- Connect Reseller API whitelist (IP: 104.198.214.223)
-- BlockBee crypto API keys (if crypto payments needed)
-- Fincra API keys (if bank payments needed)
+## Environment Variables Required
+- `MONGO_URL` - MongoDB connection string
+- `DB_NAME` - Database name (default: nomadly_bot)
+- `TELEGRAM_BOT_TOKEN` - Telegram bot token (placeholder currently)
+- `TELEGRAM_BOT_ON` - Enable/disable bot (currently: false)
+- `REST_APIS_ON` - Enable REST APIs (currently: true)
 
-## Backlog (P0/P1/P2)
-- P0: Provide Telegram Bot Token to activate bot functionality
-- P1: Configure Connect Reseller API access
-- P1: Set up payment provider API keys (BlockBee, Fincra, DynoPay)
-- P2: Production deployment configuration
-- P2: Admin dashboard enhancements (analytics, user management)
+## Next Action Items
+- P0: Provide valid TELEGRAM_BOT_TOKEN to enable bot functionality
+- P1: Configure webhook URL (SELF_URL) for production
+- P2: Add Connect Reseller IP whitelist
+
+## Backlog
+- Add admin authentication to dashboard
+- Add analytics charts
+- Enable payment integrations (Fincra, Blockbee)
