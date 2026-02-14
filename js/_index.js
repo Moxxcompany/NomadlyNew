@@ -5912,7 +5912,7 @@ const setupTelegramWebhook = async () => {
     
     // Set the new webhook with all required update types
     await bot.setWebHook(webhookUrl, {
-      allowed_updates: ['message', 'callback_query', 'my_chat_member']
+      allowed_updates: JSON.stringify(['message', 'callback_query', 'my_chat_member'])
     })
     log('✅ Telegram webhook set successfully')
     log(`📡 Webhook URL: ${webhookUrl}`)
