@@ -4,9 +4,10 @@ import sys
 import json
 import subprocess
 import re
+import os
 from datetime import datetime
 
-class NomadlyBotAPITester:
+class OffshoreHostingSubmenuTester:
     def __init__(self, base_url="https://setup-wizard-92.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
@@ -49,221 +50,299 @@ class NomadlyBotAPITester:
         except Exception as e:
             return False, f"Request failed: {str(e)}"
 
-    def test_bitly_api_direct(self):
-        """Test if Node.js backend responds correctly through FastAPI proxy"""
-        try:
-            # Test root endpoint that should be handled by Node.js
-            response = requests.get(f"{self.base_url}/", timeout=10)
-            
-            if response.status_code == 200:
-                content_type = response.headers.get('content-type', '')
-                if 'text/html' in content_type:
-                    return True, f"Node.js backend responding via proxy - Status: {response.status_code}, Content-Type: {content_type}"
-                elif 'application/json' in content_type:
-                    return True, f"Node.js backend API responding - Status: {response.status_code}"
+    def test_node_syntax_validation_all_files(self):
+        """Test Node.js syntax validation for all required files"""
+        files_to_check = [
+            'js/_index.js',
+            'js/config.js', 
+            'js/lang/en.js',
+            'js/lang/fr.js',
+            'js/lang/hi.js', 
+            'js/lang/zh.js',
+            'js/config-setup.js'
+        ]
+        
+        failed_files = []
+        passed_files = []
+        
+        for file_path in files_to_check:
+            try:
+                result = subprocess.run(['node', '--check', file_path], 
+                                      capture_output=True, text=True, cwd='/app')
+                if result.returncode == 0:
+                    passed_files.append(file_path)
                 else:
-                    return True, f"Node.js backend responding - Status: {response.status_code}"
-            else:
-                return False, f"Node.js backend error - Status: {response.status_code}, Body: {response.text[:200]}"
-        except Exception as e:
-            return False, f"Node.js backend request failed: {str(e)}"
+                    failed_files.append(f"{file_path}: {result.stderr}")
+            except Exception as e:
+                failed_files.append(f"{file_path}: {str(e)}")
+        
+        if not failed_files:
+            return True, f"All {len(passed_files)} files pass syntax validation"
+        else:
+            return False, f"Failed files: {failed_files}"
 
-    def test_frontend_dashboard(self):
-        """Test frontend dashboard loads and shows System Online"""
+    def test_config_js_hosting_redirect(self):
+        """Test config.js: hostingDomainsRedirect changed to '🌐 Offshore Hosting'"""
         try:
-            response = requests.get(f"{self.base_url}/", timeout=10)
+            with open('/app/js/config.js', 'r') as f:
+                content = f.read()
+                
+            if "hostingDomainsRedirect: '🌐 Offshore Hosting'" in content:
+                return True, "config.js has correct hostingDomainsRedirect value"
+            else:
+                return False, "config.js hostingDomainsRedirect not updated or incorrect"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_en_js_hosting_redirect(self):
+        """Test en.js: hostingDomainsRedirect changed to '🌐 Offshore Hosting'"""
+        try:
+            with open('/app/js/lang/en.js', 'r') as f:
+                content = f.read()
+                
+            if "hostingDomainsRedirect: '🌐 Offshore Hosting'" in content:
+                return True, "en.js has correct hostingDomainsRedirect value"
+            else:
+                return False, "en.js hostingDomainsRedirect not updated or incorrect"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_fr_js_hosting_redirect(self):
+        """Test fr.js: hostingDomainsRedirect changed to '🌐 Hébergement Offshore'"""
+        try:
+            with open('/app/js/lang/fr.js', 'r') as f:
+                content = f.read()
+                
+            if "hostingDomainsRedirect: '🌐 Hébergement Offshore'" in content:
+                return True, "fr.js has correct hostingDomainsRedirect value"
+            else:
+                return False, "fr.js hostingDomainsRedirect not updated or incorrect"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_hi_js_hosting_redirect(self):
+        """Test hi.js: hostingDomainsRedirect changed to '🌐 ऑफ़शोर होस्टिंग'"""
+        try:
+            with open('/app/js/lang/hi.js', 'r') as f:
+                content = f.read()
+                
+            if "hostingDomainsRedirect: '🌐 ऑफ़शोर होस्टिंग'" in content:
+                return True, "hi.js has correct hostingDomainsRedirect value"
+            else:
+                return False, "hi.js hostingDomainsRedirect not updated or incorrect"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_zh_js_hosting_redirect(self):
+        """Test zh.js: hostingDomainsRedirect changed to '🌐 离岸托管'"""
+        try:
+            with open('/app/js/lang/zh.js', 'r') as f:
+                content = f.read()
+                
+            if "hostingDomainsRedirect: '🌐 离岸托管'" in content:
+                return True, "zh.js has correct hostingDomainsRedirect value"
+            else:
+                return False, "zh.js hostingDomainsRedirect not updated or incorrect"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_bitly_shortit_buttons_config(self):
+        """Test config.js + en.js: user.redBitly = '✂️ Bit.ly' and user.redShortit = '✂️ Shortit (Trial)' exist"""
+        try:
+            files_to_check = ['/app/js/config.js', '/app/js/lang/en.js']
+            missing_keys = []
             
-            if response.status_code == 200:
-                content = response.text.lower()
-                if "system online" in content:
-                    return True, f"Frontend dashboard shows 'System Online' - Status: {response.status_code}"
-                elif "nomadly" in content or "dashboard" in content:
-                    return True, f"Frontend dashboard accessible (no 'System Online' text) - Status: {response.status_code}"
-                else:
-                    # Check if it's an HTML page at least
-                    if "<html" in content or "<!doctype" in content:
-                        return True, f"Frontend loads HTML but no 'System Online' found - Status: {response.status_code}"
-                    else:
-                        return False, f"Frontend doesn't appear to be HTML - Content preview: {response.text[:200]}"
-            else:
-                return False, f"Frontend error - Status: {response.status_code}, Body: {response.text[:200]}"
-        except Exception as e:
-            return False, f"Frontend request failed: {str(e)}"
-
-    def test_telegram_webhook_endpoint(self):
-        """Test FastAPI proxy forwarding to Node.js backend"""
-        try:
-            # Test another endpoint that should be forwarded to Node.js
-            response = requests.get(f"{self.base_url}/status", timeout=10)
+            for file_path in files_to_check:
+                with open(file_path, 'r') as f:
+                    content = f.read()
+                    
+                if "redBitly: '✂️ Bit.ly'" not in content:
+                    missing_keys.append(f"{file_path}: redBitly")
+                    
+                if "redShortit: '✂️ Shortit (Trial)'" not in content:
+                    missing_keys.append(f"{file_path}: redShortit")
             
-            # This endpoint may or may not exist, but should go through proxy
-            if response.status_code in [200, 404, 500]:  # Any response means proxy is working
-                return True, f"FastAPI proxy forwarding working - Status: {response.status_code}"
+            if not missing_keys:
+                return True, "Both redBitly and redShortit buttons exist in config.js and en.js"
             else:
-                return False, f"Proxy forwarding issue - Status: {response.status_code}, Body: {response.text[:200]}"
-        except Exception as e:
-            return False, f"Proxy forwarding test failed: {str(e)}"
-
-    def test_node_syntax_validation(self):
-        """Test Node.js syntax validation: node --check js/_index.js passes"""
-        try:
-            result = subprocess.run(['node', '--check', 'js/_index.js'], 
-                                  capture_output=True, text=True, cwd='/app')
-            if result.returncode == 0:
-                return True, "Node.js syntax validation passed"
-            else:
-                return False, f"Syntax errors: {result.stderr}"
-        except Exception as e:
-            return False, f"Syntax check failed: {str(e)}"
-
-    def test_frelinks_is_let_variable(self):
-        """Test that freeLinks is declared as let (not const) at line ~521"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-                
-            # Check for 'let freeLinks' around line 521
-            lines = content.split('\n')
-            for i, line in enumerate(lines[515:530], 516):  # Check lines 516-530
-                if 'freeLinks' in line and 'await get(freeShortLinksOf' in line:
-                    if line.strip().startswith('let freeLinks'):
-                        return True, f"Found 'let freeLinks' at line {i}"
-                    elif line.strip().startswith('const freeLinks'):
-                        return False, f"Found 'const freeLinks' at line {i}, should be 'let'"
-                        
-            return False, "Could not find freeLinks declaration around line 521"
+                return False, f"Missing keys: {missing_keys}"
         except Exception as e:
             return False, f"File check failed: {str(e)}"
 
-    def test_freelinks_set_for_new_users(self):
-        """Test that freeLinks is set to FREE_LINKS for new users (null/undefined case)"""
+    def test_bitly_shortit_buttons_other_langs(self):
+        """Test fr.js + hi.js + zh.js: redBitly and redShortit button labels exist"""
         try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-                
-            # Look for the pattern where freeLinks is set to FREE_LINKS for new users
-            if 'if (freeLinks === null || freeLinks === undefined)' in content and \
-               'freeLinks = FREE_LINKS' in content:
-                return True, "freeLinks correctly set to FREE_LINKS for new users"
-            else:
-                return False, "freeLinks not properly set for new users"
-        except Exception as e:
-            return False, f"File check failed: {str(e)}"
-
-    def test_trans_function_dynamic_keyboard(self):
-        """Test that trans function intercepts key 'o' and returns dynamic keyboard"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-                
-            # Check for the trans function with key 'o' handling
-            if "if (key === 'o' && result?.reply_markup?.keyboard)" in content:
-                return True, "trans function correctly intercepts key 'o' for dynamic keyboard"
-            else:
-                return False, "trans function doesn't handle key 'o' properly"
-        except Exception as e:
-            return False, f"File check failed: {str(e)}"
-
-    def test_dynamic_label_format(self):
-        """Test dynamic label format with correct plural handling"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-                
-            # Check for correct dynamic label format
-            expected_pattern = r"freeLinks > 0.*?`🔗✂️ URL Shortener - \$\{freeLinks\} Link\$\{freeLinks !== 1 \? 's' : ''\} Left`.*?`🔗✂️ URL Shortener`"
+            files_to_check = ['/app/js/lang/fr.js', '/app/js/lang/hi.js', '/app/js/lang/zh.js']
+            missing_keys = []
             
-            if re.search(expected_pattern, content, re.DOTALL):
-                return True, "Dynamic label format with plural handling found"
-            else:
-                return False, "Dynamic label format not found or incorrect"
-        except Exception as e:
-            return False, f"File check failed: {str(e)}"
-
-    def test_url_shortener_button_matching(self):
-        """Test URL shortener button matching uses startsWith"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-                
-            # Check for startsWith usage for button matching
-            if "message.startsWith('🔗✂️ URL Shortener')" in content:
-                return True, "URL shortener button matching uses startsWith correctly"
-            else:
-                return False, "URL shortener button matching doesn't use startsWith"
-        except Exception as e:
-            return False, f"File check failed: {str(e)}"
-
-    def test_decrement_updates_freelinks(self):
-        """Test that both decrement points update freeLinks = remaining"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-                
-            # Count occurrences of freeLinks = remaining
-            matches = re.findall(r'freeLinks = remaining', content)
+            for file_path in files_to_check:
+                with open(file_path, 'r') as f:
+                    content = f.read()
+                    
+                if "redBitly:" not in content:
+                    missing_keys.append(f"{file_path}: redBitly")
+                    
+                if "redShortit:" not in content:
+                    missing_keys.append(f"{file_path}: redShortit")
             
-            if len(matches) >= 2:
-                return True, f"Found {len(matches)} instances of 'freeLinks = remaining'"
+            if not missing_keys:
+                return True, "Both redBitly and redShortit buttons exist in all language files"
             else:
-                return False, f"Found only {len(matches)} instances of 'freeLinks = remaining', expected at least 2"
+                return False, f"Missing keys: {missing_keys}"
         except Exception as e:
             return False, f"File check failed: {str(e)}"
 
-    def test_keyboard_structure_preserved(self):
-        """Test that keyboard structure returned by trans('o') has same shape"""
+    def test_submenu1_structure(self):
+        """Test _index.js submenu1 function shows [redBitly, redShortit] row, [urlShortener] row, [viewShortLinks] row"""
         try:
             with open('/app/js/_index.js', 'r') as f:
                 content = f.read()
                 
-            # Check that the keyboard structure is preserved with reply_markup.keyboard
-            if "reply_markup: {" in content and \
-               "keyboard: result.reply_markup.keyboard.map((row, i) =>" in content:
-                return True, "Keyboard structure preserved in trans('o') function"
+            # Look for submenu1 function with correct structure
+            submenu_pattern = r"submenu1.*?trans\('k\.of',\s*\[\s*\[user\.redBitly,\s*user\.redShortit\],\s*\[user\.urlShortener\],\s*\[user\.viewShortLinks\]\s*\]\)"
+            
+            if re.search(submenu_pattern, content, re.DOTALL):
+                return True, "submenu1 function has correct button structure"
             else:
-                return False, "Keyboard structure not properly preserved"
+                return False, "submenu1 function doesn't have the expected button structure"
         except Exception as e:
             return False, f"File check failed: {str(e)}"
 
-    def test_node_server_port_5000(self):
-        """Test Node.js Express server running on port 5000 via proxy"""
+    def test_bitly_handler(self):
+        """Test _index.js: Bitly button handler saves redSelectProvider[0] as provider then goes to redSelectUrl"""
         try:
-            # Test that the backend proxy can reach Node.js server
-            response = requests.get(f"{self.base_url}/", timeout=10)
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+                
+            # Check for Bitly handler
+            bitly_pattern = r"if.*?message.*?===.*?user\.redBitly.*?redSelectProviderOptions.*?saveInfo\('provider',\s*redSelectProviderOptions\[0\]\).*?goto\.redSelectUrl"
             
-            if response.status_code == 200:
-                content_type = response.headers.get('content-type', '')
-                if 'text/html' in content_type or 'application/json' in content_type:
-                    return True, f"Node.js server accessible via proxy on port 5000 - Status: {response.status_code}, Content-Type: {content_type}"
-                else:
-                    return True, f"Node.js server responding via proxy - Status: {response.status_code}"
+            if re.search(bitly_pattern, content, re.DOTALL):
+                return True, "Bitly button handler correctly saves provider[0] and goes to redSelectUrl"
             else:
-                return False, f"Node.js server error via proxy - Status: {response.status_code}, Body: {response.text[:200]}"
+                return False, "Bitly button handler not found or incorrect"
         except Exception as e:
-            return False, f"Node.js server request failed: {str(e)}"
+            return False, f"File check failed: {str(e)}"
+
+    def test_shortit_handler(self):
+        """Test _index.js: Shortit button handler saves redSelectProvider[1] as provider then goes to redSelectUrl"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+                
+            # Check for Shortit handler
+            shortit_pattern = r"if.*?message.*?===.*?user\.redShortit.*?redSelectProviderOptions.*?saveInfo\('provider',\s*redSelectProviderOptions\[1\]\).*?goto\.redSelectUrl"
+            
+            if re.search(shortit_pattern, content, re.DOTALL):
+                return True, "Shortit button handler correctly saves provider[1] and goes to redSelectUrl"
+            else:
+                return False, "Shortit button handler not found or incorrect"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_redSelectUrl_skips_provider(self):
+        """Test _index.js: redSelectUrl action handler goes directly to redSelectRandomCustom (skips provider selection)"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+                
+            # Look for redSelectUrl handler that goes to redSelectRandomCustom
+            redselecturl_pattern = r"redSelectUrl:.*?goto\.redSelectRandomCustom"
+            
+            if re.search(redselecturl_pattern, content, re.DOTALL):
+                return True, "redSelectUrl handler goes directly to redSelectRandomCustom"
+            else:
+                return False, "redSelectUrl handler doesn't skip provider selection"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_redSelectRandomCustom_back_button(self):
+        """Test _index.js: redSelectRandomCustom back button goes to redSelectUrl (not redSelectProvider)"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+                
+            # Look for back button handling in redSelectRandomCustom
+            back_pattern = r"if.*?message.*?===.*?t\.back.*?return\s+goto\.redSelectUrl"
+            
+            if re.search(back_pattern, content, re.DOTALL):
+                return True, "redSelectRandomCustom back button goes to redSelectUrl"
+            else:
+                return False, "redSelectRandomCustom back button doesn't go to redSelectUrl"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_hosting_handler_env_check(self):
+        """Test _index.js: hostingDomainsRedirect handler checks OFFSHORE_HOSTING_ON env, shows unavailable when false"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+                
+            # Look for hostingDomainsRedirect handler with env check
+            hosting_pattern = r"hostingDomainsRedirect.*?OFFSHORE_HOSTING_ON.*?unavailable"
+            
+            if re.search(hosting_pattern, content, re.DOTALL | re.IGNORECASE):
+                return True, "hostingDomainsRedirect handler checks OFFSHORE_HOSTING_ON env"
+            else:
+                return False, "hostingDomainsRedirect handler doesn't check OFFSHORE_HOSTING_ON env"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_offshore_hosting_env_false(self):
+        """Test OFFSHORE_HOSTING_ON=false exists in /app/.env"""
+        try:
+            with open('/app/.env', 'r') as f:
+                content = f.read()
+                
+            if "OFFSHORE_HOSTING_ON=false" in content:
+                return True, "OFFSHORE_HOSTING_ON=false found in .env"
+            else:
+                return False, "OFFSHORE_HOSTING_ON=false not found in .env"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
+
+    def test_config_setup_default(self):
+        """Test config-setup.js: setDefault for OFFSHORE_HOSTING_ON exists"""
+        try:
+            with open('/app/js/config-setup.js', 'r') as f:
+                content = f.read()
+                
+            if "setDefault('OFFSHORE_HOSTING_ON'" in content:
+                return True, "setDefault for OFFSHORE_HOSTING_ON found in config-setup.js"
+            else:
+                return False, "setDefault for OFFSHORE_HOSTING_ON not found in config-setup.js"
+        except Exception as e:
+            return False, f"File check failed: {str(e)}"
 
 def main():
     """Main test runner"""
-    tester = NomadlyBotAPITester()
+    tester = OffshoreHostingSubmenuTester()
     
-    print("🚀 Starting NomadlyBot Dynamic Keyboard Testing")
+    print("🚀 Starting Offshore Hosting + Submenu Restructure Testing")
     print(f"⚡ Base URL: {tester.base_url}")
-    print("=" * 60)
+    print("=" * 80)
     
     # Run all tests based on review request features
-    tester.run_test("Node.js syntax validation: node --check js/_index.js passes", tester.test_node_syntax_validation)
-    tester.run_test("GET /api/health returns status ok with all services running", tester.test_health_endpoint)
-    tester.run_test("freeLinks is declared as 'let' (not const) at line ~521", tester.test_frelinks_is_let_variable)
-    tester.run_test("freeLinks is set to FREE_LINKS for new users (null/undefined case)", tester.test_freelinks_set_for_new_users)
-    tester.run_test("trans function intercepts key 'o' and returns dynamic keyboard", tester.test_trans_function_dynamic_keyboard)
-    tester.run_test("Dynamic label format with plural handling implemented", tester.test_dynamic_label_format)
-    tester.run_test("URL shortener button matching uses startsWith for dynamic text", tester.test_url_shortener_button_matching)
-    tester.run_test("Both decrement points update freeLinks = remaining", tester.test_decrement_updates_freelinks)
-    tester.run_test("Keyboard structure preserved in trans('o') function", tester.test_keyboard_structure_preserved)
-    tester.run_test("Node.js Express server accessible on port 5000 via proxy", tester.test_node_server_port_5000)
+    tester.run_test("All files pass node --check syntax validation", tester.test_node_syntax_validation_all_files)
+    tester.run_test("GET /api/health returns ok with all services running", tester.test_health_endpoint)
+    tester.run_test("config.js: hostingDomainsRedirect changed to '🌐 Offshore Hosting'", tester.test_config_js_hosting_redirect)
+    tester.run_test("en.js: hostingDomainsRedirect changed to '🌐 Offshore Hosting'", tester.test_en_js_hosting_redirect)
+    tester.run_test("fr.js: hostingDomainsRedirect changed to '🌐 Hébergement Offshore'", tester.test_fr_js_hosting_redirect)
+    tester.run_test("hi.js: hostingDomainsRedirect changed to '🌐 ऑफ़शोर होस्टिंग'", tester.test_hi_js_hosting_redirect)
+    tester.run_test("zh.js: hostingDomainsRedirect changed to '🌐 离岸托管'", tester.test_zh_js_hosting_redirect)
+    tester.run_test("config.js + en.js: user.redBitly = '✂️ Bit.ly' and user.redShortit = '✂️ Shortit (Trial)' exist", tester.test_bitly_shortit_buttons_config)
+    tester.run_test("fr.js + hi.js + zh.js: redBitly and redShortit button labels exist", tester.test_bitly_shortit_buttons_other_langs)
+    tester.run_test("_index.js submenu1 function shows [redBitly, redShortit] row, [urlShortener] row, [viewShortLinks] row", tester.test_submenu1_structure)
+    tester.run_test("_index.js: Bitly button handler saves redSelectProvider[0] as provider then goes to redSelectUrl", tester.test_bitly_handler)
+    tester.run_test("_index.js: Shortit button handler saves redSelectProvider[1] as provider then goes to redSelectUrl", tester.test_shortit_handler)
+    tester.run_test("_index.js: redSelectUrl action handler goes directly to redSelectRandomCustom (skips provider selection)", tester.test_redSelectUrl_skips_provider)
+    tester.run_test("_index.js: redSelectRandomCustom back button goes to redSelectUrl (not redSelectProvider)", tester.test_redSelectRandomCustom_back_button)
+    tester.run_test("_index.js: hostingDomainsRedirect handler checks OFFSHORE_HOSTING_ON env, shows unavailable when false", tester.test_hosting_handler_env_check)
+    tester.run_test("OFFSHORE_HOSTING_ON=false exists in /app/.env", tester.test_offshore_hosting_env_false)
+    tester.run_test("config-setup.js: setDefault for OFFSHORE_HOSTING_ON exists", tester.test_config_setup_default)
     
     # Print summary
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 80)
     print(f"📊 Test Results: {tester.tests_passed}/{tester.tests_run} tests passed")
     
     success_rate = (tester.tests_passed / tester.tests_run * 100) if tester.tests_run > 0 else 0
