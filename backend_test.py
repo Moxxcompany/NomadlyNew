@@ -246,15 +246,20 @@ def main():
     """Main test runner"""
     tester = NomadlyBotAPITester()
     
-    print("🚀 Starting NomadlyBot API Testing")
+    print("🚀 Starting NomadlyBot Dynamic Keyboard Testing")
     print(f"⚡ Base URL: {tester.base_url}")
     print("=" * 60)
     
-    # Run all tests based on review request
+    # Run all tests based on review request features
+    tester.run_test("Node.js syntax validation: node --check js/_index.js passes", tester.test_node_syntax_validation)
     tester.run_test("GET /api/health returns status ok with all services running", tester.test_health_endpoint)
-    tester.run_test("Node.js backend responds via FastAPI proxy", tester.test_bitly_api_direct)  
-    tester.run_test("React frontend loads NomadlyBot dashboard", tester.test_frontend_dashboard)
-    tester.run_test("FastAPI proxy correctly forwards requests to Node.js", tester.test_telegram_webhook_endpoint)
+    tester.run_test("freeLinks is declared as 'let' (not const) at line ~521", tester.test_frelinks_is_let_variable)
+    tester.run_test("freeLinks is set to FREE_LINKS for new users (null/undefined case)", tester.test_freelinks_set_for_new_users)
+    tester.run_test("trans function intercepts key 'o' and returns dynamic keyboard", tester.test_trans_function_dynamic_keyboard)
+    tester.run_test("Dynamic label format with plural handling implemented", tester.test_dynamic_label_format)
+    tester.run_test("URL shortener button matching uses startsWith for dynamic text", tester.test_url_shortener_button_matching)
+    tester.run_test("Both decrement points update freeLinks = remaining", tester.test_decrement_updates_freelinks)
+    tester.run_test("Keyboard structure preserved in trans('o') function", tester.test_keyboard_structure_preserved)
     tester.run_test("Node.js Express server accessible on port 5000 via proxy", tester.test_node_server_port_5000)
     
     # Print summary
