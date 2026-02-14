@@ -5,6 +5,10 @@
 
 const assert = require('assert');
 
+// Set FREE_LINKS env for testing
+process.env.FREE_LINKS = '5';
+process.env.FREE_LINKS_TIME_SECONDS = '86400';
+
 // Test Results
 const testResults = {
   passed: [],
@@ -47,9 +51,9 @@ async function testLanguageFilesLinksRemaining() {
       }
       
       // Test with different values
-      const result0 = langObj.t.linksRemaining(0);
-      const result1 = langObj.t.linksRemaining(1);
-      const result2 = langObj.t.linksRemaining(2);
+      const result0 = langObj.t.linksRemaining(0, 5);
+      const result1 = langObj.t.linksRemaining(1, 5);
+      const result2 = langObj.t.linksRemaining(2, 5);
       
       // Validate returns valid strings
       if (typeof result0 !== 'string' || result0.length === 0) {
@@ -89,8 +93,8 @@ async function testEnglishPluralHandling() {
   try {
     const { en } = require('../lang/en.js');
     
-    const singular = en.t.linksRemaining(1);
-    const plural = en.t.linksRemaining(2);
+    const singular = en.t.linksRemaining(1, 5);
+    const plural = en.t.linksRemaining(2, 5);
     
     // Check that 1 uses singular "link" not "links"
     const singularCorrect = singular.includes('link') && !singular.includes('links');
@@ -189,7 +193,7 @@ async function testRandomLinkFlowCodeReview() {
           if (checkLine.includes('send(chatId, _shortUrl')) {
             hasSendShortUrl = true;
           }
-          if (checkLine.includes('t.linksRemaining(remaining)')) {
+          if (checkLine.includes('t.linksRemaining(remaining')) {
             hasSendLinksRemaining = true;
           }
         }
@@ -240,7 +244,7 @@ async function testCustomLinkFlowCodeReview() {
     }
     
     // Additional check: Count t.linksRemaining usage
-    const linksRemainingUsage = (content.match(/t\.linksRemaining\(remaining\)/g) || []).length;
+    const linksRemainingUsage = (content.match(/t\.linksRemaining\(remaining/g) || []).length;
     logResult(`linksRemaining called in ${linksRemainingUsage} places`, linksRemainingUsage >= 2, `Found ${linksRemainingUsage} usages`);
     
   } catch (error) {
