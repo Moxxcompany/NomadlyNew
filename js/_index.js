@@ -5680,6 +5680,7 @@ app.post('/dynopay/crypto-wallet', authDyno, async (req, res) => {
   del(chatIdOfDynopayPayment, ref)
   const name = await get(nameOf, chatId)
   set(payments, ref, `Crypto,Wallet,wallet,$${usdIn},${chatId},${name},${new Date()},${value} ${coin},transaction,${id}`)
+  notifyGroup(`💰 <b>Wallet Funded!</b>\nUser ${maskName(name)} added funds to their wallet.\nReady to roll! 💪`)
   
   log('=== DYNOPAY WALLET WEBHOOK PROCESSING COMPLETE ===')
 })
