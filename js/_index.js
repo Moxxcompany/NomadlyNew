@@ -21,6 +21,8 @@ const {
   tickerOfDyno,
   tickerViewOfDyno,
   continueAtHostbayKeyboard,
+  freeDomainsOf,
+  freeValidationsOf,
 } = require('./config.js')
 const createShortBitly = require('./bitly.js')
 const { createShortUrlApi, analyticsCuttly } = require('./cuttly.js')
