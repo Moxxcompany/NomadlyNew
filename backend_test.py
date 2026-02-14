@@ -121,19 +121,18 @@ class NomadlyBotAPITester:
 
 def main():
     """Main test runner"""
-    tester = URLShortenerAPITester()
+    tester = NomadlyBotAPITester()
     
-    print("🚀 Starting URL Shortener API Testing")
+    print("🚀 Starting NomadlyBot API Testing")
     print(f"⚡ Base URL: {tester.base_url}")
-    print(f"🔑 Bitly API Key: {tester.bitly_api_key[:20]}...")
     print("=" * 60)
     
     # Run all tests based on review request
     tester.run_test("GET /api/health returns status ok with all services running", tester.test_health_endpoint)
-    tester.run_test("Bitly API is accessible and can shorten URLs", tester.test_bitly_api_direct)  
-    tester.run_test("Frontend dashboard still loads and shows System Online", tester.test_frontend_dashboard)
-    tester.run_test("Telegram webhook endpoint at /telegram/webhook returns 200", tester.test_telegram_webhook_endpoint)
-    tester.run_test("Node.js Express server is running on port 5000 via proxy", tester.test_node_server_port_5000)
+    tester.run_test("Node.js backend responds via FastAPI proxy", tester.test_bitly_api_direct)  
+    tester.run_test("React frontend loads NomadlyBot dashboard", tester.test_frontend_dashboard)
+    tester.run_test("FastAPI proxy correctly forwards requests to Node.js", tester.test_telegram_webhook_endpoint)
+    tester.run_test("Node.js Express server accessible on port 5000 via proxy", tester.test_node_server_port_5000)
     
     # Print summary
     print("\n" + "=" * 60)
