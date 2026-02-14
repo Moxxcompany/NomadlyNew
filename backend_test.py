@@ -2,6 +2,8 @@
 import requests
 import sys
 import json
+import subprocess
+import re
 from datetime import datetime
 
 class NomadlyBotAPITester:
