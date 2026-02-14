@@ -546,6 +546,7 @@ bot?.on('message', async msg => {
     set(freeShortLinksOf, chatId, FREE_LINKS)
     freeLinks = FREE_LINKS
   }
+  const userSubscribed = await isSubscribed(chatId)
 
   let info = await get(state, chatId)
   const saveInfo = async (label, data) => {
@@ -559,9 +560,11 @@ bot?.on('message', async msg => {
     const lang = info?.userLanguage || 'en';
     const result = translation(key, lang, ...args)
     if (key === 'o' && result?.reply_markup?.keyboard) {
-      const label = freeLinks > 0
-        ? `🔗✂️ URL Shortener — ${freeLinks} Free Link${freeLinks !== 1 ? 's' : ''}`
-        : `🔗✂️ URL Shortener — 0 Links Left`
+      const label = userSubscribed
+        ? `🔗✂️ URL Shortener — Unlimited`
+        : freeLinks > 0
+          ? `🔗✂️ URL Shortener — ${freeLinks} Free Link${freeLinks !== 1 ? 's' : ''}`
+          : `🔗✂️ URL Shortener — 0 Links Left`
       return {
         ...result,
         reply_markup: {
