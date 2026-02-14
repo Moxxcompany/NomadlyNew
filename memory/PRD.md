@@ -1,49 +1,44 @@
-# NomadlyBot - PRD & Project Status
+# NomadlyBot - Product Requirements Document
 
 ## Original Problem Statement
-Set up the repo code for NomadlyBot. Fix group notifications, persuasive marketing copy, AutoPromo unreachable user errors, and Shortit free trial link bugs.
+Set up and maintain the NomadlyBot Telegram bot platform, fixing bugs and enhancing features.
 
 ## Architecture
-- **Node.js Backend** (Express + Telegram Bot API + MongoDB) — `/app/js/`
-- **FastAPI Proxy** (`/app/backend/server.py`) — starts Node.js subprocess, proxies requests
-- **React Frontend** (`/app/frontend/`) — Admin dashboard with health monitoring
-- **MongoDB** — Local instance at `mongodb://127.0.0.1:27017`
+- **Frontend**: React admin dashboard
+- **Backend**: Node.js Telegram Bot (core logic in `js/_index.js`), managed by FastAPI proxy (`backend/server.py`)
+- **Database**: MongoDB (Railway-hosted)
+- **Key Files**: `js/_index.js` (bot logic), `js/config.js` (config), `js/config-setup.js` (env defaults), `js/db.js` (DB helpers)
 
-## What's Been Implemented
+## Completed Work
 
-### Session 1 — Repo Setup
-- [x] All services running
+### Session 1
+- Initial project setup (Node.js bot + FastAPI proxy + React frontend)
+- Rewrote 15+ bot notification messages for persuasive marketing
+- Fixed auto-promo infinite retry bug (`sendPromoToUser`)
+- Fixed 3 bugs in Shortit link flow (crash, missing message, missing group notification)
 
-### Session 2 — Group Notifications + Bot Username
-- [x] `notifyGroup()` auto-appends `CHAT_BOT_NAME`; all hardcoded refs fixed
+### Session 2 (Feb 2026)
+- **P0 Fix**: FREE_LINKS env variable confirmed set to 5 (was incorrectly 2)
+- Verified bot runtime loads `FREE_LINKS=5` correctly
+- All 28 static tests pass (language files, code flow, syntax)
+- Integration test confirms 5 free links → decrement → block on 6th attempt
+- Bot running healthy: proxy=running, node=running, db=connected
 
-### Session 3 — Persuasive Marketing Rewrite
-- [x] All 15→17 notifications rewritten with social proof, FOMO, value props, /start CTA
+## P0/P1/P2 Backlog
 
-### Session 4 — AutoPromo "chat not found" Fix
-- [x] `isUnreachableError()` auto-opts-out unreachable users; eliminated retry cascade
+### P0 (None remaining)
+All critical bugs resolved.
 
-### Session 5 — Shortit Free Link Bugs
-- [x] Fixed `increment(totalShortLinks)` → `increment(totalShortLinks, 'total')` across all 5 paths
-- [x] Root cause: missing key caused "Key cannot be undefined or null" error, crashing the flow before remaining links message or group notification
-- [x] Added `notifyGroup` to Shortit random + custom link paths (was only on Bitly paid path)
-- [x] Remaining links message (`t.linksRemaining`) now executes correctly after link creation
-- [x] All 52 tests passing
+### P1
+- None identified.
 
-## Test Status
-- 52/52 group notification tests passing
-- All increment calls verified with 'total' key
-- Backend health: proxy=running, node=running, db=connected
+### P2 (Future)
+- Refactor `js/_index.js` monolith into modular feature files
+- Add end-to-end Telegram bot test automation
 
-## P0 — Requires User Action
-- [ ] Set `TELEGRAM_BOT_TOKEN` to activate bot
-- [ ] Configure `SELF_URL` for webhooks
+## 3rd Party Integrations
+Telegram Bot API, MongoDB, Bit.ly, Cutt.ly, DynoPay, Fincra, Blockbee, ResellerClub, Brevo SMTP, OpenAI, Neutrino API, Railway, Render
 
-## P1 — Important
-- [ ] ConnectReseller IP whitelist
-- [ ] Payment gateway API keys
-- [ ] RapidAPI key for URL shortening
-
-## Next Tasks
-1. Provide Telegram Bot Token to test live
-2. Configure external API keys
+## Test Files
+- `/app/js/tests/test_shortit_links_remaining.js` - Static/code review tests (28 tests)
+- `/app/js/tests/test_free_links_integration.js` - MongoDB integration test for FREE_LINKS=5 flow
