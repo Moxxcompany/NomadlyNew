@@ -515,13 +515,20 @@ schedule.scheduleJob('*/5 * * * *', function() {
 bot?.on('message', async msg => {
   const chatId = msg?.chat?.id
   const message = msg?.text || ''
-  log('message: ' + message + '\tfrom: ' + chatId + ' ' + msg?.from?.username)
-
-  // Ignore non-command messages in group chats
   const chatType = msg?.chat?.type
-  if ((chatType === 'group' || chatType === 'supergroup') && !message.startsWith('/')) {
-    return
+  const isGroupChat = chatType === 'group' || chatType === 'supergroup'
+  
+  // In group chats, only respond to commands that start with /
+  // Also ignore messages without text (photos, stickers, etc.) in groups
+  if (isGroupChat) {
+    if (!msg?.text || !message.startsWith('/')) {
+      return // Silently ignore non-command messages in groups
+    }
+    // Strip bot username from command if present (e.g., /start@BotName -> /start)
+    // This prevents responding to commands meant for other bots
   }
+  
+  log('message: ' + message + '\tfrom: ' + chatId + ' ' + msg?.from?.username)
 
   // Throttle Connect Reseller IP check to once per hour instead of every message
   const now_cr = Date.now()
