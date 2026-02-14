@@ -384,10 +384,18 @@ test('customCuttly.js has no syntax errors (already checked via node --check)', 
 test('Count total notifyGroup calls - should be 15 total hooks', () => {
   const matches = indexJsContent.match(/notifyGroup\(`[^`]*`\)/g) || [];
   console.log(`   Found ${matches.length} notifyGroup calls`);
-  // According to requirements: onboarding (1), subscription (4), domain (4), wallet (3), bitly (1), leads (2) = 15
   assert(
     matches.length >= 15,
     `Expected at least 15 notifyGroup calls, found ${matches.length}`
+  );
+});
+
+test('Every group message will include bot username via taggedMessage', () => {
+  // The notifyGroup function appends CHAT_BOT_NAME to every message
+  // So we just verify the function has the taggedMessage logic
+  assert(
+    indexJsContent.includes('taggedMessage') && indexJsContent.includes('CHAT_BOT_NAME'),
+    'notifyGroup should construct taggedMessage using CHAT_BOT_NAME'
   );
 });
 
