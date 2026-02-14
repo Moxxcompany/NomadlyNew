@@ -273,26 +273,26 @@ cPanel hosting & country TLDs?
     shortener: [
       `<b>SHORTEN. BRAND. TRACK.</b>
 
-Stop using boring links nobody clicks!
+Start with <b>5 FREE trial links</b> — no payment needed!
 
 - Custom branded URLs with YOUR domain
 - Real-time click analytics
-- Free Shortit links for all users
 - Bit.ly integration available
+- Unlimited links with subscription
 
-Tap <b>URL Shortener</b> to get started!
+Tap <b>URL Shortener</b> to claim your free links!
 
 -----
 cPanel hosting or country TLDs?
 Visit @hostbay_bot`,
 
-      `<b>ARE YOUR LINKS WORKING FOR YOU?</b>
+      `<b>5 FREE SHORT LINKS — NO STRINGS ATTACHED</b>
 
-Every click tells a story.
+Every new user gets 5 free Shortit trial links.
 
 + Brand links with YOUR domain
 + Track every single click
-+ Unlimited Shortit links with subscription
++ Upgrade for unlimited links anytime
 
 Tap <b>URL Shortener</b> now!
 
@@ -304,9 +304,9 @@ Country domains (.ng .za .ke .gh)?
 
 <code>bit.ly/3xK9mQ2</code> vs <code>yourbrand.com/deals</code>
 
+- 5 free trial links to get started
 - Use your own domain for short links
 - See who clicks, when, and where
-- Random or custom back-half
 
 <b>URL Shortener</b> — try Shortit free!
 
@@ -315,7 +315,7 @@ Need hosting? Visit @hostbay_bot`,
 
       `<b>LINK SHORTENING MADE POWERFUL</b>
 
-Marketing without tracking is driving blind.
+Start FREE with 5 trial Shortit links!
 
 - Redirect & shorten any URL
 - Custom domain shortener
@@ -330,6 +330,7 @@ cPanel hosting & country TLDs?
       `<b>SMART MARKETERS USE SMART LINKS</b>
 
 Branded short links get up to 34% more clicks.
+Start with 5 FREE trial links today!
 
 + Use your domain as a shortener
 + Track performance in real-time
