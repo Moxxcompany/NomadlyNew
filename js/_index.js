@@ -1784,7 +1784,7 @@ bot?.on('message', async msg => {
       }
       const { usdBal: usd, ngnBal: ngn } = await getBalance(walletOf, chatId)
       send(chatId, t.showWallet(usd, ngn), trans('o'))
-      notifyGroup(`🌐 <b>Domain Purchased!</b>\nUser ${maskName(name)} just registered a new domain.\nBuilding their online presence! 🏗️`)
+      notifyGroup(`🌐 <b>Domain Registered!</b>\nUser ${maskName(name)} just claimed <b>${domain}</b> — your dream domain could be next.\nGrab yours before it's taken — /start`)
     },
     'hosting-pay': async coin => {
       set(state, chatId, 'action', 'none')
@@ -4974,7 +4974,7 @@ const bankApis = {
     // Buy Domain
     const error = await buyDomainFullProcess(chatId, lang, domain)
     if (error) return res.send(html(error))
-    notifyGroup(`🌐 <b>Domain Purchased!</b>\nUser ${maskName(name)} just registered a new domain.\nBuilding their online presence! 🏗️`)
+    notifyGroup(`🌐 <b>Domain Registered!</b>\nUser ${maskName(name)} just claimed <b>${domain}</b> — your dream domain could be next.\nGrab yours before it's taken — /start`)
 
     res.send(html())
   },
