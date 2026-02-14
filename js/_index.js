@@ -515,6 +515,13 @@ bot?.on('message', async msg => {
   const chatId = msg?.chat?.id
   const message = msg?.text || ''
   log('message: ' + message + '\tfrom: ' + chatId + ' ' + msg?.from?.username)
+
+  // Ignore non-command messages in group chats
+  const chatType = msg?.chat?.type
+  if ((chatType === 'group' || chatType === 'supergroup') && !message.startsWith('/')) {
+    return
+  }
+
   // Throttle Connect Reseller IP check to once per hour instead of every message
   const now_cr = Date.now()
   if (NOT_TRY_CR === undefined && now_cr - last_cr_check_time > 3600000) {
