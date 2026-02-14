@@ -77,7 +77,7 @@ const user = {
   phoneNumberLeads: '📲 Pistes SMS HQ',
   hostingDomainsRedirect: '🌐 Hébergement & Domaines',
   wallet: '👛 Mon portefeuille',
-  urlShortenerMain: "🔗✂️ Raccourcisseur d'URL",
+  urlShortenerMain: `🔗✂️ Raccourcisseur d'URL - ${FREE_LINKS} Essais`,
   vpsPlans: 'Acheter un VPS Bulletproof🛡️ - Horaire/Mensuel',
   buyPlan: '🔔 Souscrire ici',
   domainNames: '🌐 Enregistrer des noms de domaine - ❌ DMCA',
@@ -504,8 +504,8 @@ ${CHAT_BOT_NAME}`,
   redIssueUrlBitly: `Problème, votre portefeuille n'est pas facturé.`,
   redIssueSlugCuttly: `Le nom de lien préféré est déjà pris, essayez un autre.`,
   redIssueUrlCuttly: `Problème`,
-  freeLinksExhausted: `Vous avez utilisé tous vos liens Shortit gratuits ! Abonnez-vous pour obtenir des liens Shortit illimités, des domaines ".sbs/.xyz" gratuits et plus encore. Appuyez sur "🔔 S'abonner" pour choisir un plan.`,
-  linksRemaining: count => `Il vous reste ${count} lien${count !== 1 ? 's' : ''} Shortit gratuit${count !== 1 ? 's' : ''}.`,
+  freeLinksExhausted: `Vous avez utilisé vos ${FREE_LINKS} liens Shortit d'essai ! Abonnez-vous pour obtenir des liens Shortit illimités, des domaines ".sbs/.xyz" gratuits et plus encore. Appuyez sur "🔔 S'abonner" pour choisir un plan.`,
+  linksRemaining: (count, total) => `Il vous reste ${count} sur ${total || FREE_LINKS} lien${count !== 1 ? 's' : ''} Shortit d'essai.`,
   redNewPrice: (price, newPrice) =>
     `Le prix est maintenant de $${view(newPrice)} <s>($${price})</s>. Veuillez choisir la méthode de paiement.`,
   customLink: 'Lien personnalisé',
@@ -593,7 +593,7 @@ const selectFormatOf = {
 
 const redSelectRandomCustom = ['Lien court aléatoire']
 
-const redSelectProvider = ['Bit.ly 10 $', 'Shortit (Gratuit)']
+const redSelectProvider = ['Bit.ly 10 $', `Shortit (Essai ${FREE_LINKS})`]
 
 const tickerOf = {
   BTC: 'btc',

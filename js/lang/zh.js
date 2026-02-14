@@ -76,7 +76,7 @@ const user = {
   phoneNumberLeads: '📲 HQ 短信线索',
   hostingDomainsRedirect: '🌐 托管和域名',
   wallet: '👛 我的钱包',
-  urlShortenerMain: '🔗✂️ URL 缩短器',
+  urlShortenerMain: `🔗✂️ URL 缩短器 - ${FREE_LINKS}次试用`,
   vpsPlans: '购买防弹 VPS🛡️ - 按小时/按月',
   buyPlan: '🔔 订阅这里',
   domainNames: '🌐 注册域名 - ❌ DMCA',
@@ -298,7 +298,7 @@ ${CHAT_BOT_BRAND}团队
 了解更多： ${TG_CHANNEL}`,
   successPayment: `支付成功处理！现在可以关闭此窗口。`,
   welcome: `感谢选择 ${CHAT_BOT_NAME}！请在下面选择一个选项：`,
-  welcomeFreeTrial: `${CHAT_BOT_BRAND}欢迎您！使用Shortit免费缩短URL。订阅可获得无限Shortit链接、免费 ".sbs/.xyz" 域名和免费USA电话验证。体验${CHAT_BOT_BRAND}的不同！`,
+  welcomeFreeTrial: `${CHAT_BOT_BRAND}欢迎您！您有${FREE_LINKS}次Shortit试用链接来缩短URL。订阅可获得无限Shortit链接、免费 ".sbs/.xyz" 域名和免费USA电话验证。体验${CHAT_BOT_BRAND}的不同！`,
   unknownCommand: `找不到命令。按 /start 或联系支持 ${SUPPORT_USERNAME}。了解更多 ${TG_HANDLE}。`,
   support: `请联系支持 ${SUPPORT_USERNAME}。了解更多 ${TG_HANDLE}。`,
   joinChannel: `请加入频道 ${TG_CHANNEL}。`,
@@ -490,8 +490,8 @@ ${CHAT_BOT_NAME}`,
   redIssueUrlBitly: `问题，您的钱包未收费`,
   redIssueSlugCuttly: `您选择的链接名称已被使用，请尝试另一个`,
   redIssueUrlCuttly: `问题`,
-  freeLinksExhausted: `您已用完所有免费Shortit链接！订阅可获得无限Shortit链接、免费".sbs/.xyz"域名等更多功能。点击"🔔 订阅"选择计划。`,
-  linksRemaining: count => `您还剩 ${count} 个免费Shortit链接。`,
+  freeLinksExhausted: `您已用完全部${FREE_LINKS}次Shortit试用链接！订阅可获得无限Shortit链接、免费".sbs/.xyz"域名等更多功能。点击"🔔 订阅"选择计划。`,
+  linksRemaining: (count, total) => `您还剩 ${count}/${total || FREE_LINKS} 次Shortit试用链接。`,
   redNewPrice: (price, newPrice) => `价格现在为 $${view(newPrice)} <s>($${price})</s>。请选择支付方式。`,
   customLink: '自定义链接',
   randomLink: '随机链接',
@@ -573,7 +573,7 @@ const selectFormatOf = {
 
 const redSelectRandomCustom = ['随机短链接']
 
-const redSelectProvider = ['Bit.ly $10', 'Shortit（免费）']
+const redSelectProvider = ['Bit.ly $10', `Shortit（试用 ${FREE_LINKS}）`]
 
 const tickerOf = {
   BTC: 'btc',

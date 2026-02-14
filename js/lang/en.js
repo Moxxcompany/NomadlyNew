@@ -76,7 +76,7 @@ const user = {
   phoneNumberLeads: '📲 HQ SMS Lead',
   hostingDomainsRedirect: '🌐 Hosting & Domains',
   wallet: '👛 My Wallet',
-  urlShortenerMain: '🔗✂️ URL Shortener',
+  urlShortenerMain: `🔗✂️ URL Shortener - ${FREE_LINKS} Trial Links`,
   vpsPlans: 'Buy Bulletproof VPS🛡️ - Hourly/Monthly',
   buyPlan: '🔔 Subscribe Here',
   domainNames: '🌐 Register Domain Names - ❌ DMCA',
@@ -322,7 +322,7 @@ Discover more: ${TG_CHANNEL}`,
   successPayment: `Payment Processed Successfully! You can now close this window.`,
 
   welcome: `Thank you for choosing ${CHAT_BOT_NAME}! Please choose an option below:`,
-  welcomeFreeTrial: `Welcome to ${CHAT_BOT_BRAND}! Shorten URLs for free with Shortit. Subscribe for unlimited Shortit links, free ".sbs/.xyz" domains and free USA phone validations. Experience the ${CHAT_BOT_BRAND} difference!`,
+  welcomeFreeTrial: `Welcome to ${CHAT_BOT_BRAND}! You have ${FREE_LINKS} trial Shortit links to shorten URLs. Subscribe for unlimited Shortit links, free ".sbs/.xyz" domains and free USA phone validations. Experience the ${CHAT_BOT_BRAND} difference!`,
 
   unknownCommand: `Command not found. Press /start or Please contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
 
@@ -554,8 +554,8 @@ ${bal(usd, ngn)}`,
   redIssueUrlBitly: `Some issue, your wallet is not charged.`,
   redIssueSlugCuttly: `The preferred link name is already taken, try another.`,
   redIssueUrlCuttly: `Some issue`,
-  freeLinksExhausted: `You've used all your free Shortit links! Subscribe to get unlimited Shortit links, free ".sbs/.xyz" domains, and more. Tap "🔔 Subscribe Here" to choose a plan.`,
-  linksRemaining: count => `You have ${count} free Shortit link${count !== 1 ? 's' : ''} remaining.`,
+  freeLinksExhausted: `You've used all ${FREE_LINKS} trial Shortit links! Subscribe to get unlimited Shortit links, free ".sbs/.xyz" domains, and more. Tap "🔔 Subscribe Here" to choose a plan.`,
+  linksRemaining: (count, total) => `You have ${count} of ${total || FREE_LINKS} trial Shortit link${count !== 1 ? 's' : ''} remaining.`,
   redNewPrice: (price, newPrice) => `Price is now $${view(newPrice)} <s>($${price})</s> Please choose payment method.`,
   customLink: 'Custom Link',
   randomLink: 'Random Link',
@@ -639,7 +639,7 @@ const selectFormatOf = {
 
 const redSelectRandomCustom = ['Random Short Link']
 
-const redSelectProvider = ['Bit.ly $10', 'Shortit (Free)']
+const redSelectProvider = ['Bit.ly $10', `Shortit (Trial ${FREE_LINKS})`]
 
 const tickerOf = {
   BTC: 'btc',
