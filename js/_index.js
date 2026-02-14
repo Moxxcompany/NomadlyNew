@@ -3142,6 +3142,11 @@ bot?.on('message', async msg => {
   if (action === a.redSelectCustomExt) {
     if (message === t.back) return goto.redSelectRandomCustom()
 
+    // Check if user has free links or is subscribed
+    if (!(await isSubscribed(chatId)) && !(await freeLinksAvailable(chatId))) {
+      return send(chatId, t.freeLinksExhausted, trans('o'))
+    }
+
     if (!isValidUrl(`https://abc.com/${message}`)) return send(chatId, t.notValidHalf)
     try {
       const { url } = info
@@ -3153,6 +3158,12 @@ bot?.on('message', async msg => {
       set(maskOf, shortUrl, _shortUrl)
       set(fullUrlOf, shortUrl, url)
       set(linksOf, chatId, shortUrl, url)
+
+      // Decrement free links counter for non-subscribed users
+      if (!(await isSubscribed(chatId))) {
+        decrement(freeShortLinksOf, chatId)
+      }
+
       set(state, chatId, 'action', 'none')
       return send(chatId, _shortUrl, trans('o'))
     } catch (error) {
