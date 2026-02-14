@@ -5910,8 +5910,10 @@ const setupTelegramWebhook = async () => {
     await bot.deleteWebHook()
     log('🗑️  Deleted old webhook')
     
-    // Set the new webhook
-    await bot.setWebHook(webhookUrl)
+    // Set the new webhook with all required update types
+    await bot.setWebHook(webhookUrl, {
+      allowed_updates: ['message', 'callback_query', 'my_chat_member']
+    })
     log('✅ Telegram webhook set successfully')
     log(`📡 Webhook URL: ${webhookUrl}`)
     
