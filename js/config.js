@@ -171,6 +171,7 @@ ${CHAT_BOT_BRAND} Team
   resetLoginDeny: 'Ok sure. No further action required.',
   resetLogin: `${CHAT_BOT_BRAND}SMS: Are you trying to log out of your previous device?`,
   select: `Please select an option:`,
+  urlShortenerSelect: `Shorten, brand, or track your links:`,
 
 // cPanel/Plesk Plans initial select plan text
   selectPlan: `Please select a plan:`,
@@ -229,7 +230,7 @@ Best regards,
 ${CHAT_BOT_NAME}`,
 
   askEmail: `Please provide an email for payment confirmation.`,
-  askValidAmount: 'Please provide a valid number',
+  askValidAmount: 'Please enter a valid amount.',
   askValidEmail: 'Please provide a valid email',
   askValidCrypto: 'Please choose a valid crypto currency',
   askValidPayOption: 'Please choose a valid payment option',
