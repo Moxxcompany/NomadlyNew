@@ -1268,11 +1268,10 @@ bot?.on('message', async msg => {
     // cPanel Plans SubMenu
     submenu3: () => {
       saveInfo('username', username)
+      saveInfo('hostingType', 'cPanel')
       set(state, chatId, 'action', a.submenu3)
       send( chatId, t.selectPlan, k.of(
-        HOSTING_TRIAL_PLAN_ON && HOSTING_TRIAL_PLAN_ON === 'true'
-          ? [[user.freeTrial, user.starterPlan], [user.proPlan, user.businessPlan], user.contactSupport]
-          : [[user.starterPlan], [user.proPlan, user.businessPlan], user.contactSupport]
+        [[user.starterPlan], [user.proPlan, user.businessPlan], user.contactSupport]
       ));
     },
 
@@ -1327,12 +1326,12 @@ bot?.on('message', async msg => {
 
     // Step 1: Select Plan
     selectPlan: plan => {
-      let planName = 'Starter Plan';
+      let planName = 'Basic Plan';
 
       if (plan === a.businessPlan) {
-        planName = 'Business Plan';
+        planName = 'Intermediate Plan';
       } else if (plan === a.proPlan) {
-        planName = 'Pro Plan';
+        planName = 'Starter Plan';
       }
 
       saveInfo('plan', planName)
@@ -1433,9 +1432,9 @@ bot?.on('message', async msg => {
     proceedWithEmail: (domainName, domainPrice) => {
       let hostingPrice = parseFloat(HOSTING_STARTER_PLAN_PRICE)
 
-      if (info.plan === 'Business Plan') {
+      if (info.plan === 'Intermediate Plan') {
         hostingPrice = parseFloat(HOSTING_BUSINESS_PLAN_PRICE)
-      } else if (info.plan === 'Pro Plan') {
+      } else if (info.plan === 'Starter Plan') {
         hostingPrice = parseFloat(HOSTING_PRO_PLAN_PRICE)
       }
 
@@ -1897,7 +1896,7 @@ bot?.on('message', async msg => {
       const priceNgn = await usdToNgn(price)
       if (coin === u.ngn && ngnBal < priceNgn) return send(chatId, t.walletBalanceLow, k.of([u.deposit]))
 
-      await registerDomainAndCreateCpanel(send, info, trans('o'), state)
+      await registerDomainAndCreateCpanel(send, info, trans('o'), state, hostingTransactions)
 
       // wallet update
       if (coin === u.usd) {
@@ -2554,7 +2553,7 @@ bot?.on('message', async msg => {
     if (message === t.back || message === user.searchAnotherDomain) return goto.registerNewDomain()
     if (message === user.continueWithDomain(info.website_name)) {
       await saveInfo('continue_domain_last_state', 'registerNewDomain')
-      return goto.nameserverSelection(info.website_name)
+      return goto.enterYourEmail()
     }
   }
 
@@ -2562,7 +2561,7 @@ bot?.on('message', async msg => {
     if (message === t.back || message === user.searchAnotherDomain) return goto.useExistingDomain()
     if (message === user.continueWithDomain(info.website_name)) {
       await saveInfo('continue_domain_last_state', 'useExistingDomain')
-      return goto.nameserverSelection(info.website_name)
+      return goto.enterYourEmail()
     }
   }
 
@@ -2581,7 +2580,7 @@ bot?.on('message', async msg => {
   }
 
   if (action === a.enterYourEmail) {
-    if (message === t.back) return goto.nameserverSelection(info.website_name)
+    if (message === t.back) return goto.submenu3()
 
     if (!isValidEmail(message)) {
       return send(chatId, hP.generatePlanStepText('invalidEmail'), bc)
