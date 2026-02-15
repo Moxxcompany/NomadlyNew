@@ -4243,7 +4243,7 @@ bot?.on('message', async msg => {
   }
   if (message === user.hostingDomainsRedirect || message.startsWith('🌐 Offshore Hosting') || message.startsWith('🌐 Hosting')) {
     if (process.env.OFFSHORE_HOSTING_ON === 'false') {
-      return send(chatId, `🌐 Offshore Hosting is currently unavailable. Contact ${SUPPORT_USERNAME} for updates.`, trans('o'))
+      return send(chatId, `🌐 Offshore Hosting is currently unavailable. Contact ${process.env.SUPPORT_USERNAME} for updates.`, trans('o'))
     }
     return goto.submenu3()
   }
