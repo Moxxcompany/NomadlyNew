@@ -4793,6 +4793,53 @@ schedule.scheduleJob('*/5 * * * *', function() {
   checkVPSPlansExpiryandPayment()
 })
 
+// Check hosting plan expiry daily at midnight
+schedule.scheduleJob('0 0 * * *', function() {
+  checkHostingPlansExpiry()
+})
+
+async function checkHostingPlansExpiry() {
+  try {
+    const { suspendAccount } = require('./hostmenow')
+    const now = new Date()
+    const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
+
+    // Find accounts expiring within 3 days
+    const expiringAccounts = await hostingTransactions.find({
+      status: 'active',
+      expiresAt: { $lte: threeDaysFromNow.toISOString() }
+    }).toArray()
+
+    for (const account of expiringAccounts) {
+      const { chatId, serviceId, domain, plan, expiresAt } = account
+      const userInfo = await state.findOne({ _id: parseFloat(chatId) })
+      const lang = userInfo?.userLanguage ?? 'en'
+      const expiryDate = new Date(expiresAt)
+
+      if (expiryDate <= now) {
+        // Expired — suspend account
+        log(`[Hosting Expiry] Suspending expired account: ${serviceId} (${domain})`)
+        const result = await suspendAccount(serviceId)
+        if (result.status === 'success') {
+          await hostingTransactions.updateOne(
+            { _id: serviceId },
+            { $set: { status: 'suspended' } }
+          )
+          sendMessage(chatId, `Your hosting plan <b>${plan}</b> for <b>${domain}</b> has expired and been suspended.\n\nPlease renew to reactivate. Contact ${process.env.SUPPORT_USERNAME} for help.`)
+        } else {
+          log(`[Hosting Expiry] Suspend failed for ${serviceId}: ${result.message}`)
+        }
+      } else {
+        // Expiring soon — send reminder
+        const daysLeft = Math.ceil((expiryDate - now) / (24 * 60 * 60 * 1000))
+        sendMessage(chatId, `Reminder: Your hosting plan <b>${plan}</b> for <b>${domain}</b> expires in <b>${daysLeft} day${daysLeft > 1 ? 's' : ''}</b>.\n\nPlease renew to avoid suspension.`)
+      }
+    }
+  } catch (error) {
+    console.error('[Hosting Expiry] Error checking hosting expiry:', error)
+  }
+}
+
 async function checkVPSPlansExpiryandPayment() {
   const now = new Date()
   const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000)
