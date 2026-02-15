@@ -16,6 +16,8 @@ A complex Telegram bot application for domain registration, offshore hosting (cP
 - **Telegram webhook URL** — environment-aware using `HOSTED_ON` env var (Feb 2026)
   - `HOSTED_ON=railway` → `${SELF_URL}/telegram/webhook`
   - Otherwise → `${SELF_URL}/api/telegram/webhook`
+- **Dynopay → BlockBee auto-fallback** (Feb 2026) — All 6 crypto payment flows (wallet, domain, hosting, VPS, VPS upgrade, plan) now try Dynopay first; on any error/timeout/unreachable, silently fall back to BlockBee so users always get a crypto address
+- **SUPPORT_USERNAME bug fix** — Fixed `ReferenceError` in offshore hosting disabled message (was missing `process.env.`)
 
 ## Blocked Items (Require User Action)
 - **P1:** HostMeNow `CreateAccount` API returns "Access Denied" — user must contact HostMeNow support
