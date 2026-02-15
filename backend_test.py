@@ -89,9 +89,9 @@ class HostMeNowMigrationTester:
                 const hostmenow = require("./js/hostmenow.js");
                 hostmenow.getProducts().then(response => {
                     console.log("API Response:", JSON.stringify(response, null, 2));
-                    if (response && response.status === "success" && response.data && response.data.products) {
-                        const products = response.data.products;
-                        const productIds = products.map(p => p.id);
+                    if (response && response.status === "success" && response.data) {
+                        const products = Array.isArray(response.data) ? response.data : (response.data.products || []);
+                        const productIds = products.map(p => p.product_id || p.id);
                         const hasRequired = [111, 112, 114].every(id => productIds.includes(id));
                         console.log("Product IDs found:", productIds);
                         console.log("Has required IDs (111, 112, 114):", hasRequired);
