@@ -7,7 +7,7 @@ import re
 import os
 from datetime import datetime
 
-class OffshoreHostingSubmenuTester:
+class HostMeNowMigrationTester:
     def __init__(self, base_url="https://quick-start-65.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
