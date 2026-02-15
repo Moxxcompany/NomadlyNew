@@ -175,7 +175,7 @@ class HostMeNowMigrationTester:
                 
                 for (const domain of validTests) {
                     try {
-                        const result = checkExistingDomain(domain);
+                        const result = await checkExistingDomain(domain);
                         if (result && result.available === true) {
                             console.log(`✓ ${domain}: PASS`);
                         } else {
@@ -191,7 +191,7 @@ class HostMeNowMigrationTester:
                 console.log("Testing invalid domains:");
                 for (const domain of invalidTests) {
                     try {
-                        const result = checkExistingDomain(domain);
+                        const result = await checkExistingDomain(domain);
                         if (result && result.available === false) {
                             console.log(`✓ ${domain}: PASS - correctly rejected`);
                         } else {
