@@ -166,50 +166,55 @@ class HostMeNowMigrationTester:
             result = subprocess.run(['node', '-e', '''
                 const { checkExistingDomain } = require("./js/cr-check-domain-available.js");
                 
-                // Test valid domains
-                const validTests = ["example.com", "test-site.org", "my-domain.net"];
-                const invalidTests = ["invalid", ".com", "domain.", "spaced domain.com", ""];
-                
-                console.log("Testing valid domains:");
-                let allPassed = true;
-                
-                for (const domain of validTests) {
-                    try {
-                        const result = await checkExistingDomain(domain);
-                        if (result && result.available === true) {
-                            console.log(`✓ ${domain}: PASS`);
-                        } else {
-                            console.log(`✗ ${domain}: FAIL - should be valid`);
+                (async () => {
+                    // Test valid domains
+                    const validTests = ["example.com", "test-site.org", "my-domain.net"];
+                    const invalidTests = ["invalid", ".com", "domain.", "spaced domain.com", ""];
+                    
+                    console.log("Testing valid domains:");
+                    let allPassed = true;
+                    
+                    for (const domain of validTests) {
+                        try {
+                            const result = await checkExistingDomain(domain);
+                            if (result && result.available === true) {
+                                console.log(`✓ ${domain}: PASS`);
+                            } else {
+                                console.log(`✗ ${domain}: FAIL - should be valid`);
+                                allPassed = false;
+                            }
+                        } catch (e) {
+                            console.log(`✗ ${domain}: ERROR - ${e.message}`);
                             allPassed = false;
                         }
-                    } catch (e) {
-                        console.log(`✗ ${domain}: ERROR - ${e.message}`);
-                        allPassed = false;
                     }
-                }
-                
-                console.log("Testing invalid domains:");
-                for (const domain of invalidTests) {
-                    try {
-                        const result = await checkExistingDomain(domain);
-                        if (result && result.available === false) {
-                            console.log(`✓ ${domain}: PASS - correctly rejected`);
-                        } else {
-                            console.log(`✗ ${domain}: FAIL - should be invalid`);
-                            allPassed = false;
+                    
+                    console.log("Testing invalid domains:");
+                    for (const domain of invalidTests) {
+                        try {
+                            const result = await checkExistingDomain(domain);
+                            if (result && result.available === false) {
+                                console.log(`✓ ${domain}: PASS - correctly rejected`);
+                            } else {
+                                console.log(`✗ ${domain}: FAIL - should be invalid`);
+                                allPassed = false;
+                            }
+                        } catch (e) {
+                            console.log(`✓ ${domain}: PASS - correctly threw error`);
                         }
-                    } catch (e) {
-                        console.log(`✓ ${domain}: PASS - correctly threw error`);
                     }
-                }
-                
-                if (allPassed) {
-                    console.log("All domain validation tests passed");
-                    process.exit(0);
-                } else {
-                    console.log("Some domain validation tests failed");
+                    
+                    if (allPassed) {
+                        console.log("All domain validation tests passed");
+                        process.exit(0);
+                    } else {
+                        console.log("Some domain validation tests failed");
+                        process.exit(1);
+                    }
+                })().catch(e => {
+                    console.log("Error:", e.message);
                     process.exit(1);
-                }
+                });
             '''], capture_output=True, text=True, cwd='/app', timeout=15)
             
             if result.returncode == 0:
