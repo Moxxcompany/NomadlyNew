@@ -5129,7 +5129,7 @@ const bankApis = {
     }
 
     // Buy Domain Hosting
-    await registerDomainAndCreateCpanel(send, info, translation('o', lang), state)
+    await registerDomainAndCreateCpanel(send, info, translation('o', lang), state, hostingTransactions, bot)
 
     res.send(html())
   },
@@ -5449,7 +5449,7 @@ app.get('/crypto-pay-hosting', auth, async (req, res) => {
     sendMessage(chatId, translation('t.sentMoreMoney', lang, `$${price}`, `$${usdIn}`))
   }
 
-  await registerDomainAndCreateCpanel(send, info, translation('o', lang), state)
+  await registerDomainAndCreateCpanel(send, info, translation('o', lang), state, hostingTransactions, bot)
 
   res.send(html())
 })
@@ -5664,7 +5664,7 @@ app.post('/dynopay/crypto-pay-hosting', authDyno, async (req, res) => {
     sendMessage(chatId, translation('t.sentMoreMoney', lang, `$${price}`, `$${usdIn}`))
   }
 
-  await registerDomainAndCreateCpanel(send, info, translation('o', lang), state)
+  await registerDomainAndCreateCpanel(send, info, translation('o', lang), state, hostingTransactions, bot)
 
   res.send(html())
 })
