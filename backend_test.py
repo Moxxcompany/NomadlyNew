@@ -69,36 +69,50 @@ class HostMeNowMigrationTester:
         except Exception as e:
             return False, f"Request failed: {str(e)}"
 
-    def test_node_syntax_validation_all_files(self):
-        """Test Node.js syntax validation for all required files"""
-        files_to_check = [
-            'js/_index.js',
-            'js/config.js', 
-            'js/lang/en.js',
-            'js/lang/fr.js',
-            'js/lang/hi.js', 
-            'js/lang/zh.js',
-            'js/config-setup.js'
-        ]
-        
-        failed_files = []
-        passed_files = []
-        
-        for file_path in files_to_check:
-            try:
-                result = subprocess.run(['node', '--check', file_path], 
-                                      capture_output=True, text=True, cwd='/app')
-                if result.returncode == 0:
-                    passed_files.append(file_path)
-                else:
-                    failed_files.append(f"{file_path}: {result.stderr}")
-            except Exception as e:
-                failed_files.append(f"{file_path}: {str(e)}")
-        
-        if not failed_files:
-            return True, f"All {len(passed_files)} files pass syntax validation"
-        else:
-            return False, f"Failed files: {failed_files}"
+    def test_hostmenow_api_module_loads(self):
+        """Test HostMeNow API module (js/hostmenow.js) loads correctly"""
+        try:
+            result = subprocess.run(['node', '-e', 'const hostmenow = require("./js/hostmenow.js"); console.log("Module loaded successfully"); console.log("Available functions:", Object.keys(hostmenow))'], 
+                                  capture_output=True, text=True, cwd='/app')
+            if result.returncode == 0:
+                return True, f"HostMeNow module loads - Output: {result.stdout.strip()}"
+            else:
+                return False, f"Module load failed - Error: {result.stderr}"
+        except Exception as e:
+            return False, f"Test failed: {str(e)}"
+
+    def test_hostmenow_get_products_api(self):
+        """Test HostMeNow API Get_Products call returns products including IDs 111, 112, 114"""
+        try:
+            # Test the HostMeNow API key and product retrieval
+            result = subprocess.run(['node', '-e', '''
+                const hostmenow = require("./js/hostmenow.js");
+                hostmenow.getProducts().then(response => {
+                    console.log("API Response:", JSON.stringify(response, null, 2));
+                    if (response && response.status === "success" && response.data && response.data.products) {
+                        const products = response.data.products;
+                        const productIds = products.map(p => p.id);
+                        const hasRequired = [111, 112, 114].every(id => productIds.includes(id));
+                        console.log("Product IDs found:", productIds);
+                        console.log("Has required IDs (111, 112, 114):", hasRequired);
+                        if (hasRequired) process.exit(0);
+                        else process.exit(1);
+                    } else {
+                        console.log("API call failed or unexpected response structure");
+                        process.exit(2);
+                    }
+                }).catch(err => {
+                    console.log("API Error:", err.message);
+                    process.exit(3);
+                });
+            '''], capture_output=True, text=True, cwd='/app', timeout=30)
+            
+            if result.returncode == 0:
+                return True, f"HostMeNow API call successful - {result.stdout.strip()}"
+            else:
+                return False, f"API call failed (code {result.returncode}) - {result.stdout.strip()}"
+        except Exception as e:
+            return False, f"Test failed: {str(e)}"
 
     def test_config_js_hosting_redirect(self):
         """Test config.js: hostingDomainsRedirect changed to '🌐 Offshore Hosting'"""
