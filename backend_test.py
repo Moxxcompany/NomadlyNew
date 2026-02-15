@@ -8,7 +8,7 @@ import os
 from datetime import datetime
 
 class HostMeNowMigrationTester:
-    def __init__(self, base_url="https://initial-config-1.preview.emergentagent.com"):
+    def __init__(self, base_url="https://bot-webhook-config.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
