@@ -130,11 +130,9 @@ Domain: ${info.website_name}
 Username: ${response.username}
 Email: ${info.email}
 Password: ${response.password}
-cPanel URL: ${response.url}
+cPanel URL: ${response.url}${response.serverIP ? `\nServer IP: ${response.serverIP}` : ''}${response.orderId ? `\nOrder ID: ${response.orderId}` : ''}
 
-Your cPanel credentials have been sent to your email ${info.email} as well.
-
-<b>Note:</b> Please update your domain's DNS A record to point to the hosting server.`
+Your cPanel credentials have been sent to your email ${info.email} as well.${response.serverIP ? `\n\n<b>DNS Setup:</b> Point your domain's A record to <b>${response.serverIP}</b>` : `\n\n<b>Note:</b> Please contact support to get the server IP for DNS setup.`}`
 
 const support = (plan, statusCode) => `Something went wrong while setting up your ${plan}|${statusCode}. 
                                               Please contact support ${SUPPORT_USERNAME}.
