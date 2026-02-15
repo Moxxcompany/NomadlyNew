@@ -277,30 +277,23 @@ class HostMeNowMigrationTester:
 
 def main():
     """Main test runner"""
-    tester = OffshoreHostingSubmenuTester()
+    tester = HostMeNowMigrationTester()
     
-    print("🚀 Starting Offshore Hosting + Submenu Restructure Testing")
+    print("🚀 Starting HostMeNow Migration Testing")
     print(f"⚡ Base URL: {tester.base_url}")
     print("=" * 80)
     
     # Run all tests based on review request features
-    tester.run_test("All files pass node --check syntax validation", tester.test_node_syntax_validation_all_files)
-    tester.run_test("GET /api/health returns ok with all services running", tester.test_health_endpoint)
-    tester.run_test("config.js: hostingDomainsRedirect changed to '🌐 Offshore Hosting'", tester.test_config_js_hosting_redirect)
-    tester.run_test("en.js: hostingDomainsRedirect changed to '🌐 Offshore Hosting'", tester.test_en_js_hosting_redirect)
-    tester.run_test("fr.js: hostingDomainsRedirect changed to '🌐 Hébergement Offshore'", tester.test_fr_js_hosting_redirect)
-    tester.run_test("hi.js: hostingDomainsRedirect changed to '🌐 ऑफ़शोर होस्टिंग'", tester.test_hi_js_hosting_redirect)
-    tester.run_test("zh.js: hostingDomainsRedirect changed to '🌐 离岸托管'", tester.test_zh_js_hosting_redirect)
-    tester.run_test("config.js + en.js: user.redBitly = '✂️ Bit.ly' and user.redShortit = '✂️ Shortit (Trial)' exist", tester.test_bitly_shortit_buttons_config)
-    tester.run_test("fr.js + hi.js + zh.js: redBitly and redShortit button labels exist", tester.test_bitly_shortit_buttons_other_langs)
-    tester.run_test("_index.js submenu1 function shows [redBitly, redShortit] row, [urlShortener] row, [viewShortLinks] row", tester.test_submenu1_structure)
-    tester.run_test("_index.js: Bitly button handler saves redSelectProvider[0] as provider then goes to redSelectUrl", tester.test_bitly_handler)
-    tester.run_test("_index.js: Shortit button handler saves redSelectProvider[1] as provider then goes to redSelectUrl", tester.test_shortit_handler)
-    tester.run_test("_index.js: redSelectUrl action handler goes directly to redSelectRandomCustom (skips provider selection)", tester.test_redSelectUrl_skips_provider)
-    tester.run_test("_index.js: redSelectRandomCustom back button goes to redSelectUrl (not redSelectProvider)", tester.test_redSelectRandomCustom_back_button)
-    tester.run_test("_index.js: hostingDomainsRedirect handler checks OFFSHORE_HOSTING_ON env, shows unavailable when false", tester.test_hosting_handler_env_check)
-    tester.run_test("OFFSHORE_HOSTING_ON=false exists in /app/.env", tester.test_offshore_hosting_env_false)
-    tester.run_test("config-setup.js: setDefault for OFFSHORE_HOSTING_ON exists", tester.test_config_setup_default)
+    tester.run_test("Backend /api/health endpoint returns status ok", tester.test_backend_health_endpoint)
+    tester.run_test("Node.js Express /health endpoint returns healthy", tester.test_nodejs_health_endpoint)
+    tester.run_test("HostMeNow API module (js/hostmenow.js) loads correctly", tester.test_hostmenow_api_module_loads)
+    tester.run_test("HostMeNow API Get_Products returns products including IDs 111, 112, 114", tester.test_hostmenow_get_products_api)
+    tester.run_test("Plan text generation shows correct names: Basic, Starter, Intermediate", tester.test_plan_text_generation_names)
+    tester.run_test("cr-check-domain-available.js loads and exports checkExistingDomain", tester.test_cr_check_domain_loads_and_exports)
+    tester.run_test("Domain validation format check accepts/rejects domains correctly", tester.test_domain_validation_format_check)
+    tester.run_test("cr-register-domain-&-create-cpanel.js loads and exports function", tester.test_cr_register_domain_loads_and_exports)
+    tester.run_test("HOSTING_TRIAL_PLAN_ON defaults to false", tester.test_hosting_trial_plan_on_defaults_false)
+    tester.run_test("OFFSHORE_HOSTING_ON is set to true in .env", tester.test_offshore_hosting_on_set_true)
     
     # Print summary
     print("\n" + "=" * 80)
