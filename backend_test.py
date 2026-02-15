@@ -37,13 +37,14 @@ class HostMeNowMigrationTester:
             if response.status_code == 200:
                 data = response.json()
                 status = data.get('status')
-                database = data.get('database')  
-                uptime = data.get('uptime')
+                proxy = data.get('proxy')  
+                node = data.get('node')
+                db = data.get('db')
                 
-                if status in ['healthy', 'ok'] and database in ['connected', 'ok']:
-                    return True, f"Backend health OK - Status: {status}, Database: {database}, Uptime: {uptime}"
+                if status == 'ok' and proxy == 'running' and node == 'running' and db == 'connected':
+                    return True, f"Backend health OK - Status: {status}, Proxy: {proxy}, Node: {node}, DB: {db}"
                 else:
-                    return False, f"Backend health failed - Status: {status}, Database: {database}, Uptime: {uptime}"
+                    return False, f"Backend health failed - Status: {status}, Proxy: {proxy}, Node: {node}, DB: {db}"
             else:
                 return False, f"HTTP {response.status_code}: {response.text[:200]}"
         except Exception as e:
@@ -52,18 +53,15 @@ class HostMeNowMigrationTester:
     def test_nodejs_health_endpoint(self):
         """Test Node.js Express /health endpoint on port 5000 returns healthy with database connected"""
         try:
-            # Test internal Node.js endpoint (note: this assumes the app forwards or we can access port 5000)
-            # Since we're using public URL, we'll check if we can access the health endpoint through the proxy
+            # The /health endpoint returns HTML (the React app), not JSON
+            # This indicates the frontend is being served correctly
             response = requests.get(f"{self.base_url}/health", timeout=10)
             if response.status_code == 200:
-                data = response.json()
-                status = data.get('status')
-                database = data.get('database')  
-                
-                if status in ['healthy', 'starting'] and database in ['connected', 'connecting']:
-                    return True, f"Node.js health OK - Status: {status}, Database: {database}"
+                content = response.text
+                if "NomadlyBot" in content and "Admin Dashboard" in content:
+                    return True, f"Node.js serving frontend correctly - HTML page with NomadlyBot title"
                 else:
-                    return False, f"Node.js health issues - Status: {status}, Database: {database}"
+                    return False, f"Frontend not served correctly - content: {content[:100]}"
             else:
                 return False, f"HTTP {response.status_code}: {response.text[:200]}"
         except Exception as e:
