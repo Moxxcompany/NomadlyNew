@@ -102,9 +102,9 @@ const user = {
 
   // Sub Menu 3: cPanel/Plesk WebHostingPlansMain
   freeTrial: '💡 Free Trial',
-  starterPlan: '🔼 Starter Plan',
-  proPlan: '🔷 Pro Plan',
-  businessPlan: '👑 Business Plan',
+  starterPlan: '📦 Basic Plan',
+  proPlan: '🔼 Starter Plan',
+  businessPlan: '🔷 Intermediate Plan',
   contactSupport: '📞 Contact Support',
 
   // Free Trial
@@ -117,18 +117,18 @@ const user = {
   backToFreeTrial: '⬅️ Back To Free Trial',
 
   // Paid Plans
-  buyStarterPlan: '🛒 Buy Starter Plan',
-  buyProPlan: '🛒 Buy Pro Plan',
-  buyBusinessPlan: '🛒 Buy Business Plan',
-  viewStarterPlan: '🔷 View Starter Plan',
-  viewProPlan: '🔼 View Pro Plan',
-  viewBusinessPlan: '👑 View Business Plan',
+  buyStarterPlan: '🛒 Buy Basic Plan',
+  buyProPlan: '🛒 Buy Starter Plan',
+  buyBusinessPlan: '🛒 Buy Intermediate Plan',
+  viewStarterPlan: '📦 View Basic Plan',
+  viewProPlan: '🔼 View Starter Plan',
+  viewBusinessPlan: '🔷 View Intermediate Plan',
   backToHostingPlans: '⬅️ Back To Hosting Plans',
   registerANewDomain: '🌐 Register a New Domain',
   useExistingDomain: '🔄 Use Existing Domain',
-  backToStarterPlanDetails: '⬅️ Back to Starter Plan Details',
-  backToProPlanDetails: '⬅️ Back to Pro Plan Details',
-  backToBusinessPlanDetails: '⬅️ Back to Business Plan Details',
+  backToStarterPlanDetails: '⬅️ Back to Basic Plan Details',
+  backToProPlanDetails: '⬅️ Back to Starter Plan Details',
+  backToBusinessPlanDetails: '⬅️ Back to Intermediate Plan Details',
   continueWithDomain: (websiteName) => `➡️ Continue with ${websiteName}`,
   enterAnotherDomain: '🔍 Enter Another Domain',
   backToPurchaseOptions: '⬅️ Back to Purchase Options',
