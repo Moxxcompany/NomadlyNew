@@ -98,11 +98,11 @@ const user = {
   viewDomainNames: '📂 My Domain Names',
   dnsManagement: '🔧 DNS Management',
 
-  // Sub Menu 3: cPanel/Plesk WebHostingPlansMain
+  // Sub Menu 3: Offshore cPanel Hosting Plans
   freeTrial: '💡 Free Trial',
-  starterPlan: '🔼 Starter Plan',
-  proPlan: '🔷 Pro Plan',
-  businessPlan: '👑 Business Plan',
+  starterPlan: '📦 Basic Plan',
+  proPlan: '🔼 Starter Plan',
+  businessPlan: '🔷 Intermediate Plan',
   contactSupport: '📞 Contact Support',
 
   // Sub Menu 4: VPS Plans
@@ -120,18 +120,18 @@ const user = {
   backToFreeTrial: '⬅️ Back To Free Trial',
 
   // Paid Plans
-  buyStarterPlan: '🛒 Buy Starter Plan',
-  buyProPlan: '🛒 Buy Pro Plan',
-  buyBusinessPlan: '🛒 Buy Business Plan',
-  viewStarterPlan: '🔷 View Starter Plan',
-  viewProPlan: '🔼 View Pro Plan',
-  viewBusinessPlan: '👑 View Business Plan',
+  buyStarterPlan: '🛒 Buy Basic Plan',
+  buyProPlan: '🛒 Buy Starter Plan',
+  buyBusinessPlan: '🛒 Buy Intermediate Plan',
+  viewStarterPlan: '📦 View Basic Plan',
+  viewProPlan: '🔼 View Starter Plan',
+  viewBusinessPlan: '🔷 View Intermediate Plan',
   backToHostingPlans: '⬅️ Back To Hosting Plans',
   registerANewDomain: '🌐 Register a New Domain',
   useExistingDomain: '🔄 Use Existing Domain',
-  backToStarterPlanDetails: '⬅️ Back to Starter Plan Details',
-  backToProPlanDetails: '⬅️ Back to Pro Plan Details',
-  backToBusinessPlanDetails: '⬅️ Back to Business Plan Details',
+  backToStarterPlanDetails: '⬅️ Back to Basic Plan Details',
+  backToProPlanDetails: '⬅️ Back to Starter Plan Details',
+  backToBusinessPlanDetails: '⬅️ Back to Intermediate Plan Details',
   continueWithDomain: websiteName => `➡️ Continue with ${websiteName}`,
   enterAnotherDomain: '🔍 Enter Another Domain',
   backToPurchaseOptions: '⬅️ Back to Purchase Options',
@@ -959,43 +959,46 @@ const html = (text = t.successPayment) => {
         </html>
     `
 }
-const plans = hostingType => {
+const plans = (hostingType = 'cPanel') => {
   return {
     starterPlan: {
-      name: 'Starter Plan',
+      name: 'Basic Plan',
       price: HOSTING_STARTER_PLAN_PRICE,
+      productId: 114,
       duration: '30 days',
       storage: '10 GB SSD',
       bandwidth: '100 GB',
       domains: 'Unlimited domains',
       emailAccounts: '5 email accounts',
       databases: '1 MySQL database',
-      features: `Full access to ${hostingType} for managing files, databases, emails, etc.`,
+      features: `Full access to Offshore cPanel for managing files, databases, emails, etc.`,
       idealFor: 'Personal blogs, small business websites, or portfolios.',
     },
     proPlan: {
-      name: 'Pro Plan',
+      name: 'Starter Plan',
       price: HOSTING_PRO_PLAN_PRICE,
+      productId: 111,
       duration: '30 days',
       storage: '50 GB SSD',
       bandwidth: '500 GB',
       domains: 'Unlimited domains',
       emailAccounts: '25 email accounts',
       databases: '10 MySQL databases',
-      features: `Full access to ${hostingType} with advanced tools for backups, security, and analytics.`,
+      features: `Full access to Offshore cPanel with advanced tools for backups, security, and analytics.`,
       additionalFeatures: 'Free website migration, daily backups.',
       idealFor: 'Small to medium-sized business websites, e-commerce sites.',
     },
     businessPlan: {
-      name: 'Business Plan',
+      name: 'Intermediate Plan',
       price: HOSTING_BUSINESS_PLAN_PRICE,
+      productId: 112,
       duration: '30 days',
       storage: '100 GB SSD',
       bandwidth: 'Unlimited',
       domains: 'Unlimited domains',
       emailAccounts: 'Unlimited email accounts',
       databases: 'Unlimited MySQL databases',
-      features: `Full access to ${hostingType} with all advanced features, including priority support.`,
+      features: `Full access to Offshore cPanel with all advanced features, including priority support.`,
       additionalFeatures: 'Free website migration, daily backups, staging environment, enhanced security features.',
       idealFor: 'Large businesses, high-traffic websites, and developers needing more flexibility.',
     },
@@ -1073,19 +1076,17 @@ Best regards,
 ${CHAT_BOT_NAME}`,
 
   successText: (info, response) =>
-    `Here are your ${info.hostingType} Credentials for ${info.plan}:
+    `Here are your Offshore cPanel Credentials for ${info.plan}:
   
 Domain: ${info.website_name}
 Username: ${response.username}
 Email: ${info.email}
 Password: ${response.password}
-URL: ${response.url}
-  
-<b>Nameservers</b>
-  - ${response.nameservers.ns1}
-  - ${response.nameservers.ns2}
-    
-Your ${info.hostingType} credentials has been successfully sent to your email ${info.email} as well`,
+cPanel URL: ${response.url}
+
+Your cPanel credentials have been sent to your email ${info.email} as well.
+
+<b>Note:</b> Please update your domain's DNS A record to point to the hosting server.`,
 
   support: (plan, statusCode) => `Something went wrong while setting up your ${plan}|${statusCode}. 
                                                 Please contact support ${SUPPORT_USERNAME}.
