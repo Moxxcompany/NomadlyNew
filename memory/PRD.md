@@ -1,71 +1,38 @@
-# NomadlyBot - PRD & Architecture Document
+# Telegram Bot Application - PRD
 
 ## Original Problem Statement
-Telegram bot platform (NomadlyBot) for URL shortening, domain sales, phone leads, crypto payments, and offshore web hosting. User requested: "analyze codebase and setup".
+A complex Telegram bot application for domain registration, offshore hosting (cPanel via HostMeNow), URL shortening, lead validation, and more. The bot integrates with ConnectReseller (domains/DNS), HostMeNow (cPanel hosting), and various payment gateways.
 
 ## Architecture
-
-### Tech Stack
-- **Frontend**: React 18 + Tailwind CSS (Admin Dashboard at port 3000)
-- **Backend Proxy**: FastAPI (Python) at port 8001 — proxies all requests to Node.js
-- **Core Bot Engine**: Node.js/Express at port 5000 — Telegram bot + REST APIs
-- **Database**: MongoDB (external Railway-hosted instance)
-- **Hosting Provider**: HostMeNow Reseller API (offshore cPanel)
-
-### Service Architecture
-```
-[Frontend :3000] → [FastAPI Proxy :8001] → [Node.js Express :5000] → [MongoDB]
-                                                     ↓                    ↓
-                                              [Telegram Bot API]   [HostMeNow API]
-                                                                   [ConnectReseller API]
-                                                                   [BlockBee/DynoPay Crypto]
-                                                                   [Fincra Payments]
-```
-
-### Key Modules (js/)
-- `_index.js` — Main bot logic, Express server, MongoDB collections, Telegram message handler
-- `config.js` — Bot config, keyboard layouts, pricing, supported crypto
-- `config-setup.js` — Environment detection, defaults, token management
-- `db.js` — MongoDB CRUD operations (get/set/del/increment)
-- `start-bot.js` — Entry point, loads config, starts bot
-- `hostmenow.js` — HostMeNow Reseller API client
-- `pay-blockbee.js` / `pay-dynopay.js` / `pay-fincra.js` — Payment integrations
-- `cr-*.js` — ConnectReseller domain management APIs
-- `vm-instance-setup.js` — VPS management
-- `validatePhone*.js` — Phone number validation services
-- `bitly.js` / `cuttly.js` — URL shortening services
-- `broadcast-config.js` / `auto-promo.js` — Marketing automation
-- `translation.js` / `lang/` — i18n support
+- **Backend:** FastAPI proxy (Python) → Node.js Express bot (port 5000)
+- **Frontend:** React dashboard
+- **Database:** MongoDB
+- **Deployment:** Dual-environment — Kubernetes preview (with `/api` prefix) and Railway production (direct)
 
 ## What's Been Implemented
+- Full project setup with all dependencies and `.env` configured
+- Offshore hosting automation: domain registration (ConnectReseller) + cPanel creation (HostMeNow) + DNS A record setup
+- Hosting expiry cron job for auto-suspension
+- **Telegram webhook URL** — environment-aware using `HOSTED_ON` env var (Feb 2026)
+  - `HOSTED_ON=railway` → `${SELF_URL}/telegram/webhook`
+  - Otherwise → `${SELF_URL}/api/telegram/webhook`
 
-### [2026-02-15] HostMeNow Integration
-- Replaced Nameword hosting with HostMeNow Reseller API
-- Plans: Basic (ID 114), Starter (ID 111), Intermediate (ID 112)
-- No free trial, cPanel only
-
-### [2026-02-15] Setup & Verification
-- Installed Node.js dependencies (npm install)
-- Created root `.env` with MongoDB URL and service config
-- All 3 services running and healthy:
-  - Frontend (React): Running on port 3000
-  - Backend (FastAPI proxy): Running on port 8001
-  - Node.js bot/Express: Running on port 5000
-  - MongoDB: Connected
-- Telegram bot: Disabled (no token configured)
-- Dashboard showing all services online
-
-## Status
-- All services: RUNNING
-- MongoDB: CONNECTED
-- HostMeNow API: CONFIGURED
-- Telegram Bot: DISABLED (no token)
-- ConnectReseller: WARNING (IP not whitelisted)
+## Blocked Items (Require User Action)
+- **P1:** HostMeNow `CreateAccount` API returns "Access Denied" — user must contact HostMeNow support
+- **P1:** `HOSTMENOW_SERVER_IP` env var needed for automated DNS — user must get IP from HostMeNow
 
 ## Prioritized Backlog
-- P0: Configure Telegram bot token for live testing
-- P1: ConnectReseller IP whitelist for domain features
-- P1: Set actual hosting plan pricing
-- P2: Add account management features in dashboard
-- P2: SSO session creation for direct cPanel access
-- P3: Bandwidth/disk usage monitoring dashboard
+### P1
+- Wire up cPanel management features (suspend/unsuspend/terminate/SSO) into bot commands
+
+### P2
+- Modularize `_index.js` (5000+ lines) into smaller files
+- Organize `bot/utils/` into feature-based subdirectories
+
+## Key Files
+- `/app/js/_index.js` — Main bot entry (routes, commands, cron, webhook setup)
+- `/app/js/cr-register-domain-&-create-cpanel.js` — Hosting automation workflow
+- `/app/js/hostmenow.js` — HostMeNow API client
+- `/app/js/config-setup.js` — Environment detection and URL config
+- `/app/backend/server.py` — FastAPI proxy that starts the Node.js bot
+- `/app/.env` — All secrets and configuration
