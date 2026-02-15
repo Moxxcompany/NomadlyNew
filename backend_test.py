@@ -114,18 +114,110 @@ class HostMeNowMigrationTester:
         except Exception as e:
             return False, f"Test failed: {str(e)}"
 
-    def test_config_js_hosting_redirect(self):
-        """Test config.js: hostingDomainsRedirect changed to '🌐 Offshore Hosting'"""
+    def test_plan_text_generation_names(self):
+        """Test plan text generation shows correct plan names: Basic Plan, Starter Plan, Intermediate Plan"""
         try:
-            with open('/app/js/config.js', 'r') as f:
+            with open('/app/js/hosting/plans.js', 'r') as f:
                 content = f.read()
                 
-            if "hostingDomainsRedirect: '🌐 Offshore Hosting'" in content:
-                return True, "config.js has correct hostingDomainsRedirect value"
+            required_names = ["'Basic Plan'", "'Starter Plan'", "'Intermediate Plan'"]
+            found_names = []
+            missing_names = []
+            
+            for name in required_names:
+                if name in content:
+                    found_names.append(name)
+                else:
+                    missing_names.append(name)
+                    
+            if not missing_names:
+                return True, f"All required plan names found: {found_names}"
             else:
-                return False, "config.js hostingDomainsRedirect not updated or incorrect"
+                return False, f"Missing plan names: {missing_names}, Found: {found_names}"
         except Exception as e:
             return False, f"File check failed: {str(e)}"
+
+    def test_cr_check_domain_loads_and_exports(self):
+        """Test cr-check-domain-available.js loads without errors and exports checkExistingDomain function"""
+        try:
+            result = subprocess.run(['node', '-e', '''
+                const domain = require("./js/cr-check-domain-available.js");
+                console.log("Module loaded successfully");
+                console.log("Exported functions:", Object.keys(domain));
+                if (typeof domain.checkExistingDomain === "function") {
+                    console.log("checkExistingDomain function found");
+                    process.exit(0);
+                } else {
+                    console.log("checkExistingDomain function NOT found");
+                    process.exit(1);
+                }
+            '''], capture_output=True, text=True, cwd='/app')
+            
+            if result.returncode == 0:
+                return True, f"Module loads and exports correctly - {result.stdout.strip()}"
+            else:
+                return False, f"Module test failed - {result.stderr}"
+        except Exception as e:
+            return False, f"Test failed: {str(e)}"
+
+    def test_domain_validation_format_check(self):
+        """Test cr-check-domain-available.js checkExistingDomain validates domain format correctly"""
+        try:
+            result = subprocess.run(['node', '-e', '''
+                const { checkExistingDomain } = require("./js/cr-check-domain-available.js");
+                
+                // Test valid domains
+                const validTests = ["example.com", "test-site.org", "my-domain.net"];
+                const invalidTests = ["invalid", ".com", "domain.", "spaced domain.com", ""];
+                
+                console.log("Testing valid domains:");
+                let allPassed = true;
+                
+                for (const domain of validTests) {
+                    try {
+                        const result = checkExistingDomain(domain);
+                        if (result && result.available === true) {
+                            console.log(`✓ ${domain}: PASS`);
+                        } else {
+                            console.log(`✗ ${domain}: FAIL - should be valid`);
+                            allPassed = false;
+                        }
+                    } catch (e) {
+                        console.log(`✗ ${domain}: ERROR - ${e.message}`);
+                        allPassed = false;
+                    }
+                }
+                
+                console.log("Testing invalid domains:");
+                for (const domain of invalidTests) {
+                    try {
+                        const result = checkExistingDomain(domain);
+                        if (result && result.available === false) {
+                            console.log(`✓ ${domain}: PASS - correctly rejected`);
+                        } else {
+                            console.log(`✗ ${domain}: FAIL - should be invalid`);
+                            allPassed = false;
+                        }
+                    } catch (e) {
+                        console.log(`✓ ${domain}: PASS - correctly threw error`);
+                    }
+                }
+                
+                if (allPassed) {
+                    console.log("All domain validation tests passed");
+                    process.exit(0);
+                } else {
+                    console.log("Some domain validation tests failed");
+                    process.exit(1);
+                }
+            '''], capture_output=True, text=True, cwd='/app', timeout=15)
+            
+            if result.returncode == 0:
+                return True, f"Domain validation works correctly - {result.stdout.strip()}"
+            else:
+                return False, f"Domain validation failed - {result.stdout.strip()}"
+        except Exception as e:
+            return False, f"Test failed: {str(e)}"
 
     def test_en_js_hosting_redirect(self):
         """Test en.js: hostingDomainsRedirect changed to '🌐 Offshore Hosting'"""
