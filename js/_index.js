@@ -6008,7 +6008,8 @@ const setupTelegramWebhook = async () => {
   }
 
   try {
-    const webhookUrl = `${SELF_URL}/api/telegram/webhook`
+    const webhookPrefix = HOSTED_ON === 'railway' ? '' : '/api'
+    const webhookUrl = `${SELF_URL}${webhookPrefix}/telegram/webhook`
     
     // Delete any existing webhook first
     await bot.deleteWebHook()
