@@ -3691,33 +3691,38 @@ bot?.on('message', async msg => {
     const domain = info?.domain
     const plan = info?.plan
     const ref = nanoid()
-    if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
-      const coin = tickerOf[ticker]
-      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-hosting?a=b&ref=${ref}&`)
-      if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
-      set(chatIdOfPayment, ref, { chatId, price, domain })
-      log({ ref })
-      await sendQrCode(bot, chatId, bb, info?.userLanguage ?? 'en')
-      set(state, chatId, 'action', a.proceedWithPaymentProcess)
-      const priceCrypto = await convert(price, 'usd', coin)
-      return send(chatId, hP.showCryptoPaymentInfo(priceCrypto, ticker, address, plan), k.of([t.iHaveSentThePayment]))
-    } else {
-      const coin = tickerOfDyno[ticker]
-      if (!coin) return send(chatId, t.askValidCrypto)
-      const redirect_url = `${SELF_URL}/dynopay/crypto-pay-hosting`
-      const meta_data = {
-        "product_name": dynopayActions.payHosting,
-        "refId" : ref
+    const coin = tickerOf[ticker]
+    // Try Dynopay first, fall back to BlockBee on error
+    if (BLOCKBEE_CRYTPO_PAYMENT_ON !== 'true') {
+      try {
+        const coinDyno = tickerOfDyno[ticker]
+        if (coinDyno) {
+          const redirect_url = `${SELF_URL}/dynopay/crypto-pay-hosting`
+          const meta_data = { "product_name": dynopayActions.payHosting, "refId": ref }
+          const dynoResult = await getDynopayCryptoAddress(price, coinDyno, redirect_url, meta_data)
+          if (dynoResult?.address && !dynoResult?.error) {
+            set(chatIdOfDynopayPayment, ref, { chatId, price, domain, action: dynopayActions.payHosting, address: dynoResult.address })
+            log({ ref })
+            await generateQr(bot, chatId, dynoResult.qr_code, info?.userLanguage ?? 'en')
+            set(state, chatId, 'action', a.proceedWithPaymentProcess)
+            const priceCrypto = await convert(price, 'usd', coin)
+            return send(chatId, hP.showCryptoPaymentInfo(priceCrypto, ticker, dynoResult.address, plan), k.of([t.iHaveSentThePayment]))
+          }
+        }
+        log('⚠️ Dynopay unavailable for hosting payment, falling back to BlockBee')
+      } catch (e) {
+        log('⚠️ Dynopay error for hosting payment, falling back to BlockBee:', e.message)
       }
-      const { qr_code, address } = await getDynopayCryptoAddress(price, coin, redirect_url, meta_data)
-      if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
-      set(chatIdOfDynopayPayment, ref, { chatId, price, domain, action: dynopayActions.payHosting, address })
-      log({ ref })
-      await generateQr(bot, chatId, qr_code, info?.userLanguage ?? 'en')
-      set(state, chatId, 'action', a.proceedWithPaymentProcess)
-      const priceCrypto = await convert(price, 'usd', tickerOf[ticker])
-      return send(chatId, hP.showCryptoPaymentInfo(priceCrypto, ticker, address, plan), k.of([t.iHaveSentThePayment]))
     }
+    // BlockBee (primary or fallback)
+    const { address: bbAddress, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-hosting?a=b&ref=${ref}&`)
+    if (!bbAddress) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
+    set(chatIdOfPayment, ref, { chatId, price, domain })
+    log({ ref })
+    await sendQrCode(bot, chatId, bb, info?.userLanguage ?? 'en')
+    set(state, chatId, 'action', a.proceedWithPaymentProcess)
+    const priceCrypto = await convert(price, 'usd', coin)
+    return send(chatId, hP.showCryptoPaymentInfo(priceCrypto, ticker, bbAddress, plan), k.of([t.iHaveSentThePayment]))
   }
   if (action === 'get-free-domain') {
     if (message === t.back || message === t.no) return goto['choose-domain-to-buy']()
@@ -3784,32 +3789,38 @@ bot?.on('message', async msg => {
     const vpsDetails = info.vpsDetails
     const price = vpsDetails.plan === 'Hourly' && vpsDetails.totalPrice < VPS_HOURLY_PLAN_MINIMUM_AMOUNT_PAYABLE  ? VPS_HOURLY_PLAN_MINIMUM_AMOUNT_PAYABLE || 50 : vpsDetails?.totalPrice
     const ref = nanoid()
-    if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
-      const coin = tickerOf[ticker]
-      set(chatIdOfPayment, ref, { chatId, price, vpsDetails })
-      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-vps?a=b&ref=${ref}&`)
-      if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
-      log({ ref })
-      await sendQrCode(bot, chatId, bb, info?.userLanguage ?? 'en')
-      set(state, chatId, 'action', 'none')
-      const priceCrypto = await convert(price, 'usd', coin)
-      return send(chatId, vp.showDepositCryptoInfoVps(priceCrypto, ticker, address, vpsDetails), trans('o'))
-    } else {
-      const coin = tickerOfDyno[ticker]
-      const redirect_url = `${SELF_URL}/dynopay/crypto-pay-vps`
-      const meta_data = {
-        "product_name": dynopayActions.payVps,
-        "refId" : ref
+    const coin = tickerOf[ticker]
+    // Try Dynopay first, fall back to BlockBee on error
+    if (BLOCKBEE_CRYTPO_PAYMENT_ON !== 'true') {
+      try {
+        const coinDyno = tickerOfDyno[ticker]
+        if (coinDyno) {
+          const redirect_url = `${SELF_URL}/dynopay/crypto-pay-vps`
+          const meta_data = { "product_name": dynopayActions.payVps, "refId": ref }
+          const dynoResult = await getDynopayCryptoAddress(price, coinDyno, redirect_url, meta_data)
+          if (dynoResult?.address && !dynoResult?.error) {
+            set(chatIdOfDynopayPayment, ref, { chatId, price, vpsDetails, action: dynopayActions.payVps, address: dynoResult.address })
+            log({ ref })
+            await generateQr(bot, chatId, dynoResult.qr_code, info?.userLanguage ?? 'en')
+            set(state, chatId, 'action', 'none')
+            const priceCrypto = await convert(price, 'usd', coin)
+            return send(chatId, vp.showDepositCryptoInfoVps(priceCrypto, ticker, dynoResult.address, vpsDetails), trans('o'))
+          }
+        }
+        log('⚠️ Dynopay unavailable for VPS payment, falling back to BlockBee')
+      } catch (e) {
+        log('⚠️ Dynopay error for VPS payment, falling back to BlockBee:', e.message)
       }
-      const { qr_code, address } = await getDynopayCryptoAddress(price, coin, redirect_url, meta_data)
-      if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
-      set(chatIdOfDynopayPayment, ref, { chatId, price, vpsDetails, action: dynopayActions.payVps, address })
-      log({ ref })
-      await generateQr(bot, chatId, qr_code, info?.userLanguage ?? 'en')
-      set(state, chatId, 'action', 'none')
-      const priceCrypto = await convert(price, 'usd', tickerOf[ticker])
-      return send(chatId, vp.showDepositCryptoInfoVps(priceCrypto, ticker, address, vpsDetails), trans('o'))
     }
+    // BlockBee (primary or fallback)
+    set(chatIdOfPayment, ref, { chatId, price, vpsDetails })
+    const { address: bbAddress, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-vps?a=b&ref=${ref}&`)
+    if (!bbAddress) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
+    log({ ref })
+    await sendQrCode(bot, chatId, bb, info?.userLanguage ?? 'en')
+    set(state, chatId, 'action', 'none')
+    const priceCryptoVps = await convert(price, 'usd', coin)
+    return send(chatId, vp.showDepositCryptoInfoVps(priceCryptoVps, ticker, bbAddress, vpsDetails), trans('o'))
   }
   //
 
