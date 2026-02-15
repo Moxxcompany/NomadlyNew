@@ -83,7 +83,7 @@ function App() {
             <FeatureCard icon="globe" title="Domain Names" desc="Buy, manage DNS, link with services" />
             <FeatureCard icon="phone" title="Phone Leads" desc="SMS & Voice leads with carrier filtering" />
             <FeatureCard icon="wallet" title="Wallet System" desc="USD & NGN deposits via crypto & bank" />
-            <FeatureCard icon="server" title="Web Hosting" desc="cPanel & Plesk plans with free trials" />
+            <FeatureCard icon="server" title="Offshore Hosting" desc="Offshore cPanel hosting — Basic, Starter, Intermediate" />
             <FeatureCard icon="cloud" title="VPS Plans" desc="Virtual private servers on demand" />
           </div>
         </main>
