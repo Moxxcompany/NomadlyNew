@@ -3885,32 +3885,38 @@ bot?.on('message', async msg => {
     const vpsDetails = info.vpsDetails
     const price = vpsDetails?.billingCycle === 'Hourly' && vpsDetails.totalPrice < VPS_HOURLY_PLAN_MINIMUM_AMOUNT_PAYABLE  ? VPS_HOURLY_PLAN_MINIMUM_AMOUNT_PAYABLE || 50 : vpsDetails?.totalPrice
     const ref = nanoid()
-    if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
-      const coin = tickerOf[ticker]
-      set(chatIdOfPayment, ref, { chatId, price, vpsDetails })
-      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-upgrade-vps?a=b&ref=${ref}&`)
-      if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
-      log({ ref })
-      await sendQrCode(bot, chatId, bb, info?.userLanguage ?? 'en')
-      set(state, chatId, 'action', 'none')
-      const priceCrypto = await convert(price, 'usd', coin)
-      return send(chatId, vp.showDepositCryptoInfoVpsUpgrade(priceCrypto, ticker, address), trans('o'))
-    } else {
-      const coin = tickerOfDyno[ticker]
-      const redirect_url = `${SELF_URL}/dynopay/crypto-pay-upgrade-vps`
-      const meta_data = {
-        "product_name": dynopayActions.payVps,
-        "refId" : ref
+    const coin = tickerOf[ticker]
+    // Try Dynopay first, fall back to BlockBee on error
+    if (BLOCKBEE_CRYTPO_PAYMENT_ON !== 'true') {
+      try {
+        const coinDyno = tickerOfDyno[ticker]
+        if (coinDyno) {
+          const redirect_url = `${SELF_URL}/dynopay/crypto-pay-upgrade-vps`
+          const meta_data = { "product_name": dynopayActions.payVps, "refId": ref }
+          const dynoResult = await getDynopayCryptoAddress(price, coinDyno, redirect_url, meta_data)
+          if (dynoResult?.address && !dynoResult?.error) {
+            set(chatIdOfDynopayPayment, ref, { chatId, price, vpsDetails, action: dynopayActions.payVps, address: dynoResult.address })
+            log({ ref })
+            await generateQr(bot, chatId, dynoResult.qr_code, info?.userLanguage ?? 'en')
+            set(state, chatId, 'action', 'none')
+            const priceCrypto = await convert(price, 'usd', coin)
+            return send(chatId, vp.showDepositCryptoInfoVpsUpgrade(priceCrypto, ticker, dynoResult.address), trans('o'))
+          }
+        }
+        log('⚠️ Dynopay unavailable for VPS upgrade payment, falling back to BlockBee')
+      } catch (e) {
+        log('⚠️ Dynopay error for VPS upgrade payment, falling back to BlockBee:', e.message)
       }
-      const { qr_code, address } = await getDynopayCryptoAddress(price, coin, redirect_url, meta_data)
-      if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
-      set(chatIdOfDynopayPayment, ref, { chatId, price, vpsDetails, action: dynopayActions.payVps, address })
-      log({ ref })
-      await generateQr(bot, chatId, qr_code, info?.userLanguage ?? 'en')
-      set(state, chatId, 'action', 'none')
-      const priceCrypto = await convert(price, 'usd', tickerOf[ticker])
-      return send(chatId, vp.showDepositCryptoInfoVpsUpgrade(priceCrypto, ticker, address), trans('o'))
     }
+    // BlockBee (primary or fallback)
+    set(chatIdOfPayment, ref, { chatId, price, vpsDetails })
+    const { address: bbAddress, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-upgrade-vps?a=b&ref=${ref}&`)
+    if (!bbAddress) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
+    log({ ref })
+    await sendQrCode(bot, chatId, bb, info?.userLanguage ?? 'en')
+    set(state, chatId, 'action', 'none')
+    const priceCryptoUpgrade = await convert(price, 'usd', coin)
+    return send(chatId, vp.showDepositCryptoInfoVpsUpgrade(priceCryptoUpgrade, ticker, bbAddress), trans('o'))
   }
   //
   if (message === user.buyPlan) {
@@ -3989,32 +3995,36 @@ bot?.on('message', async msg => {
     if (!ticker) return send(chatId, t.askValidCrypto)
     const { plan } = info
     const price = info?.couponApplied ? info?.newPrice : info?.price 
-    if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
-      const coin = tickerOf[ticker]
-      const { address, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-plan?a=b&ref=${ref}&`)
-      if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
-      set(chatIdOfPayment, ref, { chatId, price, plan })
-      log({ ref })
-      await sendQrCode(bot, chatId, bb, info?.userLanguage ?? 'en')
-      set(state, chatId, 'action', 'none')
-      const priceCrypto = await convert(price, 'usd', coin)
-      return send(chatId, t.showDepositCryptoInfoPlan(priceCrypto, ticker, address, plan), trans('o'))
-    } else {
-      const coin = tickerOfDyno[ticker]
-      if (!coin) return send(chatId, t.askValidCrypto)
-      const redirect_url = `${SELF_URL}/dynopay/crypto-pay-plan`
-      const meta_data = {
-        "product_name": dynopayActions.payPlan,
-        "refId" : ref
+    if (BLOCKBEE_CRYTPO_PAYMENT_ON !== 'true') {
+      try {
+        const coinDyno = tickerOfDyno[ticker]
+        if (coinDyno) {
+          const redirect_url = `${SELF_URL}/dynopay/crypto-pay-plan`
+          const meta_data = { "product_name": dynopayActions.payPlan, "refId": ref }
+          const dynoResult = await getDynopayCryptoAddress(price, coinDyno, redirect_url, meta_data)
+          if (dynoResult?.address && !dynoResult?.error) {
+            set(chatIdOfDynopayPayment, ref, { chatId, price, plan, action: dynopayActions.payPlan, address: dynoResult.address })
+            log({ ref })
+            await generateQr(bot, chatId, dynoResult.qr_code, info?.userLanguage ?? 'en')
+            const priceCrypto = await convert(price, 'usd', tickerOf[ticker])
+            return send(chatId, t.showDepositCryptoInfoPlan(priceCrypto, ticker, dynoResult.address, plan), trans('o'))
+          }
+        }
+        log('⚠️ Dynopay unavailable for plan payment, falling back to BlockBee')
+      } catch (e) {
+        log('⚠️ Dynopay error for plan payment, falling back to BlockBee:', e.message)
       }
-      const { qr_code, address } = await getDynopayCryptoAddress(price, coin, redirect_url, meta_data)
-      if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
-      set(chatIdOfDynopayPayment, ref, { chatId, price, plan, action: dynopayActions.payPlan, address })
-      log({ ref })
-      await generateQr(bot, chatId, qr_code, info?.userLanguage ?? 'en')
-      const priceCrypto = await convert(price, 'usd', tickerOf[ticker])
-      return send(chatId, t.showDepositCryptoInfoPlan(priceCrypto, ticker, address, plan), trans('o'))
     }
+    // BlockBee (primary or fallback)
+    const coin = tickerOf[ticker]
+    const { address: bbAddress, bb } = await getCryptoDepositAddress(coin, chatId, SELF_URL, `/crypto-pay-plan?a=b&ref=${ref}&`)
+    if (!bbAddress) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
+    set(chatIdOfPayment, ref, { chatId, price, plan })
+    log({ ref })
+    await sendQrCode(bot, chatId, bb, info?.userLanguage ?? 'en')
+    set(state, chatId, 'action', 'none')
+    const priceCryptoPlan = await convert(price, 'usd', coin)
+    return send(chatId, t.showDepositCryptoInfoPlan(priceCryptoPlan, ticker, bbAddress, plan), trans('o'))
   }
   //
   //
