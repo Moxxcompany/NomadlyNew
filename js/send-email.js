@@ -15,7 +15,7 @@ async function sendEmail(info, response) {
   const emailHtml = `
     <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
         <div style="background-color: #007bff; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="margin: 0;">🎉 Congratulations!</h1>
+            <h1 style="margin: 0;">Congratulations!</h1>
         </div>
         <div style="padding: 10px 20px;  background-color: #f9f9f9; border-radius: 0 0 10px 10px;">
             <p style="font-size: 18px; line-height: 1.6;">
@@ -25,7 +25,7 @@ async function sendEmail(info, response) {
                 We are excited to inform you that your <strong>(${plan})</strong> has been successfully activated!
             </p>
             <p style="font-size: 18px; line-height: 1.6; color: #007bff;">
-                You can now log in to your ${info.hostingType} and start exploring your account.
+                You can now log in to your cPanel and start exploring your account.
             </p>
 
             <table style="width: 100%; margin-top: 10px; border-collapse: separate; border-spacing: 0 10px;">
@@ -36,7 +36,7 @@ async function sendEmail(info, response) {
               </tr>
               <tr>
                   <td style="font-size: 16px; padding: 15px; background-color: #eee; border: 1px solid #ddd; border-radius: 5px;">
-                      <strong>URL:</strong> ${response.url}
+                      <strong>cPanel URL:</strong> ${response.url}
                   </td>
               </tr>
               <tr>
@@ -49,25 +49,14 @@ async function sendEmail(info, response) {
                       <strong>Password:</strong> ${response.password}
                   </td>
               </tr>
-               <tr>
-                  <td style="font-size: 16px; padding: 15px; background-color: #eee; border: 1px solid #ddd; border-radius: 5px;">
-                      <strong>Nameservers</strong>
-                      <ul style="list-style-type: none; padding-left: 0;">
-                          <li>${response.nameservers.ns1}</li>
-                          <li>${response.nameservers.ns2}</li>
-                      </ul>
-                  </td>
-              </tr>
             </table>
 
             <p style="font-size: 18px; margin-top: 10px; line-height: 1.6;">
-                Please log in to your ${info.hostingType} to manage your website and services. 
+                Please log in to your cPanel to manage your website and services. 
                 If you need any assistance, feel free to contact our support team.
                 
-                ${info.plan === 'Freedom Plan' 
-                    ? `Remember, your plan will expire in 12 hours. If you like our service, 
-                       consider upgrading to one of our premium plans!` 
-                    : ''}
+                <br><br>
+                <strong>Note:</strong> Please update your domain's DNS A record to point to the hosting server.
             </p>
             
             <p style="font-size: 18px; line-height: 1.6; margin-top: 15px;">
@@ -82,7 +71,7 @@ async function sendEmail(info, response) {
     const mailResponse = await transporter.sendMail({
       from: process.env.MAIL_SENDER,
       to: info.email,
-      subject: `🎉 Your ${plan} has been Activated!`,
+      subject: `Your ${plan} has been Activated!`,
       html: emailHtml,
     })
 
