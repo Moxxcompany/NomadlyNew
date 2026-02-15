@@ -1317,7 +1317,7 @@ bot?.on('message', async msg => {
       try {
         send(chatId, t.trialPlanActivationConfirmation)
         send(chatId, t.trialPlanActivationInProgress, trans('o'))
-        return await registerDomainAndCreateCpanel(send, info, trans('o'), state)
+        return await registerDomainAndCreateCpanel(send, info, trans('o'), state, hostingTransactions, bot)
       } catch (error) {
         console.error('Error in sending messages or email:', error)
       }
@@ -1896,7 +1896,7 @@ bot?.on('message', async msg => {
       const priceNgn = await usdToNgn(price)
       if (coin === u.ngn && ngnBal < priceNgn) return send(chatId, t.walletBalanceLow, k.of([u.deposit]))
 
-      await registerDomainAndCreateCpanel(send, info, trans('o'), state, hostingTransactions)
+      await registerDomainAndCreateCpanel(send, info, trans('o'), state, hostingTransactions, bot)
 
       // wallet update
       if (coin === u.usd) {
