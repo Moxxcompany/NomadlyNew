@@ -854,6 +854,12 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.askDomainToUseWithShortener)
       send(chatId, t.askDomainToUseWithShortener,  trans('yes_no'))
     },
+    domainNsSelect: () => {
+      set(state, chatId, 'action', a.domainNsSelect)
+      const domain = info?.domain || ''
+      const registrar = info?.registrar || ''
+      send(chatId, `Choose nameservers for <b>${domain}</b> (via ${registrar}):\n\n<b>${user.nsProviderDefault}</b> - Use ${registrar} default nameservers\n<b>${user.nsCloudflare}</b> - Use Cloudflare for DNS management`, k.of([[user.nsProviderDefault], [user.nsCloudflare], [t.back]]))
+    },
     'plan-pay': () => {
       const { plan, price, couponApplied, newPrice } = info
       couponApplied
