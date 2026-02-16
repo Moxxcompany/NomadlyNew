@@ -100,6 +100,10 @@ const user = {
   viewDomainNames: '📂 My Domain Names',
   dnsManagement: '🔧 DNS Management',
 
+  // Nameserver selection for standalone domain purchase
+  nsProviderDefault: '🏢 Provider Default',
+  nsCloudflare: '🛡️ Cloudflare',
+
   // Sub Menu 3: cPanel/Plesk WebHostingPlansMain
   freeTrial: '💡 Free Trial',
   starterPlan: '🔼 Starter Plan',
