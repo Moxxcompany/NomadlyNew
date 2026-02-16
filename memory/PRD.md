@@ -23,14 +23,24 @@ Multi-service Telegram bot for URL shortening, domain sales, phone leads, crypto
 5. Web Hosting (cPanel, Plesk plans with trials)
 6. VPS Plans (Virtual private servers)
 
-## What's Been Implemented (Feb 14, 2026)
-- [x] Installed Node.js dependencies
+## What's Been Implemented
+- [x] Installed Node.js dependencies (Feb 14, 2026)
 - [x] Created `/app/.env` with required environment variables
 - [x] Fixed `config.js` missing PRICE_BITLY_LINK variable
 - [x] Fixed `_index.js` startServer() hoisting issue
 - [x] Backend proxy + Node.js server running
 - [x] MongoDB connected
 - [x] Frontend dashboard displaying live status
+
+## Setup Completed (Feb 16, 2026)
+- [x] Re-installed Node.js dependencies (`npm install`)
+- [x] Re-created `/app/.env` with all essential env vars
+- [x] Restarted backend (FastAPI proxy) and frontend (React)
+- [x] Node.js Express server running on port 5000
+- [x] FastAPI proxy running on port 8001
+- [x] MongoDB connected and heartbeat restored
+- [x] Frontend dashboard live with all status cards showing green
+- [x] Health endpoint returning: Bot Running, DB Connected, APIs Active
 
 ## Environment Variables Required
 - `MONGO_URL` - MongoDB connection string
@@ -42,7 +52,7 @@ Multi-service Telegram bot for URL shortening, domain sales, phone leads, crypto
 ## Next Action Items
 - P0: Provide valid TELEGRAM_BOT_TOKEN to enable bot functionality
 - P1: Configure webhook URL (SELF_URL) for production
-- P2: Add Connect Reseller IP whitelist
+- P2: Add Connect Reseller IP whitelist (34.170.12.145)
 
 ## Backlog
 - Add admin authentication to dashboard
