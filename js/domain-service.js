@@ -7,80 +7,57 @@ const opService = require('./op-service')
 const cfService = require('./cf-service')
 
 /**
- * Unified Domain Service - orchestrates ConnectReseller and OpenProvider
- * with optional Cloudflare DNS management.
- *
- * Flow:
- * 1. Check domain availability on ConnectReseller first
- * 2. If unavailable or error, fallback to OpenProvider
- * 3. On registration, store registrar + nameserver choice in MongoDB
+ * Unified Domain Service
+ * - CR first, fallback to OP for availability/pricing
+ * - Supports: provider_default, cloudflare, custom nameservers
+ * - Routes DNS ops to correct API based on stored metadata
  */
 
-/**
- * Check domain price/availability across registrars
- * Tries ConnectReseller first, falls back to OpenProvider
- *
- * @param {string} domainName
- * @param {object} db - MongoDB database instance
- * @returns {{ available, price, originalPrice, registrar, message }}
- */
+// ─── Domain check ───────────────────────────────────────
+
 const checkDomainPrice = async (domainName, db) => {
-  // Try ConnectReseller first
   log(`[domain-service] Checking ${domainName} on ConnectReseller...`)
   const crResult = await checkDomainPriceOnline(domainName)
 
   if (crResult.available) {
     log(`[domain-service] ${domainName} available on ConnectReseller @ $${crResult.price}`)
     return {
-      available: true,
-      price: crResult.price,
-      originalPrice: crResult.originalPrice,
-      registrar: 'ConnectReseller',
+      available: true, price: crResult.price,
+      originalPrice: crResult.originalPrice, registrar: 'ConnectReseller',
       message: crResult.message,
     }
   }
 
-  // Fallback to OpenProvider
   log(`[domain-service] ${domainName} not on CR (${crResult.message}), trying OpenProvider...`)
   const opResult = await opService.checkDomainAvailability(domainName)
 
   if (opResult.available) {
     log(`[domain-service] ${domainName} available on OpenProvider @ $${opResult.price}`)
     return {
-      available: true,
-      price: opResult.price,
-      originalPrice: opResult.originalPrice,
-      registrar: 'OpenProvider',
+      available: true, price: opResult.price,
+      originalPrice: opResult.originalPrice, registrar: 'OpenProvider',
       message: `Available via OpenProvider`,
     }
   }
 
-  // Both failed
   return {
-    available: false,
-    price: 0,
-    originalPrice: 0,
-    registrar: null,
+    available: false, price: 0, originalPrice: 0, registrar: null,
     message: crResult.message || opResult.message || 'Domain not available',
   }
 }
 
+// ─── Domain registration ────────────────────────────────
+
 /**
- * Register a domain using the appropriate registrar
- *
- * @param {string} domainName
- * @param {string} registrar - 'ConnectReseller' or 'OpenProvider'
- * @param {string} nsChoice - 'provider_default' or 'cloudflare'
- * @param {object} db - MongoDB database instance
- * @param {string} chatId - Telegram chat ID for tracking
- * @returns {{ success, error, registrar, nameservers, cfZoneId }}
+ * @param {string} nsChoice - 'provider_default', 'cloudflare', or 'custom'
+ * @param {string[]} customNS - custom nameservers (only when nsChoice === 'custom')
  */
-const registerDomain = async (domainName, registrar, nsChoice, db, chatId) => {
+const registerDomain = async (domainName, registrar, nsChoice, db, chatId, customNS) => {
   let result
   let nameservers = []
   let cfZoneId = null
 
-  // If Cloudflare chosen, create zone first to get nameservers
+  // Determine nameservers based on choice
   if (nsChoice === 'cloudflare') {
     log(`[domain-service] Creating Cloudflare zone for ${domainName}...`)
     const cfResult = await cfService.createZone(domainName)
@@ -90,31 +67,22 @@ const registerDomain = async (domainName, registrar, nsChoice, db, chatId) => {
       log(`[domain-service] Cloudflare zone created. NS: ${nameservers.join(', ')}`)
     } else {
       log(`[domain-service] Cloudflare zone creation failed:`, cfResult.errors)
-      // Continue with provider default nameservers
       nsChoice = 'provider_default'
     }
+  } else if (nsChoice === 'custom' && customNS && customNS.length >= 2) {
+    nameservers = customNS
+    log(`[domain-service] Using custom NS: ${nameservers.join(', ')}`)
   }
 
   if (registrar === 'ConnectReseller') {
-    // ConnectReseller registration
-    if (nsChoice === 'cloudflare' && nameservers.length >= 2) {
-      // CR doesn't easily allow custom NS at registration time,
-      // so register with defaults then we'll update NS after
-      result = await buyDomainOnline(domainName)
-      // After successful CR registration, update NS to Cloudflare
-      // This is handled by post-registration nameserver update
-    } else {
-      result = await buyDomainOnline(domainName)
-    }
-
+    result = await buyDomainOnline(domainName)
     if (result.success) {
       log(`[domain-service] ${domainName} registered on ConnectReseller`)
     }
   } else if (registrar === 'OpenProvider') {
-    // OpenProvider registration - can pass nameservers at registration time
-    const ns = nsChoice === 'cloudflare' ? nameservers : []
+    // OP can accept nameservers at registration time
+    const ns = (nsChoice === 'cloudflare' || nsChoice === 'custom') ? nameservers : []
     result = await opService.registerDomain(domainName, ns)
-
     if (result.success) {
       log(`[domain-service] ${domainName} registered on OpenProvider (ID: ${result.domainId})`)
     }
@@ -122,11 +90,9 @@ const registerDomain = async (domainName, registrar, nsChoice, db, chatId) => {
     return { error: `Unknown registrar: ${registrar}` }
   }
 
-  if (result.error) {
-    return { error: result.error }
-  }
+  if (result.error) return { error: result.error }
 
-  // Store domain metadata in MongoDB
+  // Store metadata in MongoDB
   if (db) {
     try {
       await db.collection('domainsOf').updateOne(
@@ -137,6 +103,7 @@ const registerDomain = async (domainName, registrar, nsChoice, db, chatId) => {
             nameserverType: nsChoice,
             cfZoneId: cfZoneId || null,
             opDomainId: result.domainId || null,
+            customNS: nsChoice === 'custom' ? nameservers : null,
             registeredAt: new Date(),
           },
         },
@@ -149,17 +116,45 @@ const registerDomain = async (domainName, registrar, nsChoice, db, chatId) => {
   }
 
   return {
-    success: true,
-    registrar,
-    nameservers: nsChoice === 'cloudflare' ? nameservers : [],
-    cfZoneId,
-    opDomainId: result.domainId || null,
+    success: true, registrar,
+    nameservers: nsChoice !== 'provider_default' ? nameservers : [],
+    cfZoneId, opDomainId: result.domainId || null,
   }
 }
 
 /**
- * Get domain metadata from MongoDB
+ * Post-registration: update nameservers for custom NS or Cloudflare on CR domains
  */
+const postRegistrationNSUpdate = async (domainName, registrar, nsChoice, nameservers, db) => {
+  if (nsChoice === 'provider_default') return { success: true }
+  if (!nameservers || nameservers.length < 2) return { success: true }
+
+  if (registrar === 'ConnectReseller') {
+    // CR: update NS via the CR API
+    const { updateDNSRecordNs } = require('./cr-dns-record-update-ns')
+    const viewCRDNS = require('./cr-view-dns-records')
+    const crData = await viewCRDNS(domainName)
+    if (!crData || !crData.domainNameId) {
+      return { error: 'Could not fetch CR domain data for NS update' }
+    }
+    const nsRecords = (crData.records || []).filter(r => r.recordType === 'NS')
+    // Update each NS record
+    for (let i = 0; i < nameservers.length && i < 4; i++) {
+      const existingNS = nsRecords[i]
+      if (existingNS) {
+        await updateDNSRecordNs(crData.domainNameId, domainName, nameservers[i], existingNS.nsId, nsRecords)
+      }
+    }
+    return { success: true }
+  } else if (registrar === 'OpenProvider') {
+    // OP was already registered with the nameservers, but update if needed
+    return await opService.updateNameservers(domainName, nameservers)
+  }
+  return { success: true }
+}
+
+// ─── Domain metadata ────────────────────────────────────
+
 const getDomainMeta = async (domainName, db) => {
   if (!db) return null
   try {
@@ -173,13 +168,12 @@ const getDomainMeta = async (domainName, db) => {
   }
 }
 
-/**
- * View DNS records for a domain - routes to correct service
- */
+// ─── DNS operations (routing) ───────────────────────────
+
 const viewDNSRecords = async (domainName, db) => {
   const meta = await getDomainMeta(domainName, db)
 
-  // If domain uses Cloudflare nameservers, fetch from Cloudflare
+  // Cloudflare DNS
   if (meta?.nameserverType === 'cloudflare' && meta?.cfZoneId) {
     const records = await cfService.listDNSRecords(meta.cfZoneId)
     return {
@@ -196,20 +190,33 @@ const viewDNSRecords = async (domainName, db) => {
     }
   }
 
-  // If OpenProvider domain (no Cloudflare), get NS info
+  // OpenProvider DNS (provider_default or custom)
   if (meta?.registrar === 'OpenProvider') {
+    const dnsResult = await opService.listDNSRecords(domainName)
+    if (dnsResult.records && dnsResult.records.length > 0) {
+      return {
+        records: dnsResult.records.map(r => ({
+          recordType: r.recordType,
+          recordContent: r.recordContent,
+          recordName: r.recordName,
+          ttl: r.ttl,
+        })),
+        source: 'openprovider',
+        opDomainId: meta.opDomainId,
+      }
+    }
+    // Fallback: show nameserver info
     const info = await opService.getDomainInfo(domainName)
     if (info) {
       return {
         records: info.nameservers.map((ns, i) => ({
-          recordType: 'NS',
-          recordContent: ns,
-          nsId: i + 1,
+          recordType: 'NS', recordContent: ns, nsId: i + 1,
         })),
         source: 'openprovider',
         opDomainId: info.domainId,
       }
     }
+    return { records: [], source: 'openprovider' }
   }
 
   // Default: ConnectReseller
@@ -217,9 +224,6 @@ const viewDNSRecords = async (domainName, db) => {
   return { ...(await viewCRDNS(domainName)), source: 'connectreseller' }
 }
 
-/**
- * Add a DNS record - routes to correct service
- */
 const addDNSRecord = async (domainName, recordType, recordValue, hostName, db) => {
   const meta = await getDomainMeta(domainName, db)
 
@@ -229,9 +233,7 @@ const addDNSRecord = async (domainName, recordType, recordValue, hostName, db) =
   }
 
   if (meta?.registrar === 'OpenProvider') {
-    // OpenProvider DNS is managed via nameservers, not direct records
-    // If they want to add records, they need Cloudflare
-    return { error: 'DNS records for OpenProvider domains require Cloudflare nameservers. Please update your nameserver choice.' }
+    return await opService.addDNSRecord(domainName, recordType, recordValue, hostName || domainName)
   }
 
   // Default: ConnectReseller
@@ -239,41 +241,30 @@ const addDNSRecord = async (domainName, recordType, recordValue, hostName, db) =
   return await saveServerInDomain(domainName, recordValue, recordType, null, null, null, hostName)
 }
 
-/**
- * Update a DNS record - routes to correct service
- */
 const updateDNSRecord = async (domainName, recordData, db) => {
   const meta = await getDomainMeta(domainName, db)
 
   if (meta?.nameserverType === 'cloudflare' && meta?.cfZoneId && recordData.cfRecordId) {
     return await cfService.updateDNSRecord(
-      meta.cfZoneId,
-      recordData.cfRecordId,
-      recordData.recordType,
-      recordData.recordName || domainName,
-      recordData.recordValue,
-      recordData.ttl || 300
+      meta.cfZoneId, recordData.cfRecordId,
+      recordData.recordType, recordData.recordName || domainName,
+      recordData.recordValue, recordData.ttl || 300
     )
+  }
+
+  if (meta?.registrar === 'OpenProvider') {
+    return await opService.updateDNSRecord(domainName, recordData, recordData.recordValue, recordData.recordType)
   }
 
   // Default: ConnectReseller
   const { updateDNSRecord: crUpdate } = require('./cr-dns-record-update')
   return await crUpdate(
-    recordData.DNSZoneID,
-    recordData.DNSZoneRecordID,
-    domainName,
-    recordData.recordType,
-    recordData.recordValue,
-    recordData.domainNameId,
-    recordData.nsId,
-    recordData.dnsRecords,
-    recordData.hostName
+    recordData.DNSZoneID, recordData.DNSZoneRecordID,
+    domainName, recordData.recordType, recordData.recordValue,
+    recordData.domainNameId, recordData.nsId, recordData.dnsRecords, recordData.hostName
   )
 }
 
-/**
- * Delete a DNS record - routes to correct service
- */
 const deleteDNSRecord = async (domainName, recordData, db) => {
   const meta = await getDomainMeta(domainName, db)
 
@@ -281,21 +272,22 @@ const deleteDNSRecord = async (domainName, recordData, db) => {
     return await cfService.deleteDNSRecord(meta.cfZoneId, recordData.cfRecordId)
   }
 
+  if (meta?.registrar === 'OpenProvider') {
+    return await opService.deleteDNSRecord(domainName, recordData)
+  }
+
   // Default: ConnectReseller
   const { deleteDNSRecord: crDelete } = require('./cr-dns-record-del')
   return await crDelete(
-    recordData.DNSZoneID,
-    recordData.DNSZoneRecordID,
-    domainName,
-    recordData.domainNameId,
-    recordData.nsId,
-    recordData.dnsRecords
+    recordData.DNSZoneID, recordData.DNSZoneRecordID,
+    domainName, recordData.domainNameId, recordData.nsId, recordData.dnsRecords
   )
 }
 
 module.exports = {
   checkDomainPrice,
   registerDomain,
+  postRegistrationNSUpdate,
   getDomainMeta,
   viewDNSRecords,
   addDNSRecord,
