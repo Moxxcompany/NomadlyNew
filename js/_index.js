@@ -684,6 +684,7 @@ bot?.on('message', async msg => {
     skipCoupon: 'skipCoupon',
 
     askDomainToUseWithShortener: 'askDomainToUseWithShortener',
+    domainNsSelect: 'domainNsSelect',
 
     selectCurrencyToWithdraw: 'selectCurrencyToWithdraw',
 
