@@ -859,7 +859,11 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.domainNsSelect)
       const domain = info?.domain || ''
       const registrar = info?.registrar || ''
-      send(chatId, `Choose nameservers for <b>${domain}</b> (via ${registrar}):\n\n<b>${user.nsProviderDefault}</b> - Use ${registrar} default nameservers\n<b>${user.nsCloudflare}</b> - Use Cloudflare for DNS management`, k.of([[user.nsProviderDefault], [user.nsCloudflare], [t.back]]))
+      send(chatId, `Choose nameservers for <b>${domain}</b> (via ${registrar}):\n\n<b>${user.nsProviderDefault}</b> - Use ${registrar} default nameservers\n<b>${user.nsCloudflare}</b> - Use Cloudflare for DNS management\n<b>${user.nsCustom}</b> - Provide your own nameservers`, k.of([[user.nsProviderDefault], [user.nsCloudflare], [user.nsCustom], [t.back]]))
+    },
+    domainCustomNsEntry: () => {
+      set(state, chatId, 'action', a.domainCustomNsEntry)
+      send(chatId, `Enter your custom nameservers separated by space.\n\nExample: <code>ns1.example.com ns2.example.com</code>\n\nMinimum 2 nameservers required.`, k.of([[t.back]]))
     },
     'plan-pay': () => {
       const { plan, price, couponApplied, newPrice } = info
