@@ -3514,6 +3514,19 @@ bot?.on('message', async msg => {
     if (!yesNo.includes(message)) return send(chatId, t.what)
     saveInfo('askDomainToUseWithShortener', message === yesNo[0])
 
+    // Go to nameserver selection before payment
+    return goto.domainNsSelect()
+  }
+  if (action === a.domainNsSelect) {
+    if (message === t.back) return goto.askDomainToUseWithShortener()
+    if (message === user.nsProviderDefault) {
+      saveInfo('nsChoice', 'provider_default')
+    } else if (message === user.nsCloudflare) {
+      saveInfo('nsChoice', 'cloudflare')
+    } else {
+      return send(chatId, t.what)
+    }
+
     if ((info?.domain?.endsWith('.sbs') || info?.domain?.endsWith('.xyz')) && (await isSubscribed(chatId))) {
       const available = (await get(freeDomainNamesAvailableFor, chatId)) || 0
       if (available > 0) return goto['get-free-domain']()
