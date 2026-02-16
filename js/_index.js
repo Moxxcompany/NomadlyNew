@@ -3496,8 +3496,8 @@ bot?.on('message', async msg => {
     if (!domainRegex.test(domain))
       return send(chatId, t.domainInvalid)
     send(chatId, `🔍 Searching availability for ${domain} ...`)
-    const { available, price, originalPrice, message: msg } = await checkDomainPriceOnline(domain)
-    if (!available) return send(chatId, msg)
+    const { available, price, originalPrice, registrar, message: msg } = await domainService.checkDomainPrice(domain, db)
+    if (!available) return send(chatId, msg || 'Domain not available')
     if (!originalPrice) {
       send(TELEGRAM_DEV_CHAT_ID, t.issueGettingPrice)
       return send(chatId, t.issueGettingPrice)
@@ -3505,6 +3505,7 @@ bot?.on('message', async msg => {
     saveInfo('price', price)
     saveInfo('domain', domain)
     saveInfo('originalPrice', originalPrice)
+    saveInfo('registrar', registrar)
     return goto.askDomainToUseWithShortener()
   }
   if (action === a.askDomainToUseWithShortener) {
