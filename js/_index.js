@@ -3534,11 +3534,11 @@ bot?.on('message', async msg => {
   }
   if (action === a.domainNsSelect) {
     if (message === t.back) return goto.askDomainToUseWithShortener()
-    if (message === user.nsProviderDefault) {
+    if (message === configUser.nsProviderDefault) {
       saveInfo('nsChoice', 'provider_default')
-    } else if (message === user.nsCloudflare) {
+    } else if (message === configUser.nsCloudflare) {
       saveInfo('nsChoice', 'cloudflare')
-    } else if (message === user.nsCustom) {
+    } else if (message === configUser.nsCustom) {
       return goto.domainCustomNsEntry()
     } else {
       return send(chatId, t.what)
