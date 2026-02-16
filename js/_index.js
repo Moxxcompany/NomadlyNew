@@ -4766,7 +4766,10 @@ const formatLinks = links => {
 const buyDomainFullProcess = async (chatId, lang, domain) => {
   try {
     sendMessage(chatId, translation('t.paymentSuccessFul', lang), rem)
-    const { error: buyDomainError } = await buyDomain(chatId, domain)
+    let info = await get(state, chatId)
+    const registrar = info?.registrar || 'ConnectReseller'
+    const nsChoice = info?.nsChoice || 'provider_default'
+    const { error: buyDomainError } = await buyDomain(chatId, domain, registrar, nsChoice)
     if (buyDomainError) {
       const m = translation('t.domainPurchasedFailed', lang, domain, buyDomainError)
       log(m)
@@ -4776,7 +4779,6 @@ const buyDomainFullProcess = async (chatId, lang, domain) => {
     }
     send(chatId, translation('t.domainBoughtSuccess', lang, domain), translation('o', lang))
 
-    let info = await get(state, chatId)
     if (info?.askDomainToUseWithShortener === false) return
 
     // saveDomainInServerRender
@@ -4792,13 +4794,24 @@ const buyDomainFullProcess = async (chatId, lang, domain) => {
     }
     sendMessage(chatId, translation('t.domainLinking', lang, domain))
 
-    await sleep(65000) // sleep 65 seconds so that CR API can get the info that
-    const { error: saveServerInDomainError } = await saveServerInDomain(domain, server, recordType)
-    console.log("###saveServerInDomainError",saveServerInDomainError)
-    if (saveServerInDomainError) {
-      const m = `Error saving server in domain ${saveServerInDomainError}`
-      sendMessage(chatId, m)
-      return m
+    // For Cloudflare NS, add the DNS record via Cloudflare instead of ConnectReseller
+    if (nsChoice === 'cloudflare') {
+      await sleep(5000)
+      const addResult = await domainService.addDNSRecord(domain, recordType, server, '', db)
+      if (addResult.error || !addResult.success) {
+        const m = `Error saving server in domain via Cloudflare: ${addResult.error || 'Unknown error'}`
+        sendMessage(chatId, m)
+        return m
+      }
+    } else {
+      await sleep(65000) // sleep 65 seconds so that CR API can get the info
+      const { error: saveServerInDomainError } = await saveServerInDomain(domain, server, recordType)
+      console.log("###saveServerInDomainError",saveServerInDomainError)
+      if (saveServerInDomainError) {
+        const m = `Error saving server in domain ${saveServerInDomainError}`
+        sendMessage(chatId, m)
+        return m
+      }
     }
     sendMessage(chatId, translation('t.domainBought', lang).replaceAll('{{domain}}', domain))
     regularCheckDns(bot, chatId, domain, lang)
