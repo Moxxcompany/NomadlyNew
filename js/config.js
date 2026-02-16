@@ -103,6 +103,7 @@ const user = {
   // Nameserver selection for standalone domain purchase
   nsProviderDefault: '🏢 Provider Default',
   nsCloudflare: '🛡️ Cloudflare',
+  nsCustom: '🔧 Custom Nameservers',
 
   // Sub Menu 3: cPanel/Plesk WebHostingPlansMain
   freeTrial: '💡 Free Trial',
