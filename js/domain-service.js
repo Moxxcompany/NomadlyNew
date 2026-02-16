@@ -36,7 +36,7 @@ const checkDomainPrice = async (domainName, db) => {
     return {
       available: true, price: opResult.price,
       originalPrice: opResult.originalPrice, registrar: 'OpenProvider',
-      message: `Available via OpenProvider`,
+      message: `Domain is available`,
     }
   }
 
