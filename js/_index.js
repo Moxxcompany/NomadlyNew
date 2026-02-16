@@ -685,6 +685,7 @@ bot?.on('message', async msg => {
 
     askDomainToUseWithShortener: 'askDomainToUseWithShortener',
     domainNsSelect: 'domainNsSelect',
+    domainCustomNsEntry: 'domainCustomNsEntry',
 
     selectCurrencyToWithdraw: 'selectCurrencyToWithdraw',
 
