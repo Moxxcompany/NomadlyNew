@@ -907,14 +907,22 @@ bot?.on('message', async msg => {
 
     'choose-dns-action': async () => {
       const domain = info?.domainToManage
-      const { records, domainNameId } = await viewDNSRecords(domain) || { records: [], domainNameId: null }
 
-      const toSave = records?.map(({ dnszoneID, dnszoneRecordID, recordType, nsId, recordContent }) => ({
-        dnszoneID,
-        dnszoneRecordID,
-        recordType,
-        nsId,
-        recordContent,
+      // Use unified domain service to route DNS to correct provider
+      const dnsResult = await domainService.viewDNSRecords(domain, db)
+      const source = dnsResult?.source || 'connectreseller'
+      const records = dnsResult?.records || []
+      const domainNameId = dnsResult?.domainNameId || null
+      const cfZoneId = dnsResult?.cfZoneId || null
+
+      const toSave = records?.map((r) => ({
+        dnszoneID: r.dnszoneID || null,
+        dnszoneRecordID: r.dnszoneRecordID || null,
+        cfRecordId: r.cfRecordId || null,
+        recordType: r.recordType,
+        nsId: r.nsId || null,
+        recordContent: r.recordContent,
+        recordName: r.recordName || null,
       }))
 
       const categorizeRecords = (records) => {
@@ -930,7 +938,8 @@ bot?.on('message', async msg => {
       const categorizedRecords = categorizeRecords(records);
 
       set(state, chatId, 'dnsRecords', toSave)
-
+      set(state, chatId, 'dnsSource', source)
+      set(state, chatId, 'cfZoneId', cfZoneId)
       set(state, chatId, 'domainNameId', domainNameId)
       set(state, chatId, 'action', 'choose-dns-action')
       send(chatId, t.viewDnsRecords(categorizedRecords, domain), trans('dns'))
