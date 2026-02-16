@@ -4074,12 +4074,17 @@ bot?.on('message', async msg => {
     if (message === t.back || message === t.no) return goto['select-dns-record-id-to-delete']()
     if (message !== t.yes) return send(chatId, t.what)
 
-    const { domainNameId, dnsRecords, domainToManage, delId } = info
+    const { domainNameId, dnsRecords, domainToManage, delId, dnsSource } = info
     if(!!dnsRecords && !!dnsRecords?.[delId]) {
-      const nsRecords = dnsRecords.filter(r => r.recordType === 'NS')
-      const { dnszoneID, dnszoneRecordID, nsId } = dnsRecords[delId]
-      const { error } = await deleteDNSRecord(dnszoneID, dnszoneRecordID, domainToManage, domainNameId, nsId, nsRecords)
-      if (error) return send(chatId, t.errorDeletingDns(error))
+      if (dnsSource === 'cloudflare' && dnsRecords[delId].cfRecordId) {
+        const result = await domainService.deleteDNSRecord(domainToManage, dnsRecords[delId], db)
+        if (!result.success) return send(chatId, t.errorDeletingDns(result.error || 'Cloudflare delete failed'))
+      } else {
+        const nsRecords = dnsRecords.filter(r => r.recordType === 'NS')
+        const { dnszoneID, dnszoneRecordID, nsId } = dnsRecords[delId]
+        const { error } = await deleteDNSRecord(dnszoneID, dnszoneRecordID, domainToManage, domainNameId, nsId, nsRecords)
+        if (error) return send(chatId, t.errorDeletingDns(error))
+      }
   
       send(chatId, t.dnsRecordDeleted)
     } else {
