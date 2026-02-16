@@ -71,6 +71,7 @@ const {
   freeDomainsOf,
   freeValidationsOf,
 } = require('./config.js')
+const { user: configUser } = require('./config.js')
 const createShortBitly = require('./bitly.js')
 const { createShortUrlApi, analyticsCuttly } = require('./cuttly.js')
 const {
