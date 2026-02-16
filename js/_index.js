@@ -4163,10 +4163,11 @@ bot?.on('message', async msg => {
     const dnsRecords = info?.dnsRecords
     const domainNameId = info?.domainNameId
     const domain = info?.domainToManage
+    const dnsSource = info?.dnsSource
     const id = info?.dnsRecordIdToUpdate
     let newRecordDetails = null
 
-    const { dnszoneID, dnszoneRecordID, recordType, nsId } = dnsRecords[id]
+    const { dnszoneID, dnszoneRecordID, recordType, nsId, cfRecordId, recordName } = dnsRecords[id]
 
     if (recordType !== 'NS') {
       newRecordDetails = message.split(" ")
@@ -4176,21 +4177,35 @@ bot?.on('message', async msg => {
     const recordContent = newRecordDetails ? newRecordDetails[newRecordDetails.length -1 ] : message
     const hostName = newRecordDetails && newRecordDetails.length === 3 ? newRecordDetails[1] : null
 
-    const { error } = await updateDNSRecord(
-      dnszoneID,
-      dnszoneRecordID,
-      domain,
-      recordType,
-      recordContent,
-      domainNameId,
-      nsId,
-      dnsRecords.filter(r => r.recordType === 'NS'),
-      hostName
-    )
-    if (error) {
-      const m = `Error update dns record, ${error}, Provide value again`
-      send(chatId, m)
-      return m
+    if (dnsSource === 'cloudflare' && cfRecordId) {
+      const result = await domainService.updateDNSRecord(domain, {
+        cfRecordId,
+        recordType,
+        recordName: recordName || domain,
+        recordValue: recordContent,
+      }, db)
+      if (result.error || !result.success) {
+        const m = `Error update dns record, ${result.error || 'Cloudflare update failed'}, Provide value again`
+        send(chatId, m)
+        return m
+      }
+    } else {
+      const { error } = await updateDNSRecord(
+        dnszoneID,
+        dnszoneRecordID,
+        domain,
+        recordType,
+        recordContent,
+        domainNameId,
+        nsId,
+        dnsRecords.filter(r => r.recordType === 'NS'),
+        hostName
+      )
+      if (error) {
+        const m = `Error update dns record, ${error}, Provide value again`
+        send(chatId, m)
+        return m
+      }
     }
 
     send(chatId, t.dnsRecordUpdated)
