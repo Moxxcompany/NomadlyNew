@@ -4890,7 +4890,7 @@ const buyDomainFullProcess = async (chatId, lang, domain) => {
       await sleep(10000)
       const addResult = await domainService.addDNSRecord(domain, recordType, server, '', db)
       if (addResult.error || !addResult.success) {
-        const m = `Error saving server in domain via OpenProvider: ${addResult.error || 'Unknown error'}`
+        const m = `Error saving DNS record for domain: ${addResult.error || 'Unknown error'}`
         sendMessage(chatId, m)
         return m
       }
