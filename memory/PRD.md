@@ -1,60 +1,62 @@
-# NomadlyBot - Telegram Bot Admin Panel
+# NomadlyBot - Telegram Bot
 
 ## Overview
-Multi-service Telegram bot for URL shortening, domain sales, phone leads, crypto payments, and web hosting.
+NomadlyBot is a Telegram bot for domain registration, hosting, URL shortening, and telecom services.
 
-## Architecture
-- **Frontend**: React (port 3000) - Admin dashboard displaying bot status, features
-- **Backend**: FastAPI proxy (port 8001) → Node.js Express (port 5000)
-- **Database**: MongoDB (external via MONGO_URL)
-- **Bot**: Telegram Bot API (currently disabled, needs valid TELEGRAM_BOT_TOKEN)
+## Core Architecture
+- **Runtime**: Node.js
+- **Database**: MongoDB
+- **Interface**: Telegram Bot API
+- **Proxy**: FastAPI (starts Node.js bot as child process)
 
-## Tech Stack
-- React 18 + Tailwind CSS (Frontend)
-- FastAPI + httpx (Python proxy)
-- Express.js + MongoDB driver (Node.js backend)
-- node-telegram-bot-api (Telegram integration)
+## Domain Registration System
 
-## Core Features
-1. URL Shortener (Bit.ly, Custom domains, Shortit trial)
-2. Domain Names (Buy, DNS management)
-3. Phone Leads & Validation (SMS, Voice, Carrier filtering)
-4. Wallet System (USD & NGN, Crypto, Bank deposits)
-5. Web Hosting (cPanel, Plesk plans with trials)
-6. VPS Plans (Virtual private servers)
+### Registrars
+1. **ConnectReseller** (Primary) - Original registrar
+2. **OpenProvider** (Fallback) - Added Feb 2026 as fallback when CR unavailable
 
-## What's Been Implemented
-- [x] Installed Node.js dependencies (Feb 14, 2026)
-- [x] Created `/app/.env` with required environment variables
-- [x] Fixed `config.js` missing PRICE_BITLY_LINK variable
-- [x] Fixed `_index.js` startServer() hoisting issue
-- [x] Backend proxy + Node.js server running
-- [x] MongoDB connected
-- [x] Frontend dashboard displaying live status
+### DNS Management
+1. **ConnectReseller DNS** - Default for CR-registered domains
+2. **Cloudflare DNS** - Optional, user-selectable during purchase
+3. **OpenProvider DNS** - For OP-registered domains (via nameservers)
 
-## Setup Completed (Feb 16, 2026)
-- [x] Re-installed Node.js dependencies (`npm install`)
-- [x] Re-created `/app/.env` with all essential env vars
-- [x] Restarted backend (FastAPI proxy) and frontend (React)
-- [x] Node.js Express server running on port 5000
-- [x] FastAPI proxy running on port 8001
-- [x] MongoDB connected and heartbeat restored
-- [x] Frontend dashboard live with all status cards showing green
-- [x] Health endpoint returning: Bot Running, DB Connected, APIs Active
+### Domain Purchase Flow
+1. User enters domain name
+2. System checks ConnectReseller first, falls back to OpenProvider
+3. User selects nameservers: "Provider Default" or "Cloudflare"
+4. Payment processing
+5. Domain registration via appropriate registrar
+6. DNS records set up based on nameserver choice
 
-## Environment Variables Required
-- `MONGO_URL` - MongoDB connection string
-- `DB_NAME` - Database name (default: nomadly_bot)
-- `TELEGRAM_BOT_TOKEN` - Telegram bot token (placeholder currently)
-- `TELEGRAM_BOT_ON` - Enable/disable bot (currently: false)
-- `REST_APIS_ON` - Enable REST APIs (currently: true)
+## Key Files
+- `/app/js/_index.js` - Main bot logic
+- `/app/js/config.js` - Bot configuration & keyboards
+- `/app/js/op-service.js` - OpenProvider integration
+- `/app/js/cf-service.js` - Cloudflare integration
+- `/app/js/domain-service.js` - Unified domain orchestrator
+- `/app/js/cr-*.js` - ConnectReseller services
 
-## Next Action Items
-- P0: Provide valid TELEGRAM_BOT_TOKEN to enable bot functionality
-- P1: Configure webhook URL (SELF_URL) for production
-- P2: Add Connect Reseller IP whitelist (34.170.12.145)
+## What's Been Implemented (Feb 2026)
+- [x] OpenProvider service (auth, domain check, pricing, registration, DNS, country TLDs)
+- [x] Cloudflare service (zone mgmt, DNS CRUD, nameserver fetching)
+- [x] Unified domain service (CR→OP fallback, metadata storage, DNS routing)
+- [x] Nameserver selection in domain purchase flow
+- [x] DNS management routing (CR/OP/Cloudflare based on domain metadata)
+- [x] All credentials configured in .env
+- [x] Testing: 15/15 backend tests passed
+
+## Database Schema Enhancement
+- `domainsOf` collection: Added fields `registrar`, `nameserverType`, `cfZoneId`, `opDomainId`, `registeredAt`
+
+## Integrations
+- ConnectReseller API (existing)
+- OpenProvider API (v1beta) - auth, domains, customers
+- Cloudflare API (v4) - zones, dns_records
+- Telegram Bot API
+- Fincra (payments)
+- Blockbee (crypto payments)
 
 ## Backlog
-- Add admin authentication to dashboard
-- Add analytics charts
-- Enable payment integrations (Fincra, Blockbee)
+- P2: Enhanced analytics dashboard for domain portfolio
+- P2: Auto-renewal management across registrars
+- P2: Bulk domain operations
