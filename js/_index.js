@@ -860,7 +860,7 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.domainNsSelect)
       const domain = info?.domain || ''
       const registrar = info?.registrar || ''
-      send(chatId, `Choose nameservers for <b>${domain}</b> (via ${registrar}):\n\n<b>${configUser.nsProviderDefault}</b> - Use ${registrar} default nameservers\n<b>${configUser.nsCloudflare}</b> - Use Cloudflare for DNS management\n<b>${configUser.nsCustom}</b> - Provide your own nameservers`, k.of([[configUser.nsProviderDefault], [configUser.nsCloudflare], [configUser.nsCustom], [t.back]]))
+      send(chatId, `Choose nameservers for <b>${domain}</b>:\n\n<b>${configUser.nsProviderDefault}</b> - Use default nameservers\n<b>${configUser.nsCloudflare}</b> - Use Cloudflare for DNS management\n<b>${configUser.nsCustom}</b> - Provide your own nameservers`, k.of([[configUser.nsProviderDefault], [configUser.nsCloudflare], [configUser.nsCustom], [t.back]]))
     },
     domainCustomNsEntry: () => {
       set(state, chatId, 'action', a.domainCustomNsEntry)
