@@ -4107,6 +4107,7 @@ bot?.on('message', async msg => {
     if (message === t.back) return goto['select-dns-record-type-to-add']()
 
     const domain = info?.domainToManage
+    const dnsSource = info?.dnsSource
     let recordType = info?.recordType
     let newRecordDetails = null
     if (t[recordType] !== 'NS') {
@@ -4125,11 +4126,19 @@ bot?.on('message', async msg => {
       return goto['choose-dns-action']()
     }
 
-    const nextId = nextNumber(nsRecords.map(r => r.nsId))
-    const { error } = await saveServerInDomain(domain, recordContent, t[recordType], domainNameId, nextId, nsRecords, hostName)
-    if (error) {
-      const m = t.errorSavingDns(error)
-      return send(chatId, m)
+    if (dnsSource === 'cloudflare') {
+      const result = await domainService.addDNSRecord(domain, t[recordType], recordContent, hostName || '', db)
+      if (result.error || !result.success) {
+        const m = t.errorSavingDns(result.error || 'Cloudflare add failed')
+        return send(chatId, m)
+      }
+    } else {
+      const nextId = nextNumber(nsRecords.map(r => r.nsId))
+      const { error } = await saveServerInDomain(domain, recordContent, t[recordType], domainNameId, nextId, nsRecords, hostName)
+      if (error) {
+        const m = t.errorSavingDns(error)
+        return send(chatId, m)
+      }
     }
 
     send(chatId, t.dnsRecordSaved)
