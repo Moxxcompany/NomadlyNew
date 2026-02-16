@@ -4837,7 +4837,8 @@ const buyDomainFullProcess = async (chatId, lang, domain) => {
     let info = await get(state, chatId)
     const registrar = info?.registrar || 'ConnectReseller'
     const nsChoice = info?.nsChoice || 'provider_default'
-    const { error: buyDomainError } = await buyDomain(chatId, domain, registrar, nsChoice)
+    const customNS = info?.customNS || null
+    const { error: buyDomainError } = await buyDomain(chatId, domain, registrar, nsChoice, customNS)
     if (buyDomainError) {
       const m = translation('t.domainPurchasedFailed', lang, domain, buyDomainError)
       log(m)
@@ -4847,13 +4848,25 @@ const buyDomainFullProcess = async (chatId, lang, domain) => {
     }
     send(chatId, translation('t.domainBoughtSuccess', lang, domain), translation('o', lang))
 
+    // Post-registration NS update for custom or Cloudflare on CR domains
+    if (nsChoice === 'custom' && customNS && customNS.length >= 2 && registrar === 'ConnectReseller') {
+      sendMessage(chatId, `Updating nameservers to: ${customNS.join(', ')} ...`)
+      await sleep(60000) // Wait for CR to propagate
+      await domainService.postRegistrationNSUpdate(domain, registrar, nsChoice, customNS, db)
+    } else if (nsChoice === 'cloudflare' && registrar === 'ConnectReseller') {
+      const cfNS = await require('./cf-service').getAccountNameservers()
+      sendMessage(chatId, `Updating nameservers to Cloudflare: ${cfNS.join(', ')} ...`)
+      await sleep(60000)
+      await domainService.postRegistrationNSUpdate(domain, registrar, nsChoice, cfNS, db)
+    }
+
     if (info?.askDomainToUseWithShortener === false) return
 
-    // saveDomainInServerRender
+    // Link domain to Railway/Render for URL shortener
     const { server, error, recordType } =
       process.env.HOSTED_ON === 'render'
         ? await saveDomainInServerRender(domain)
-        : await saveDomainInServerRailway(domain) // save domain in railway // can do separately maybe or just send messages of progress to user
+        : await saveDomainInServerRailway(domain)
 
     if (error) {
       const m = translation('t.errorSavingDomain', lang)
@@ -4862,7 +4875,7 @@ const buyDomainFullProcess = async (chatId, lang, domain) => {
     }
     sendMessage(chatId, translation('t.domainLinking', lang, domain))
 
-    // For Cloudflare NS, add the DNS record via Cloudflare instead of ConnectReseller
+    // Add DNS record via the correct service based on registrar + NS choice
     if (nsChoice === 'cloudflare') {
       await sleep(5000)
       const addResult = await domainService.addDNSRecord(domain, recordType, server, '', db)
@@ -4871,10 +4884,20 @@ const buyDomainFullProcess = async (chatId, lang, domain) => {
         sendMessage(chatId, m)
         return m
       }
+    } else if (registrar === 'OpenProvider') {
+      // OP domains: add DNS record via OpenProvider DNS zone API
+      await sleep(10000)
+      const addResult = await domainService.addDNSRecord(domain, recordType, server, '', db)
+      if (addResult.error || !addResult.success) {
+        const m = `Error saving server in domain via OpenProvider: ${addResult.error || 'Unknown error'}`
+        sendMessage(chatId, m)
+        return m
+      }
     } else {
-      await sleep(65000) // sleep 65 seconds so that CR API can get the info
+      // ConnectReseller with provider_default or custom NS
+      await sleep(65000)
       const { error: saveServerInDomainError } = await saveServerInDomain(domain, server, recordType)
-      console.log("###saveServerInDomainError",saveServerInDomainError)
+      console.log("###saveServerInDomainError", saveServerInDomainError)
       if (saveServerInDomainError) {
         const m = `Error saving server in domain ${saveServerInDomainError}`
         sendMessage(chatId, m)
