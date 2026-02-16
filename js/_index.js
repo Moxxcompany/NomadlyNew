@@ -4743,16 +4743,15 @@ async function backupPayments() {
   fs.writeFileSync('payments.csv', head + backup, 'utf-8')
 }
 
-async function buyDomain(chatId, domain) {
+async function buyDomain(chatId, domain, registrar, nsChoice) {
   // ref https://www.mongodb.com/docs/manual/core/dot-dollar-considerations
   const domainSanitizedForDb = domain.replaceAll('.', '@')
 
-  // These below two lines are for testing
-  // so that real domain is not bought
-  // set(domainsOf, chatId, domainSanitizedForDb, true)
-  // return { success: true }
+  // Use unified domain service for registration
+  registrar = registrar || 'ConnectReseller'
+  nsChoice = nsChoice || 'provider_default'
 
-  const result = await buyDomainOnline(domain)
+  const result = await domainService.registerDomain(domain, registrar, nsChoice, db, chatId)
   if (result.success) {
     set(domainsOf, chatId, domainSanitizedForDb, true)
   }
