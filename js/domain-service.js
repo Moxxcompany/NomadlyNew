@@ -16,34 +16,56 @@ const cfService = require('./cf-service')
 // ─── Domain check ───────────────────────────────────────
 
 const checkDomainPrice = async (domainName, db) => {
-  log(`[domain-service] Checking ${domainName} on ConnectReseller...`)
-  const crResult = await checkDomainPriceOnline(domainName)
+  // Check both registrars in parallel for speed
+  log(`[domain-service] Checking ${domainName} on CR + OP in parallel...`)
+  const [crResult, opResult] = await Promise.allSettled([
+    checkDomainPriceOnline(domainName),
+    opService.checkDomainAvailability(domainName),
+  ])
 
-  if (crResult.available) {
-    log(`[domain-service] ${domainName} available on ConnectReseller @ $${crResult.price}`)
+  const cr = crResult.status === 'fulfilled' ? crResult.value : { available: false, message: crResult.reason?.message }
+  const op = opResult.status === 'fulfilled' ? opResult.value : { available: false, message: opResult.reason?.message }
+
+  // Prefer ConnectReseller if available (primary registrar)
+  if (cr.available) {
+    log(`[domain-service] ${domainName} available on ConnectReseller @ $${cr.price}`)
     return {
-      available: true, price: crResult.price,
-      originalPrice: crResult.originalPrice, registrar: 'ConnectReseller',
-      message: crResult.message,
+      available: true, price: cr.price,
+      originalPrice: cr.originalPrice, registrar: 'ConnectReseller',
+      message: cr.message,
     }
   }
 
-  log(`[domain-service] ${domainName} not on CR (${crResult.message}), trying OpenProvider...`)
-  const opResult = await opService.checkDomainAvailability(domainName)
-
-  if (opResult.available) {
-    log(`[domain-service] ${domainName} available on OpenProvider @ $${opResult.price}`)
+  if (op.available) {
+    log(`[domain-service] ${domainName} available on OpenProvider @ $${op.price}`)
     return {
-      available: true, price: opResult.price,
-      originalPrice: opResult.originalPrice, registrar: 'OpenProvider',
+      available: true, price: op.price,
+      originalPrice: op.originalPrice, registrar: 'OpenProvider',
       message: `Domain is available`,
     }
   }
 
   return {
     available: false, price: 0, originalPrice: 0, registrar: null,
-    message: crResult.message || opResult.message || 'Domain not available',
+    message: 'Domain name not available, please try another domain name',
   }
+}
+
+/**
+ * Check multiple TLD alternatives in parallel
+ */
+const checkAlternativeTLDs = async (baseName, db) => {
+  const tlds = ['com', 'net', 'org', 'io', 'co', 'de', 'fr', 'it', 'xyz', 'sbs', 'app', 'dev']
+  const checks = tlds.map(tld => {
+    const domain = `${baseName}.${tld}`
+    return checkDomainPrice(domain, db).then(r => ({ domain, ...r })).catch(() => ({ domain, available: false }))
+  })
+  const results = await Promise.allSettled(checks)
+  return results
+    .filter(r => r.status === 'fulfilled' && r.value.available)
+    .map(r => r.value)
+    .sort((a, b) => a.price - b.price)
+    .slice(0, 5) // Top 5 cheapest
 }
 
 // ─── Domain registration ────────────────────────────────
