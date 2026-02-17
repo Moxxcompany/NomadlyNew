@@ -3579,7 +3579,7 @@ bot?.on('message', async msg => {
       if (available > 0) return goto['get-free-domain']()
     }
 
-    return goto.askCoupon('choose-domain-to-buy')
+    return goto['domain-pay']()
   }
   if (action === a.domainCustomNsEntry) {
     if (message === t.back) return goto.domainNsSelect()
@@ -3602,7 +3602,7 @@ bot?.on('message', async msg => {
       if (available > 0) return goto['get-free-domain']()
     }
 
-    return goto.askCoupon('choose-domain-to-buy')
+    return goto['domain-pay']()
   }
   if (action === a.askCoupon + 'choose-domain-to-buy') {
     if (message === t.back) {
