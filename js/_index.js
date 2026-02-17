@@ -806,9 +806,13 @@ bot?.on('message', async msg => {
     },
     'domain-pay': () => {
       const { domain, price, couponApplied, newPrice } = info
+      const payKeyboard = k.of([
+        Object.values(payIn),
+        ['🎟️ Apply Coupon'],
+      ])
       couponApplied
         ? send(chatId, t.domainNewPrice(domain, price, newPrice), k.pay)
-        : send(chatId, t.domainPrice(domain, price), k.pay)
+        : send(chatId, t.domainPrice(domain, price), payKeyboard)
       set(state, chatId, 'action', 'domain-pay')
     },
     'hosting-pay': () => {
