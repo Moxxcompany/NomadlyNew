@@ -3556,7 +3556,7 @@ bot?.on('message', async msg => {
         if (available > 0) return goto['get-free-domain']()
       }
 
-      return goto.askCoupon('choose-domain-to-buy')
+      return goto['domain-pay']()
     }
 
     // No = no shortener: show NS selection
