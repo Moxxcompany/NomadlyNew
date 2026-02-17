@@ -4866,6 +4866,11 @@ const buyDomainFullProcess = async (chatId, lang, domain) => {
       sendMessage(chatId, `Updating nameservers to: ${customNS.join(', ')} ...`)
       await sleep(60000) // Wait for CR to propagate
       await domainService.postRegistrationNSUpdate(domain, registrar, nsChoice, customNS, db)
+    } else if (nsChoice === 'custom' && customNS && customNS.length >= 2 && registrar === 'OpenProvider') {
+      // OP sets NS at registration, but verify and update if needed
+      sendMessage(chatId, `Verifying nameservers: ${customNS.join(', ')} ...`)
+      await sleep(10000)
+      await domainService.postRegistrationNSUpdate(domain, registrar, nsChoice, customNS, db)
     } else if (nsChoice === 'cloudflare' && registrar === 'ConnectReseller') {
       const cfNS = await require('./cf-service').getAccountNameservers()
       sendMessage(chatId, `Updating nameservers to Cloudflare: ${cfNS.join(', ')} ...`)
