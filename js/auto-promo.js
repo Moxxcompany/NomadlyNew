@@ -203,13 +203,14 @@ const promoMessages = {
 Register DMCA-ignored domains — no takedowns.
 
 - .sbs, .com, .net, .org & 400+ extensions
+- Country domains: .ng .za .ke .gh .cm .tz
 - Offshore registration — total privacy
 - Instant DNS setup + management panel
 
 Tap <b>Register Domain Names</b> to claim yours!
 
 -----
-cPanel hosting or country TLDs (.ng .za .ke .gh)?
+RDP, VPS or cPanel hosting?
 Visit @hostbay_bot`,
 
       `<b>DOMAIN FLASH DEAL</b>
@@ -219,11 +220,12 @@ Why risk your site being taken down?
 + DMCA-Ignored registration
 + Full DNS control from day one
 + Free .sbs/.xyz domains with plans
++ Country TLDs: .ng .za .ke .gh .cm .tz
 
 Type <b>/start</b> then tap <b>Register Domain Names</b>
 
 -----
-Country domains (.ng .za .ke .cm .tz)?
+Need RDP, VPS or cPanel hosting?
 @hostbay_bot has you covered!`,
 
       `<b>OWN YOUR DIGITAL IDENTITY</b>
@@ -232,13 +234,14 @@ Every serious brand needs a domain:
 
 - Offshore, privacy-first registration
 - .sbs .com .net .org and 400+ more
+- Country domains: .ng .za .ke .gh
 - Manage DNS directly from the bot
 
 Subscribe for free .sbs/.xyz domains!
 Tap <b>Register Domain Names</b> now!
 
 -----
-Web hosting with cPanel?
+RDP, VPS or cPanel hosting?
 Head to @hostbay_bot`,
 
       `<b>STOP WORRYING ABOUT TAKEDOWNS</b>
@@ -248,11 +251,12 @@ Your competitors use DMCA-ignored domains.
 - Content stays up — guaranteed
 - Crypto & bank payments accepted
 - All your domains in one place
+- Country TLDs available here too!
 
 <b>Register Domain Names</b> — start now!
 
 -----
-Need .ng .za .ke .gh country domains?
+Need RDP, VPS or cPanel hosting?
 Visit @hostbay_bot`,
 
       `<b>TRUSTED BY THOUSANDS</b>
@@ -263,11 +267,12 @@ Why choose offshore domains?
 2. Full privacy protection
 3. Fast DNS propagation
 4. Crypto payments for anonymity
+5. Country domains (.ng .za .ke .gh) included
 
 Tap <b>Register Domain Names</b>
 
 -----
-cPanel hosting & country TLDs?
+RDP, VPS or cPanel hosting?
 @hostbay_bot`,
     ],
 
