@@ -3536,10 +3536,10 @@ bot?.on('message', async msg => {
       send(TELEGRAM_DEV_CHAT_ID, t.issueGettingPrice)
       return send(chatId, t.issueGettingPrice)
     }
-    saveInfo('price', price)
-    saveInfo('domain', domain)
-    saveInfo('originalPrice', originalPrice)
-    saveInfo('registrar', registrar)
+    await saveInfo('price', price)
+    await saveInfo('domain', domain)
+    await saveInfo('originalPrice', originalPrice)
+    await saveInfo('registrar', registrar)
     return goto.askDomainToUseWithShortener()
   }
   if (action === a.askDomainToUseWithShortener) {
