@@ -364,7 +364,7 @@ Subscribers get up to 15,000 FREE USA validations!
 Tap <b>HQ SMS Lead</b> to start!
 
 -----
-cPanel hosting or country TLDs?
+RDP, VPS or cPanel hosting?
 Visit @hostbay_bot`,
 
       `<b>STOP WASTING MONEY ON BAD LEADS</b>
@@ -378,7 +378,7 @@ Your campaigns are only as good as your list.
 Tap <b>HQ SMS Lead</b> now!
 
 -----
-Country domains & hosting?
+Need RDP, VPS or hosting?
 @hostbay_bot`,
 
       `<b>VALIDATE BEFORE YOU SEND</b>
@@ -405,7 +405,7 @@ USA | UK | Canada | Australia & more
 <b>HQ SMS Lead</b> then tap <b>Buy PhoneLeads</b>
 
 -----
-Country TLD domains (.ng .za .ke .gh)?
+RDP, VPS or cPanel hosting?
 @hostbay_bot`,
 
       `<b>SCALE YOUR SMS MARKETING TODAY</b>
@@ -421,7 +421,7 @@ Subscribers get FREE USA validations!
 Tap <b>HQ SMS Lead</b>
 
 -----
-Need cPanel hosting?
+Need cPanel hosting or VPS?
 @hostbay_bot`,
     ],
   },
