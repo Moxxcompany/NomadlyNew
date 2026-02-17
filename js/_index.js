@@ -3647,7 +3647,17 @@ bot?.on('message', async msg => {
     return goto['hosting-pay']()
   }
   if (action === 'domain-pay') {
-    if (message === t.back) return goto.askCoupon('choose-domain-to-buy')
+    if (message === t.back) {
+      // Go back to NS selection if shortener=No, otherwise to shortener question
+      if (info?.askDomainToUseWithShortener === false) return goto.domainNsSelect()
+      return goto.askDomainToUseWithShortener()
+    }
+
+    // Handle coupon inline
+    if (message === '🎟️ Apply Coupon') {
+      return goto.askCoupon('choose-domain-to-buy')
+    }
+
     const payOption = message
 
     if (payOption === payIn.crypto) {
