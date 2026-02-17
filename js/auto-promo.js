@@ -289,7 +289,7 @@ Start with <b>5 FREE trial links</b> — no payment needed!
 Tap <b>URL Shortener</b> to claim your free links!
 
 -----
-cPanel hosting or country TLDs?
+RDP, VPS or cPanel hosting?
 Visit @hostbay_bot`,
 
       `<b>5 FREE SHORT LINKS — NO STRINGS ATTACHED</b>
@@ -303,7 +303,7 @@ Every new user gets 5 free Shortit trial links.
 Tap <b>URL Shortener</b> now!
 
 -----
-Country domains (.ng .za .ke .gh)?
+Need RDP, VPS or cPanel hosting?
 @hostbay_bot`,
 
       `<b>YOUR BRAND DESERVES BETTER LINKS</b>
@@ -330,7 +330,7 @@ Start FREE with 5 trial Shortit links!
 Type <b>/start</b> then tap <b>URL Shortener</b>
 
 -----
-cPanel hosting & country TLDs?
+RDP, VPS or cPanel hosting?
 @hostbay_bot`,
 
       `<b>SMART MARKETERS USE SMART LINKS</b>
@@ -345,7 +345,7 @@ Start with 5 FREE trial links today!
 Tap <b>URL Shortener</b>
 
 -----
-Need country-level domains?
+Need RDP, VPS or hosting?
 @hostbay_bot`,
     ],
 
