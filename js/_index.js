@@ -2262,6 +2262,13 @@ bot?.on('message', async msg => {
     return send(chatId, 'Welcome! Please select an option:', trans('o'))
   }
 
+  // /refresh command — force refresh keyboard for users seeing old buttons
+  if (message === '/refresh') {
+    set(state, chatId, 'action', 'none')
+    if (isAdmin(chatId)) return send(chatId, 'Keyboard refreshed! Please select an option:', aO)
+    return send(chatId, 'Keyboard refreshed! Please select an option:', trans('o'))
+  }
+
   // /help command
   if (message === '/help') {
     return send(chatId, `${CHAT_BOT_NAME} Help:\n• URL Shortener\n• Domain Names\n• Phone Leads\n• Wallet & Payments\n• Web Hosting\n\nUse the menu below to get started!`, trans('o'))
