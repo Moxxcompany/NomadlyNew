@@ -308,6 +308,7 @@ const deleteDNSRecord = async (domainName, recordData, db) => {
 
 module.exports = {
   checkDomainPrice,
+  checkAlternativeTLDs,
   registerDomain,
   postRegistrationNSUpdate,
   getDomainMeta,
