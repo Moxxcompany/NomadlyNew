@@ -4734,7 +4734,11 @@ bot?.on('message', async msg => {
     return
   }
 
-  send(chatId, t.unknownCommand)
+  // Fallback: unrecognized message — reset user state and show fresh main keyboard
+  // This handles users with stale keyboards from old bot versions
+  set(state, chatId, 'action', 'none')
+  log(`[reset] Unrecognized message from ${chatId}: "${message}" (was action: ${action || 'none'}). Resetting to main menu.`)
+  return send(chatId, t.what + '\n' + t.welcome, isAdmin(chatId) ? aO : trans('o'))
 })?.then(a => console.log(a))?.catch(b => console.log('the error: ', b))
 
 async function getPurchasedDomains(chatId) {
