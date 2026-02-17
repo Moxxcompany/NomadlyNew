@@ -856,10 +856,11 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', 'choose-domain-to-buy')
       send(chatId, t.chooseDomainToBuy(text), bc)
     },
-    askDomainToUseWithShortener: () => {
+    askDomainToUseWithShortener: async () => {
       set(state, chatId, 'action', a.askDomainToUseWithShortener)
-      const domain = info?.domain || ''
-      const price = info?.price || ''
+      const latest = await get(state, chatId)
+      const domain = latest?.domain || ''
+      const price = latest?.price || ''
       send(chatId, `✅ <b>${domain}</b> is available for <b>$${price}</b>\n\n${t.askDomainToUseWithShortener}`, trans('yes_no'))
     },
     domainNsSelect: () => {
