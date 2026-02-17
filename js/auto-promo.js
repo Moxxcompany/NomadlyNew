@@ -34,13 +34,14 @@ const SERVICE_CONTEXT = {
     services: 'DMCA-ignored offshore domain registration',
     details: [
       '.sbs, .com, .net, .org and 400+ extensions',
+      'Country-level domains: .ng .za .ke .gh .cm .tz',
       'Offshore registration with total content privacy',
       'Instant DNS setup and full management panel',
       'Pay with BTC, ETH, USDT or bank transfer',
       'Free .sbs/.xyz domains with subscription plans',
     ],
     cta: 'Register Domain Names',
-    crossPromo: '@hostbay_bot for cPanel/Plesk hosting and country TLDs (.ng .za .ke .gh .cm .tz)',
+    crossPromo: '@hostbay_bot for RDP, VPS and cPanel/Plesk hosting',
   },
   shortener: {
     services: 'Shortit — URL shortener with custom domain branding',
@@ -53,7 +54,7 @@ const SERVICE_CONTEXT = {
       'Unlimited links with subscription plans (Daily/Weekly/Monthly)',
     ],
     cta: 'URL Shortener',
-    crossPromo: '@hostbay_bot for cPanel/Plesk hosting and country TLDs (.ng .za .ke .gh .cm .tz)',
+    crossPromo: '@hostbay_bot for RDP, VPS and cPanel/Plesk hosting',
   },
   leads: {
     services: 'Phone number lead generation and validation',
@@ -67,7 +68,7 @@ const SERVICE_CONTEXT = {
       'Bulk download with instant delivery',
     ],
     cta: 'HQ SMS Lead',
-    crossPromo: '@hostbay_bot for cPanel/Plesk hosting and country TLDs (.ng .za .ke .gh .cm .tz)',
+    crossPromo: '@hostbay_bot for RDP, VPS and cPanel/Plesk hosting',
   },
 }
 
