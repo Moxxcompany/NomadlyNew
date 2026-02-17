@@ -435,6 +435,40 @@ const loadData = async () => {
   } else {
     log('[AutoPromo] Skipped — Telegram bot is disabled')
   }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // Scheduled auto-cleanup: reset stale user states every 6 hours
+  // Users idle in a flow for >24h get reset to 'none' so they see fresh keyboards
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000 // 24 hours
+  const CLEANUP_INTERVAL_MS = 6 * 60 * 60 * 1000 // every 6 hours
+
+  async function cleanupStaleStates() {
+    try {
+      const cutoff = new Date(Date.now() - STALE_THRESHOLD_MS)
+      // Reset users who have a non-'none' action and whose lastUpdated is older than 24h
+      const result = await state.updateMany(
+        {
+          action: { $exists: true, $ne: 'none' },
+          $or: [
+            { lastUpdated: { $lt: cutoff } },
+            { lastUpdated: { $exists: false } } // legacy entries without timestamp
+          ]
+        },
+        { $set: { action: 'none' } }
+      )
+      if (result.modifiedCount > 0) {
+        log(`[StateCleanup] Reset ${result.modifiedCount} stale user states (idle >24h)`)
+      }
+    } catch (err) {
+      log(`[StateCleanup] Error: ${err.message}`)
+    }
+  }
+
+  // Run once on startup, then every 6 hours
+  cleanupStaleStates()
+  setInterval(cleanupStaleStates, CLEANUP_INTERVAL_MS)
+  log(`[StateCleanup] Scheduled every ${CLEANUP_INTERVAL_MS / 3600000}h (stale threshold: ${STALE_THRESHOLD_MS / 3600000}h)`)
 }
 
 const client = new MongoClient(process.env.MONGO_URL, {
