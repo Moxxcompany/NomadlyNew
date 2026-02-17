@@ -870,7 +870,7 @@ bot?.on('message', async msg => {
     },
     domainCustomNsEntry: () => {
       set(state, chatId, 'action', a.domainCustomNsEntry)
-      send(chatId, `Enter your custom nameservers separated by space.\n\nExample: <code>ns1.example.com ns2.example.com</code>\n\nMinimum 2 nameservers required.`, k.of([[t.back]]))
+      send(chatId, `Enter your custom nameservers separated by space.\n\nExample: <code>ns1.example.com ns2.example.com</code>\n\nMinimum 2 nameservers required.`, k.of([]))
     },
     'plan-pay': () => {
       const { plan, price, couponApplied, newPrice } = info
