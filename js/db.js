@@ -88,7 +88,12 @@ async function set(c, key, value, valueInside) {
     if (valueInside === undefined) {
       result = await c.updateOne({ _id: key }, { $set: { val: value } }, { upsert: true })
     } else {
-      result = await c.updateOne({ _id: key }, { $set: { [value]: valueInside } }, { upsert: true })
+      // Track lastUpdated timestamp for action changes (enables stale state cleanup)
+      const updateFields = { [value]: valueInside }
+      if (value === 'action') {
+        updateFields.lastUpdated = new Date()
+      }
+      result = await c.updateOne({ _id: key }, { $set: updateFields }, { upsert: true })
     }
 
     // Verify the operation succeeded
