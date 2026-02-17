@@ -854,7 +854,9 @@ bot?.on('message', async msg => {
     },
     askDomainToUseWithShortener: () => {
       set(state, chatId, 'action', a.askDomainToUseWithShortener)
-      send(chatId, t.askDomainToUseWithShortener,  trans('yes_no'))
+      const domain = info?.domain || ''
+      const price = info?.price || ''
+      send(chatId, `✅ <b>${domain}</b> is available for <b>$${price}</b>\n\n${t.askDomainToUseWithShortener}`, trans('yes_no'))
     },
     domainNsSelect: () => {
       set(state, chatId, 'action', a.domainNsSelect)
