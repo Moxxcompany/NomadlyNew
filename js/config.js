@@ -101,9 +101,9 @@ const user = {
   dnsManagement: '🔧 DNS Management',
 
   // Nameserver selection for standalone domain purchase
-  nsProviderDefault: '🏢 Provider Default',
-  nsCloudflare: '🛡️ Cloudflare',
-  nsCustom: '🔧 Custom Nameservers',
+  nsProviderDefault: '🔒 Standard DNS',
+  nsCloudflare: '🛡️ Cloudflare DNS',
+  nsCustom: '⚙️ Custom DNS',
 
   // Sub Menu 3: cPanel/Plesk WebHostingPlansMain
   freeTrial: '💡 Free Trial',
