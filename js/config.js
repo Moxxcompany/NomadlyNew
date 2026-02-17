@@ -671,6 +671,7 @@ const userKeyboard = {
       [user.urlShortenerMain],
       [user.hostingDomainsRedirect],
       [user.phoneNumberLeads],
+      HIDE_SMS_APP === 'true' ? [user.domainNames] : [user.freeTrialAvailable, user.domainNames],
       [user.wallet, user.viewPlan],
       [user.buyPlan],
       HIDE_BECOME_RESELLER === 'true'
