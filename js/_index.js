@@ -3512,7 +3512,20 @@ bot?.on('message', async msg => {
       return send(chatId, t.domainInvalid)
     send(chatId, `🔍 Searching availability for ${domain} ...`)
     const { available, price, originalPrice, registrar, message: msg } = await domainService.checkDomainPrice(domain, db)
-    if (!available) return send(chatId, msg || 'Domain not available')
+    if (!available) {
+      // Suggest alternative TLDs
+      const baseName = domain.split('.')[0]
+      send(chatId, `❌ <b>${domain}</b> is not available.`)
+      send(chatId, `🔍 Searching alternatives for <b>${baseName}</b> ...`)
+      const alts = await domainService.checkAlternativeTLDs(baseName, db)
+      if (alts.length > 0) {
+        const altList = alts.map(a => `  <b>${a.domain}</b> — $${a.price}`).join('\n')
+        send(chatId, `✅ Available alternatives:\n\n${altList}\n\nType any domain name to check:`)
+      } else {
+        send(chatId, `No alternatives found. Try a different name:`)
+      }
+      return
+    }
     if (!originalPrice) {
       send(TELEGRAM_DEV_CHAT_ID, t.issueGettingPrice)
       return send(chatId, t.issueGettingPrice)
