@@ -6133,7 +6133,7 @@ const setupTelegramWebhook = async () => {
   }
 
   try {
-    const webhookUrl = `${SELF_URL}/api/telegram/webhook`
+    const webhookUrl = `${SELF_URL}/telegram/webhook`
     
     // Delete any existing webhook first
     await bot.deleteWebHook()
