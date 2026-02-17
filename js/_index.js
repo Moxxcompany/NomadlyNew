@@ -3605,11 +3605,7 @@ bot?.on('message', async msg => {
     return goto['domain-pay']()
   }
   if (action === a.askCoupon + 'choose-domain-to-buy') {
-    if (message === t.back) {
-      // Go back to NS selection if shortener=No, otherwise to shortener question
-      if (info?.askDomainToUseWithShortener === false) return goto.domainNsSelect()
-      return goto.askDomainToUseWithShortener()
-    }
+    if (message === t.back) return goto['domain-pay']()
     if (message === t.skip) return goto.skipCoupon('domain-pay')
 
     const { price } = info
