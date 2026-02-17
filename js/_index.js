@@ -4903,16 +4903,9 @@ const buyDomainFullProcess = async (chatId, lang, domain) => {
     }
     sendMessage(chatId, translation('t.domainLinking', lang, domain))
 
-    // Add DNS record via the correct service based on registrar + NS choice
-    if (nsChoice === 'cloudflare') {
-      await sleep(5000)
-      const addResult = await domainService.addDNSRecord(domain, recordType, server, '', db)
-      if (addResult.error || !addResult.success) {
-        const m = `Error saving server in domain via Cloudflare: ${addResult.error || 'Unknown error'}`
-        sendMessage(chatId, m)
-        return m
-      }
-    } else if (registrar === 'OpenProvider') {
+    // Add DNS record via the correct service based on registrar
+    // Note: nsChoice is always 'provider_default' here (shortener=Yes forces it)
+    if (registrar === 'OpenProvider') {
       // OP domains: add DNS record via OpenProvider DNS zone API
       await sleep(10000)
       const addResult = await domainService.addDNSRecord(domain, recordType, server, '', db)
@@ -4922,7 +4915,7 @@ const buyDomainFullProcess = async (chatId, lang, domain) => {
         return m
       }
     } else {
-      // ConnectReseller with provider_default or custom NS
+      // ConnectReseller with provider_default
       await sleep(65000)
       const { error: saveServerInDomainError } = await saveServerInDomain(domain, server, recordType)
       console.log("###saveServerInDomainError", saveServerInDomainError)
