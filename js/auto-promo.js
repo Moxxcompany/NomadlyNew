@@ -433,13 +433,14 @@ Need cPanel hosting or VPS?
 Domaines ignorant le DMCA — aucun retrait.
 
 - .sbs, .com, .net, .org & 400+ extensions
+- Domaines pays : .ng .za .ke .gh .cm .tz
 - Enregistrement offshore — confidentialite totale
 - Configuration DNS instantanee
 
 Appuyez sur <b>Enregistrer des noms de domaine</b> !
 
 -----
-Hebergement cPanel ou domaines pays (.ng .za .ke .gh) ?
+RDP, VPS ou hebergement cPanel ?
 Visitez @hostbay_bot`,
 
       `<b>OFFRE FLASH DOMAINES</b>
@@ -449,11 +450,12 @@ Pourquoi risquer la suppression de votre site ?
 + Enregistrement DMCA-ignore
 + Controle DNS complet des le premier jour
 + Domaines .sbs/.xyz gratuits avec abonnements
++ TLD pays : .ng .za .ke .gh .cm .tz
 
 Tapez <b>/start</b> puis <b>Enregistrer des noms de domaine</b>
 
 -----
-Domaines pays (.ng .za .ke .cm .tz) ?
+RDP, VPS ou hebergement cPanel ?
 @hostbay_bot`,
 
       `<b>POSSEDEZ VOTRE IDENTITE NUMERIQUE</b>
@@ -462,12 +464,13 @@ Toute marque serieuse a besoin d'un domaine :
 
 - Enregistrement offshore, confidentialite d'abord
 - .sbs .com .net .org .io et plus
+- Domaines pays : .ng .za .ke .gh
 - Gerez les DNS directement depuis le bot
 
 Appuyez sur <b>Enregistrer des noms de domaine</b> !
 
 -----
-Hebergement cPanel ?
+RDP, VPS ou hebergement cPanel ?
 Direction @hostbay_bot`,
 
       `<b>ARRETEZ DE VOUS INQUIETER DES SUPPRESSIONS</b>
@@ -477,11 +480,12 @@ Vos concurrents utilisent deja des domaines DMCA-ignores.
 - Contenu en ligne — garanti
 - Paiements crypto & bancaires
 - Tous vos domaines au meme endroit
+- TLD pays disponibles ici aussi !
 
 <b>Enregistrer des noms de domaine</b> — commencez !
 
 -----
-Domaines .ng .za .ke .gh ?
+RDP, VPS ou hebergement ?
 Visitez @hostbay_bot`,
 
       `<b>LA CONFIANCE DE MILLIERS D'UTILISATEURS</b>
@@ -492,11 +496,12 @@ Pourquoi choisir l'offshore ?
 2. Protection vie privee totale
 3. Propagation DNS rapide
 4. Paiements crypto anonymes
+5. Domaines pays (.ng .za .ke .gh) inclus
 
 Appuyez sur <b>Enregistrer des noms de domaine</b>
 
 -----
-Hebergement cPanel & domaines pays ?
+RDP, VPS ou hebergement cPanel ?
 @hostbay_bot`,
     ],
 
@@ -513,7 +518,7 @@ Commencez avec <b>5 liens gratuits</b> — aucun paiement requis !
 Appuyez sur <b>Raccourcisseur d'URL</b> !
 
 -----
-Hebergement cPanel ou domaines pays ?
+RDP, VPS ou hebergement cPanel ?
 Visitez @hostbay_bot`,
 
       `<b>5 LIENS COURTS GRATUITS — SANS ENGAGEMENT</b>
@@ -527,7 +532,7 @@ Chaque nouvel utilisateur recoit 5 liens Shortit gratuits.
 Appuyez sur <b>Raccourcisseur d'URL</b> !
 
 -----
-Domaines pays (.ng .za .ke .gh) ?
+RDP, VPS ou hebergement ?
 @hostbay_bot`,
 
       `<b>VOTRE MARQUE MERITE DE MEILLEURS LIENS</b>
@@ -554,7 +559,7 @@ Commencez GRATUITEMENT avec 5 liens Shortit !
 Tapez <b>/start</b> puis <b>Raccourcisseur d'URL</b>
 
 -----
-Hebergement cPanel & domaines pays ?
+RDP, VPS ou hebergement cPanel ?
 @hostbay_bot`,
 
       `<b>LIENS PERSONNALISES = 34% DE CLICS EN PLUS</b>
@@ -568,7 +573,7 @@ Commencez avec 5 liens d'essai GRATUITS !
 Appuyez sur <b>Raccourcisseur d'URL</b>
 
 -----
-Domaines pays ?
+RDP, VPS ou hebergement ?
 @hostbay_bot`,
     ],
 
@@ -586,7 +591,7 @@ Numeros existants ? Validez pour 15$/1000 !
 Appuyez sur <b>Pistes SMS HQ</b> !
 
 -----
-Hebergement cPanel ou domaines pays ?
+RDP, VPS ou hebergement cPanel ?
 Visitez @hostbay_bot`,
 
       `<b>ARRETEZ DE GASPILLER SUR DE MAUVAIS LEADS</b>
@@ -600,7 +605,7 @@ Vos campagnes valent votre liste.
 Appuyez sur <b>Pistes SMS HQ</b> !
 
 -----
-Domaines pays & hebergement ?
+RDP, VPS ou hebergement ?
 @hostbay_bot`,
 
       `<b>VALIDEZ AVANT D'ENVOYER</b>
@@ -627,7 +632,7 @@ USA | UK | Canada | Australie & plus
 <b>Pistes SMS HQ</b> puis <b>Acheter des leads</b>
 
 -----
-Domaines TLD pays ?
+RDP, VPS ou hebergement ?
 @hostbay_bot`,
 
       `<b>DEVELOPPEZ VOTRE MARKETING SMS</b>
@@ -642,7 +647,7 @@ Liste existante ? Validez-la chez nous !
 Appuyez sur <b>Pistes SMS HQ</b>
 
 -----
-Hebergement cPanel ?
+Hebergement cPanel ou VPS ?
 @hostbay_bot`,
     ],
   },
