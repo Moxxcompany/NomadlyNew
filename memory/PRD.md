@@ -18,30 +18,27 @@ NomadlyBot is a Telegram bot for domain registration, hosting, URL shortening, a
 ### DNS Management
 1. **ConnectReseller DNS** - Default for CR-registered domains with provider_default NS
 2. **OpenProvider DNS** - For OP-registered domains via OP DNS zone API (CRUD)
-3. **Cloudflare DNS** - Optional, user-selectable during purchase
+3. **Cloudflare DNS** - Optional, user-selectable during purchase (only when shortener=No)
 
-### Nameserver Options (during domain purchase)
+### Nameserver Options (only when shortener=No)
 1. **Provider Default** - Uses registrar's default nameservers
 2. **Cloudflare** - Creates CF zone, uses CF nameservers, DNS managed via CF API
-3. **Custom Nameservers** - User provides own NS (e.g. ns1.example.com ns2.example.com), updated post-registration
+3. **Custom Nameservers** - User provides own NS, updated post-registration
 
 ### Domain Purchase Flow
 1. User enters domain name
 2. System checks ConnectReseller first, falls back to OpenProvider
 3. User asked to use domain with URL shortener (Yes/No)
-4. User selects nameservers: Provider Default / Cloudflare / Custom
-5. Payment processing (crypto/bank/wallet)
+4. **If Yes**: Skip NS selection, auto-set provider_default, go to coupon/payment
+5. **If No**: Show NS selection (Provider Default / Cloudflare / Custom) → coupon/payment
 6. Domain registration via appropriate registrar
-7. Post-registration NS update (for custom/cloudflare on CR domains)
-8. If shortener=Yes: link domain to Railway/Render, add DNS record via correct service
+7. Post-registration: NS update (for custom/cloudflare on CR), Railway/Render linking (if shortener=Yes)
 
 ### URL Shortener Linking
-- Railway/Render domain linking is registrar-agnostic
+- Shortener=Yes forces provider_default NS for reliable Railway CNAME linking
 - DNS record creation routes through unified domain-service:
   - CR + provider_default: uses CR saveServerInDomain
   - OP + provider_default: uses OP addDNSRecord (DNS zone API)
-  - Any + cloudflare: uses CF createDNSRecord
-  - Any + custom: uses appropriate registrar's DNS API
 
 ### Country-Specific TLD Support
 .us, .ca, .it, .sg, .eu, .fr, .es, .de, .nl, .be, .uk, .co.uk, .au, .nz, .in, .br, .cl, .mx
@@ -49,21 +46,25 @@ NomadlyBot is a Telegram bot for domain registration, hosting, URL shortening, a
 ## Key Files
 - `/app/js/_index.js` - Main bot logic
 - `/app/js/config.js` - Bot configuration & keyboards
-- `/app/js/op-service.js` - OpenProvider integration (12 exports: auth, domain check/register, DNS CRUD, country TLDs)
-- `/app/js/cf-service.js` - Cloudflare integration (10 exports: zone mgmt, DNS CRUD, default records)
-- `/app/js/domain-service.js` - Unified domain orchestrator (8 exports: check, register, NS update, DNS routing)
+- `/app/js/op-service.js` - OpenProvider integration (12 exports)
+- `/app/js/cf-service.js` - Cloudflare integration (10 exports)
+- `/app/js/domain-service.js` - Unified domain orchestrator (8 exports)
 - `/app/js/cr-*.js` - ConnectReseller services
 
 ## What's Been Implemented (Feb 2026)
 - [x] OpenProvider service: auth, domain check, pricing, registration, DNS zone CRUD, country TLDs
 - [x] Cloudflare service: zone mgmt, DNS CRUD, nameserver fetching, default DNS records
 - [x] Unified domain service: CR->OP fallback, metadata storage, DNS routing, post-reg NS update
-- [x] 3 nameserver options: Provider Default, Cloudflare, Custom Nameservers
-- [x] Custom NS entry flow with validation
+- [x] 3 nameserver options (only shown when shortener=No): Provider Default, Cloudflare, Custom
+- [x] Shortener=Yes skips NS selection, uses provider_default for reliable Railway CNAME
+- [x] Custom NS entry flow with validation (min 2 NS, hostname format check)
 - [x] URL shortener works for OP domains (routes DNS add to OP API)
 - [x] DNS management routes to correct API based on stored domain metadata
-- [x] All credentials configured in .env
-- [x] Testing: 25/25 backend tests passed (iteration_13)
+- [x] No registrar names (OpenProvider/ConnectReseller) shown in user-facing messages
+- [x] SUPPORT_USERNAME bug fix for Offshore Hosting
+- [x] All credentials configured in .env, SELF_URL set to pod URL
+- [x] Webhook fixed with /api prefix + SELF_URL_PROD override
+- [x] E2E tested: 22/22 human-like tests passed
 
 ## Database Schema Enhancement
 - `domainsOf` collection fields: `registrar`, `nameserverType`, `cfZoneId`, `opDomainId`, `customNS`, `registeredAt`
