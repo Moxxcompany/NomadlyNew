@@ -6055,6 +6055,91 @@ app.get('/unsubscribe', (req, res) => {
   res.send(html(translation('t.subscribeRCS', null, phone)))
 })
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ADMIN: Reset all user keyboards
+// Clears stale action states and sends fresh keyboard to all users
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+app.get('/admin/reset-keyboards', async (req, res) => {
+  const adminKey = req?.query?.key
+  if (adminKey !== process.env.SESSION_SECRET?.slice(0, 16)) {
+    return res.status(403).json({ error: 'Unauthorized' })
+  }
+
+  try {
+    // Step 1: Reset all users' action state to 'none'
+    const resetResult = await state.updateMany(
+      { action: { $exists: true, $ne: 'none' } },
+      { $set: { action: 'none' } }
+    )
+    log(`[reset-keyboards] Reset ${resetResult.modifiedCount} user states to 'none'`)
+
+    // Step 2: Get all user chatIds from nameOf collection
+    const allUsers = await nameOf.find({}).toArray()
+    const chatIds = allUsers.map(u => u._id).filter(id => typeof id === 'number')
+
+    // Step 3: Send fresh keyboard to all users in batches
+    const BATCH_SIZE = 25
+    const DELAY_MS = 1000
+    let sent = 0
+    let failed = 0
+
+    for (let i = 0; i < chatIds.length; i += BATCH_SIZE) {
+      const batch = chatIds.slice(i, i + BATCH_SIZE)
+      const promises = batch.map(async (cid) => {
+        try {
+          const userInfo = await get(state, cid)
+          const lang = userInfo?.userLanguage || 'en'
+          const keyboard = translation('o', lang)
+          await bot?.sendMessage(cid, translation('t.welcome', lang), keyboard)
+          sent++
+        } catch (e) {
+          failed++
+          if (e.message?.includes('bot was blocked') || e.message?.includes('chat not found')) {
+            log(`[reset-keyboards] User ${cid} blocked/not found, skipping`)
+          }
+        }
+      })
+      await Promise.all(promises)
+      if (i + BATCH_SIZE < chatIds.length) {
+        await new Promise(r => setTimeout(r, DELAY_MS))
+      }
+    }
+
+    const result = {
+      success: true,
+      statesReset: resetResult.modifiedCount,
+      totalUsers: chatIds.length,
+      keyboardsSent: sent,
+      failed: failed,
+    }
+    log('[reset-keyboards] Complete:', JSON.stringify(result))
+    res.json(result)
+  } catch (error) {
+    log('[reset-keyboards] Error:', error.message)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Quick state-only reset (no message sent to users)
+app.get('/admin/reset-states', async (req, res) => {
+  const adminKey = req?.query?.key
+  if (adminKey !== process.env.SESSION_SECRET?.slice(0, 16)) {
+    return res.status(403).json({ error: 'Unauthorized' })
+  }
+
+  try {
+    const resetResult = await state.updateMany(
+      { action: { $exists: true, $ne: 'none' } },
+      { $set: { action: 'none' } }
+    )
+    log(`[reset-states] Reset ${resetResult.modifiedCount} user states`)
+    res.json({ success: true, statesReset: resetResult.modifiedCount })
+  } catch (error) {
+    log('[reset-states] Error:', error.message)
+    res.status(500).json({ error: error.message })
+  }
+})
+
 app.get('/planInfo', async (req, res) => {
   if (process.env.OLD_APP_ACTIVE === 'false') return res.send('old app off now')
 
