@@ -659,13 +659,14 @@ Hebergement cPanel ou VPS ?
 注册无视DMCA的域名 — 无删除无干扰
 
 - .sbs .com .net .org 及400+扩展名
+- 国家域名: .ng .za .ke .gh .cm .tz
 - 离岸注册 — 完全隐私
 - 即时DNS设置 + 管理面板
 
 点击 <b>注册域名</b> 立即注册!
 
 -----
-cPanel主机或国家域名?
+RDP VPS或cPanel主机?
 访问 @hostbay_bot`,
 
       `<b>域名限时优惠</b>
@@ -675,11 +676,12 @@ cPanel主机或国家域名?
 + 无视DMCA域名注册
 + 从第一天起完全控制DNS
 + 订阅赠送免费.sbs/.xyz域名
++ 国家TLD: .ng .za .ke .gh .cm .tz
 
 输入 <b>/start</b> 然后点击 <b>注册域名</b>
 
 -----
-国家域名 (.ng .za .ke .cm .tz)?
+RDP VPS或cPanel主机?
 @hostbay_bot`,
 
       `<b>拥有您的数字身份</b>
@@ -688,12 +690,13 @@ cPanel主机或国家域名?
 
 - 离岸 隐私优先注册
 - .sbs .com .net .org 等
+- 国家域名: .ng .za .ke .gh
 - 直接从机器人管理DNS
 
 立即点击 <b>注册域名</b>!
 
 -----
-cPanel网站托管?
+RDP VPS或cPanel主机?
 @hostbay_bot`,
 
       `<b>不再担心内容被删除</b>
@@ -703,11 +706,12 @@ cPanel网站托管?
 - 内容保持在线 — 保证
 - 接受加密货币和银行支付
 - 所有域名一处管理
+- 国家TLD也在这里注册!
 
 <b>注册域名</b> — 立即开始!
 
 -----
-.ng .za .ke .gh 国家域名?
+RDP VPS或主机?
 访问 @hostbay_bot`,
 
       `<b>数千用户的信赖之选</b>
@@ -718,11 +722,12 @@ cPanel网站托管?
 2. 完全隐私保护
 3. 极速DNS传播
 4. 加密支付保护匿名
+5. 国家域名 (.ng .za .ke .gh) 已包含
 
 点击 <b>注册域名</b>
 
 -----
-cPanel托管和国家域名?
+RDP VPS或cPanel主机?
 @hostbay_bot`,
     ],
 
@@ -739,7 +744,7 @@ cPanel托管和国家域名?
 点击 <b>URL 缩短器</b> 领取免费链接!
 
 -----
-cPanel托管或国家域名?
+RDP VPS或cPanel主机?
 访问 @hostbay_bot`,
 
       `<b>5个免费短链接 — 无附加条件</b>
@@ -753,7 +758,7 @@ cPanel托管或国家域名?
 立即点击 <b>URL 缩短器</b>!
 
 -----
-国家域名?
+RDP VPS或主机?
 @hostbay_bot`,
 
       `<b>您的品牌值得更好的链接</b>
@@ -767,7 +772,7 @@ cPanel托管或国家域名?
 <b>URL 缩短器</b> — 免费试用Shortit!
 
 -----
-需要托管? @hostbay_bot`,
+需要主机? @hostbay_bot`,
 
       `<b>强大的链接缩短工具</b>
 
@@ -780,7 +785,7 @@ cPanel托管或国家域名?
 输入 <b>/start</b> 然后点击 <b>URL 缩短器</b>
 
 -----
-cPanel托管和国家域名?
+RDP VPS或cPanel主机?
 @hostbay_bot`,
 
       `<b>聪明的营销人用聪明的链接</b>
@@ -795,7 +800,7 @@ cPanel托管和国家域名?
 点击 <b>URL 缩短器</b>
 
 -----
-国家级域名?
+RDP VPS或主机?
 @hostbay_bot`,
     ],
 
@@ -814,7 +819,7 @@ cPanel托管和国家域名?
 点击 <b>HQ 短信线索</b> 开始!
 
 -----
-cPanel托管或国家域名?
+RDP VPS或cPanel主机?
 @hostbay_bot`,
 
       `<b>停止在劣质线索上浪费</b>
@@ -828,7 +833,7 @@ cPanel托管或国家域名?
 立即点击 <b>HQ 短信线索</b>!
 
 -----
-国家域名和托管?
+RDP VPS或主机?
 @hostbay_bot`,
 
       `<b>发送前先验证</b>
@@ -842,7 +847,7 @@ cPanel托管或国家域名?
 <b>HQ 短信线索</b> 然后 <b>验证电话线索</b>
 
 -----
-需要托管? @hostbay_bot`,
+需要主机? @hostbay_bot`,
 
       `<b>新鲜线索 = 新鲜收入</b>
 
@@ -855,7 +860,7 @@ cPanel托管或国家域名?
 <b>HQ 短信线索</b> 然后 <b>购买电话线索</b>
 
 -----
-国家TLD域名?
+RDP VPS或cPanel主机?
 @hostbay_bot`,
 
       `<b>扩大您的短信营销</b>
@@ -870,7 +875,7 @@ cPanel托管或国家域名?
 点击 <b>HQ 短信线索</b>
 
 -----
-cPanel托管?
+cPanel主机或VPS?
 @hostbay_bot`,
     ],
   },
