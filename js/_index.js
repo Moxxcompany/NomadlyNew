@@ -3006,19 +3006,27 @@ bot?.on('message', async msg => {
     if (message === vp.back) return goto.askUserVpsPlan()
     let vpsDetails = info.vpsDetails
     const coupon = message.toUpperCase()
-    const discount = discountOn[coupon]
-
-    if (isNaN(discount) && message != vp.skip) return send(chatId, vp.couponInvalid)
-    const couponApplied = message === vp.skip ? false : true
-    const couponDiscount = couponApplied ? (vpsDetails.plantotalPrice * discount) / 100 : 0;
-    const newPrice = couponApplied ? vpsDetails.plantotalPrice - couponDiscount : 0;
-    vpsDetails.couponApplied = couponApplied
+    if (message === vp.skip) {
+      vpsDetails.couponApplied = false
+      vpsDetails.couponDiscount = 0
+      vpsDetails.planNewPrice = 0
+      info.vpsDetails = vpsDetails
+      await saveInfo('vpsDetails', vpsDetails)
+      return goto.skipCouponVps()
+    }
+    const couponResult = await resolveCoupon(coupon, chatId)
+    if (!couponResult) return send(chatId, vp.couponInvalid)
+    if (couponResult.error === 'already_used') return send(chatId, '⚠️ You have already used this coupon today.')
+    const discount = couponResult.discount
+    const couponDiscount = (vpsDetails.plantotalPrice * discount) / 100;
+    const newPrice = vpsDetails.plantotalPrice - couponDiscount;
+    vpsDetails.couponApplied = true
     vpsDetails.couponDiscount = couponDiscount
     vpsDetails.planNewPrice = newPrice
 
     info.vpsDetails = vpsDetails
     await saveInfo('vpsDetails', vpsDetails)
-    if (message === vp.skip) return goto.skipCouponVps()
+    if (couponResult.type === 'daily') await dailyCouponSystem.markCouponUsed(couponResult.code, chatId)
     send(chatId, vp.couponValid(couponDiscount))
     return vpsDetails.plan != 'Hourly' ? goto.askVPSPlanAutoRenewal() : goto.askVpsCpanel()
   }
