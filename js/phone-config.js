@@ -324,17 +324,20 @@ All incoming calls will now be forwarded.`,
   forwardingDisabled: (number) => `✅ Call forwarding disabled for ${formatPhone(number)}.`,
 
   // SMS Settings
-  smsSettingsMenu: (number, config) => {
+  smsSettingsMenu: (number, config, plan) => {
     const tg = config?.toTelegram ? '✅ ON' : '❌ OFF'
     const em = config?.toEmail ? '✅ ' + config.toEmail : '❌ OFF'
     const wh = config?.webhookUrl ? '✅ Set' : '❌ Not Set'
+    const canEmail = canAccessFeature(plan, 'smsToEmail')
+    const canWebhook = canAccessFeature(plan, 'smsWebhook')
+    const planName = plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : 'Unknown'
     return `📩 <b>Inbound SMS Settings</b> for <b>${formatPhone(number)}</b>
 
 📌 SMS is <b>inbound only</b> — you receive SMS to this number but cannot send outbound.
 
 📲 Forward to Telegram: ${tg}
-📧 Forward to Email: ${em}
-🔗 Webhook URL: ${wh}`
+📧 Forward to Email: ${canEmail ? em : `🔒 Requires Pro plan or higher (current: ${planName})`}
+🔗 Webhook URL: ${canWebhook ? wh : `🔒 Requires Pro plan or higher (current: ${planName})`}`
   },
   smsToggled: (channel, state) => `${channel} is now ${state ? '✅ ON' : '❌ OFF'}`,
   enterEmail: 'Enter the email address to forward SMS messages to:',
