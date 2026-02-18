@@ -187,7 +187,7 @@ class UsernameSyncTester:
 
     def test_mongodb_nameOf_hostbay_support(self):
         """Test MongoDB nameOf for chatId 5168006768 has val 'Hostbay_support'"""
-        if not self.db:
+        if self.db is None:
             self.log_result(
                 "MongoDB nameOf for chatId 5168006768 has val 'Hostbay_support'",
                 False,
