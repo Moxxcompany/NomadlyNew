@@ -586,6 +586,7 @@ module.exports = {
   isValidEmail,
   isNormalUser,
   subscribePlan,
+  MAX_PLAN_DURATION_MS,
   regularCheckDns,
   checkFreeTrialTaken,
   extractPhoneNumbers,
