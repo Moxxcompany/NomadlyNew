@@ -3,9 +3,10 @@
 import requests
 import sys
 import json
+import re
 from datetime import datetime
 
-class NomadlyBotTester:
+class UsageLimitTester:
     def __init__(self, base_url="https://setup-wizard-100.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
