@@ -2278,6 +2278,117 @@ bot?.on('message', async msg => {
       const { usdBal: usd, ngnBal: ngn } = await getBalance(walletOf, chatId)
       send(chatId, t.showWallet(usd, ngn), trans('o'))
     },
+    'phone-pay': async coin => {
+      set(state, chatId, 'action', 'none')
+      const price = info?.cpPrice
+      const { usdBal, ngnBal } = await getBalance(walletOf, chatId)
+
+      if (![u.usd, u.ngn].includes(coin)) return send(chatId, 'Some Issue')
+
+      const priceUsd = price
+      if (coin === u.usd && usdBal < priceUsd) return send(chatId, t.walletBalanceLow, k.of([u.deposit]))
+      const priceNgn = await usdToNgn(price)
+      if (coin === u.ngn && ngnBal < priceNgn) return send(chatId, t.walletBalanceLow, k.of([u.deposit]))
+
+      const name = await get(nameOf, chatId)
+      
+      // wallet deduct
+      if (coin === u.usd) {
+        set(payments, nanoid(), `Wallet,CloudPhone,$${priceUsd},${chatId},${name},${new Date()}`)
+        await atomicIncrement(walletOf, chatId, 'usdOut', priceUsd)
+      } else {
+        set(payments, nanoid(), `Wallet,CloudPhone,$${priceUsd},${chatId},${name},${new Date()},${priceNgn} NGN`)
+        await atomicIncrement(walletOf, chatId, 'ngnOut', priceNgn)
+      }
+
+      // Buy number via Telnyx
+      send(chatId, '🔄 Purchasing your number...')
+      const selectedNumber = info?.cpSelectedNumber
+      const planKey = info?.cpPlanKey
+      const plan = phoneConfig.plans[planKey]
+      const countryName = info?.cpCountryName || 'US'
+
+      const orderResult = await telnyxApi.buyNumber(
+        selectedNumber,
+        telnyxResources.sipConnectionId,
+        telnyxResources.messagingProfileId
+      )
+
+      if (!orderResult) {
+        // Refund
+        if (coin === u.usd) await atomicIncrement(walletOf, chatId, 'usdIn', priceUsd)
+        else await atomicIncrement(walletOf, chatId, 'ngnIn', priceNgn)
+        return send(chatId, '❌ Failed to purchase number. Your wallet has been refunded. Please try again or contact support.', trans('o'))
+      }
+
+      // Generate SIP credentials
+      const sipUsername = phoneConfig.generateSipUsername()
+      const sipPassword = phoneConfig.generateSipPassword()
+      
+      // Create SIP credential on Telnyx
+      if (telnyxResources.sipConnectionId) {
+        await telnyxApi.createSIPCredential(telnyxResources.sipConnectionId, sipUsername, sipPassword)
+      }
+
+      const expiresAt = new Date()
+      expiresAt.setMonth(expiresAt.getMonth() + 1)
+
+      // Save to DB
+      const numberDoc = {
+        phoneNumber: selectedNumber,
+        telnyxOrderId: orderResult.id,
+        country: info?.cpCountryCode || 'US',
+        countryName: countryName,
+        type: info?.cpNumberType || 'local',
+        plan: planKey,
+        planPrice: price,
+        purchaseDate: new Date().toISOString(),
+        expiresAt: expiresAt.toISOString(),
+        autoRenew: true,
+        status: 'active',
+        sipUsername: sipUsername,
+        sipPassword: sipPassword,
+        messagingProfileId: telnyxResources.messagingProfileId,
+        connectionId: telnyxResources.sipConnectionId,
+        smsUsed: 0,
+        minutesUsed: 0,
+        features: {
+          sms: true,
+          callForwarding: { enabled: false, mode: 'disabled', forwardTo: null, ringTimeout: 25 },
+          voicemail: { enabled: false, greetingType: 'default', customGreetingUrl: null, forwardToTelegram: true, forwardToEmail: null, ringTimeout: 25 },
+          smsForwarding: { toTelegram: true, toEmail: null, webhookUrl: null },
+          recording: false,
+        }
+      }
+
+      // Upsert into phoneNumbersOf
+      const existing = await get(phoneNumbersOf, chatId)
+      if (existing?.numbers) {
+        existing.numbers.push(numberDoc)
+        await set(phoneNumbersOf, chatId, { numbers: existing.numbers })
+      } else {
+        await set(phoneNumbersOf, chatId, { numbers: [numberDoc] })
+      }
+
+      // Save transaction
+      await phoneTransactions.insertOne({
+        chatId, phoneNumber: selectedNumber,
+        action: 'purchase', plan: planKey,
+        amount: price, paymentMethod: coin === u.usd ? 'wallet_usd' : 'wallet_ngn',
+        timestamp: new Date().toISOString(),
+      })
+
+      const { usdBal: usd2, ngnBal: ngn2 } = await getBalance(walletOf, chatId)
+      send(chatId, t.showWallet(usd2, ngn2))
+      send(chatId, phoneConfig.txt.activated(
+        selectedNumber, plan.name, price, sipUsername,
+        phoneConfig.SIP_DOMAIN,
+        phoneConfig.shortDate(expiresAt.toISOString())
+      ), trans('o'))
+
+      // Notify admin
+      notifyGroup(phoneConfig.txt.adminPurchase(maskName(name), selectedNumber, plan.name, price, coin === u.usd ? 'Wallet USD' : 'Wallet NGN'))
+    },
     [a.buyLeadsSelectFormat]: async coin => {
       set(state, chatId, 'action', 'none')
       const price = info?.couponApplied ? info?.newPrice : info?.price
