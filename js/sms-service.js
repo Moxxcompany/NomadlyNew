@@ -149,11 +149,27 @@ async function handleInboundSms(webhookData, bot, phoneNumbersOf, phoneLogs) {
       return log(`handleInboundSms: number ${cleanTo} is ${numberConfig.status}, skipping`)
     }
 
-    // ── CHECK: Inbound SMS limit reached? Skip forwarding + notify ──
+    // ── CHECK: Inbound SMS limit reached? → Try overage billing ──
     if (_isSmsLimitReached && _isSmsLimitReached(numberConfig)) {
-      log(`handleInboundSms: SMS limit reached for ${cleanTo} (${numberConfig.smsUsed || 0}/${plans[numberConfig.plan]?.sms || 0}), dropping`)
-      // Don't forward, don't count — silently drop
-      return
+      let overageAllowed = false
+      if (_walletOf) {
+        try {
+          const { usdBal } = await getBalance(_walletOf, ownerChatId)
+          if (usdBal >= OVERAGE_RATE_SMS) {
+            // Charge overage from wallet
+            await atomicIncrement(_walletOf, ownerChatId, 'usdOut', OVERAGE_RATE_SMS)
+            overageAllowed = true
+            const ref = _nanoid?.() || `ovsms_${Date.now()}`
+            const { set } = require('./db.js')
+            if (_payments) set(_payments, ref, `Overage,CloudPhoneSMS,$${OVERAGE_RATE_SMS},${ownerChatId},${cleanTo},${new Date()}`)
+            log(`[SMS] Overage charged: $${OVERAGE_RATE_SMS} for inbound SMS on ${cleanTo}`)
+          }
+        } catch (e) { log(`[SMS] Overage check error: ${e.message}`) }
+      }
+      if (!overageAllowed) {
+        log(`handleInboundSms: SMS limit reached for ${cleanTo} (${numberConfig.smsUsed || 0}/${plans[numberConfig.plan]?.sms || 0}), no wallet balance — dropping`)
+        return
+      }
     }
 
     const smsConfig = numberConfig.features?.smsForwarding || {}
