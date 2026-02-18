@@ -4670,7 +4670,53 @@ bot?.on('message', async msg => {
   if (action === 'choose-dns-action') {
     if (message === t.back) return goto['choose-domain-to-manage']()
 
-    if (![t.addDns, t.updateDns, t.deleteDns].includes(message)) return send(chatId, t.selectValidOption)
+    if (![t.addDns, t.updateDns, t.deleteDns, t.activateShortener].includes(message)) return send(chatId, t.selectValidOption)
+
+    if (message === t.activateShortener) {
+      const domain = info?.domainToManage
+      if (!domain) return send(chatId, 'No domain selected.')
+      send(chatId, `🔗 <b>Activating URL Shortener</b> for <b>${domain}</b>...\n\nThis will configure DNS to point your domain to our shortener service. Please wait — this may take a few minutes.`)
+      
+      // Run the same linking process as when user answers "Yes" during purchase
+      try {
+        const { server, error, recordType } =
+          process.env.HOSTED_ON === 'render'
+            ? await saveDomainInServerRender(domain)
+            : await saveDomainInServerRailway(domain)
+
+        if (error) {
+          return send(chatId, `❌ Error linking <b>${domain}</b> to shortener: ${error}\n\nPlease try again later or contact support.`)
+        }
+
+        send(chatId, `⏳ Domain <b>${domain}</b> is being linked to the shortener...\nAdding DNS record (${recordType} → ${server})...`)
+
+        // Determine registrar from DNS records
+        const dnsResult = await domainService.viewDNSRecords(domain, db)
+        const source = dnsResult?.source || 'connectreseller'
+
+        if (source === 'openprovider') {
+          await sleep(10000)
+          const addResult = await domainService.addDNSRecord(domain, recordType, server, '', db)
+          if (addResult.error || !addResult.success) {
+            return send(chatId, `❌ DNS record error for <b>${domain}</b>: ${addResult.error || 'Unknown error'}`)
+          }
+        } else {
+          await sleep(65000)
+          const { error: saveErr } = await saveServerInDomain(domain, server, recordType)
+          if (saveErr) {
+            return send(chatId, `❌ DNS record error for <b>${domain}</b>: ${saveErr}`)
+          }
+        }
+
+        send(chatId, `✅ <b>${domain}</b> has been linked to the URL shortener!\n\nDNS propagation may take up to 24 hours. You'll be notified when your domain is ready to use for short links.`)
+        const lang = info?.userLanguage || 'en'
+        regularCheckDns(bot, chatId, domain, lang)
+      } catch (e) {
+        log(`[ActivateShortener] Error for ${domain}: ${e.message}`)
+        send(chatId, `❌ Error activating shortener for <b>${domain}</b>: ${e.message}\n\nPlease try again later.`)
+      }
+      return
+    }
 
     if (message === t.deleteDns) return goto['select-dns-record-id-to-delete']()
 
