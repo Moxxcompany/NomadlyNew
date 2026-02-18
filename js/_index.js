@@ -432,6 +432,7 @@ const loadData = async () => {
   phoneTransactions = db.collection('phoneTransactions')
   phoneLogs = db.collection('phoneLogs')
   ivrAnalytics = db.collection('ivrAnalytics')
+  cnamCache = db.collection('cnamCache')
 
   freeDomainNamesAvailableFor = db.collection('freeDomainNamesAvailableFor')
   freeValidationsAvailableFor = db.collection('freeValidationsAvailableFor')
