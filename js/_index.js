@@ -5493,6 +5493,16 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpManageNumber)
       return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
+    // Greeting management
+    if (message === pc.vmGreeting || message === '🔊 Greeting') {
+      set(state, chatId, 'action', a.cpVmGreeting)
+      const vm = num.features?.voicemail || {}
+      return send(chatId, phoneConfig.txt.vmGreetingMenu(num.phoneNumber, vm), k.of([
+        [pc.vmCustomGreeting],
+        [pc.vmDefaultGreeting],
+        [pc.back]
+      ]))
+    }
     // Toggle VM to Telegram
     if (message.startsWith('📲 VM to Telegram')) {
       const vm = num.features?.voicemail || {}
@@ -5518,6 +5528,86 @@ bot?.on('message', async msg => {
       return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
     return send(chatId, 'Select an option.')
+  }
+
+  // ━━━ VOICEMAIL GREETING ━━━
+  if (action === a.cpVmGreeting) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpVoicemail)
+      const vm = num.features?.voicemail || {}
+      const btns = vm.enabled
+        ? [['🔊 Greeting'],
+           ['📲 VM to Telegram ' + (vm.forwardToTelegram !== false ? '✅ ON' : '❌ OFF')],
+           ['📧 VM to Email ' + (vm.forwardToEmail ? '✅ ' + vm.forwardToEmail : '❌ OFF')],
+           [`⏰ Ring Time: ${vm.ringTimeout || 25}s`],
+           [pc.disableVoicemail]]
+        : [[pc.enableVoicemail]]
+      return send(chatId, phoneConfig.txt.voicemailMenu(num.phoneNumber, vm), k.of(btns))
+    }
+    if (message === pc.vmCustomGreeting) {
+      set(state, chatId, 'action', a.cpVmAudioUpload)
+      return send(chatId, phoneConfig.txt.vmSendAudioPrompt)
+    }
+    if (message === pc.vmDefaultGreeting) {
+      const vm = num.features?.voicemail || {}
+      vm.greetingType = 'default'
+      vm.customAudioGreetingUrl = null
+      vm.customGreetingText = null
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'voicemail', vm)
+      num.features.voicemail = vm
+      await saveInfo('cpActiveNumber', num)
+      send(chatId, phoneConfig.txt.vmDefaultRestored)
+      set(state, chatId, 'action', a.cpVoicemail)
+      const btns = vm.enabled
+        ? [['🔊 Greeting'],
+           ['📲 VM to Telegram ' + (vm.forwardToTelegram !== false ? '✅ ON' : '❌ OFF')],
+           ['📧 VM to Email ' + (vm.forwardToEmail ? '✅ ' + vm.forwardToEmail : '❌ OFF')],
+           [`⏰ Ring Time: ${vm.ringTimeout || 25}s`],
+           [pc.disableVoicemail]]
+        : [[pc.enableVoicemail]]
+      return send(chatId, phoneConfig.txt.voicemailMenu(num.phoneNumber, vm), k.of(btns))
+    }
+    return send(chatId, 'Select an option.')
+  }
+
+  // ━━━ VOICEMAIL AUDIO UPLOAD ━━━
+  if (action === a.cpVmAudioUpload) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpVmGreeting)
+      const vm = num.features?.voicemail || {}
+      return send(chatId, phoneConfig.txt.vmGreetingMenu(num.phoneNumber, vm), k.of([
+        [pc.vmCustomGreeting],
+        [pc.vmDefaultGreeting],
+        [pc.back]
+      ]))
+    }
+    // If user sends text instead of audio, treat as custom text greeting
+    if (message && !rawMsg?.voice && !rawMsg?.audio) {
+      const vm = num.features?.voicemail || {}
+      vm.greetingType = 'custom'
+      vm.customGreetingText = message
+      vm.customAudioGreetingUrl = null
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'voicemail', vm)
+      num.features.voicemail = vm
+      await saveInfo('cpActiveNumber', num)
+      send(chatId, phoneConfig.txt.vmTextGreetingSet(message))
+      set(state, chatId, 'action', a.cpVoicemail)
+      const btns = vm.enabled
+        ? [['🔊 Greeting'],
+           ['📲 VM to Telegram ' + (vm.forwardToTelegram !== false ? '✅ ON' : '❌ OFF')],
+           ['📧 VM to Email ' + (vm.forwardToEmail ? '✅ ' + vm.forwardToEmail : '❌ OFF')],
+           [`⏰ Ring Time: ${vm.ringTimeout || 25}s`],
+           [pc.disableVoicemail]]
+        : [[pc.enableVoicemail]]
+      return send(chatId, phoneConfig.txt.voicemailMenu(num.phoneNumber, vm), k.of(btns))
+    }
+    return send(chatId, 'Send a voice message, audio file, or type a custom greeting text.')
   }
 
   // ━━━ CALL RECORDING (Business) ━━━
