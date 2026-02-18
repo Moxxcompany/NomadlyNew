@@ -585,7 +585,7 @@ class UsageLimitTester:
         return results
 
 def main():
-    tester = NomadlyBotTester()
+    tester = UsageLimitTester()
     results = tester.run_all_tests()
     
     # Return appropriate exit code
