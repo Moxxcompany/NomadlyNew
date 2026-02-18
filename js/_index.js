@@ -992,7 +992,8 @@ bot?.on('message', async msg => {
     a.submenu3,
     'displayMainMenuButtons',
 
-    a.submenu4
+    a.submenu4,
+    a.submenu5
   ]
   const goto = {
     askCoupon: action => {
