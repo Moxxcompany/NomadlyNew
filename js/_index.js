@@ -4473,7 +4473,9 @@ bot?.on('message', async msg => {
   // TARGET LEADS HANDLERS
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   if (action === a.targetSelectTarget) {
-    if (message === t.back) return goto.phoneNumberLeads()
+    if (message === t.back) return goto.displayMainMenuButtons ? goto.displayMainMenuButtons() : send(chatId, t.userPressedBtn(message), isAdmin(chatId) ? aO : trans('o'))
+    const validateBtn = trans('phoneNumberLeads')[1] || '✅📲 Validate PhoneLeads'
+    if (message === validateBtn) return goto.validatorSelectCountry()
     if (!targetLeadsTargets.includes(message)) return send(chatId, t.what)
     await saveInfo('targetName', message)
     await saveInfo('country', 'USA')
