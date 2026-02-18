@@ -210,8 +210,7 @@ Register DMCA-ignored domains — no takedowns.
 Tap <b>Register Domain Names</b> to claim yours!
 
 -----
-RDP, VPS or cPanel hosting?
-Visit @hostbay_bot`,
+Need phone leads? Tap <b>HQ SMS Lead</b> for verified leads by area code`,
 
       `<b>DOMAIN FLASH DEAL</b>
 
@@ -225,8 +224,8 @@ Why risk your site being taken down?
 Type <b>/start</b> then tap <b>Register Domain Names</b>
 
 -----
-Need RDP, VPS or cPanel hosting?
-@hostbay_bot has you covered!`,
+Shorten your links with Shortit — 5 free trial links!
+Tap <b>URL Shortener</b>`,
 
       `<b>OWN YOUR DIGITAL IDENTITY</b>
 
@@ -241,8 +240,7 @@ Subscribe for free .sbs/.xyz domains!
 Tap <b>Register Domain Names</b> now!
 
 -----
-RDP, VPS or cPanel hosting?
-Head to @hostbay_bot`,
+Buy targeted phone leads — tap <b>HQ SMS Lead</b>`,
 
       `<b>STOP WORRYING ABOUT TAKEDOWNS</b>
 
@@ -256,8 +254,7 @@ Your competitors use DMCA-ignored domains.
 <b>Register Domain Names</b> — start now!
 
 -----
-Need RDP, VPS or cPanel hosting?
-Visit @hostbay_bot`,
+Shorten campaign links with <b>URL Shortener</b> — 5 free!`,
 
       `<b>TRUSTED BY THOUSANDS</b>
 
@@ -272,8 +269,7 @@ Why choose offshore domains?
 Tap <b>Register Domain Names</b>
 
 -----
-RDP, VPS or cPanel hosting?
-@hostbay_bot`,
+Need verified phone leads? Tap <b>HQ SMS Lead</b>`,
     ],
 
     shortener: [
@@ -289,8 +285,7 @@ Start with <b>5 FREE trial links</b> — no payment needed!
 Tap <b>URL Shortener</b> to claim your free links!
 
 -----
-RDP, VPS or cPanel hosting?
-Visit @hostbay_bot`,
+Register DMCA-ignored domains — tap <b>Register Domain Names</b>`,
 
       `<b>5 FREE SHORT LINKS — NO STRINGS ATTACHED</b>
 
@@ -303,8 +298,7 @@ Every new user gets 5 free Shortit trial links.
 Tap <b>URL Shortener</b> now!
 
 -----
-Need RDP, VPS or cPanel hosting?
-@hostbay_bot`,
+Need targeted leads? Tap <b>HQ SMS Lead</b> to buy verified phone leads`,
 
       `<b>YOUR BRAND DESERVES BETTER LINKS</b>
 
@@ -317,7 +311,7 @@ Need RDP, VPS or cPanel hosting?
 <b>URL Shortener</b> — try Shortit free!
 
 -----
-Need hosting? Visit @hostbay_bot`,
+Register your brand domain — tap <b>Register Domain Names</b>`,
 
       `<b>LINK SHORTENING MADE POWERFUL</b>
 
@@ -330,8 +324,7 @@ Start FREE with 5 trial Shortit links!
 Type <b>/start</b> then tap <b>URL Shortener</b>
 
 -----
-RDP, VPS or cPanel hosting?
-@hostbay_bot`,
+Buy phone leads by area code — tap <b>HQ SMS Lead</b>`,
 
       `<b>SMART MARKETERS USE SMART LINKS</b>
 
@@ -345,8 +338,7 @@ Start with 5 FREE trial links today!
 Tap <b>URL Shortener</b>
 
 -----
-Need RDP, VPS or hosting?
-@hostbay_bot`,
+Need DMCA-ignored domains? Tap <b>Register Domain Names</b>`,
     ],
 
     leads: [
@@ -364,8 +356,7 @@ Subscribers get up to 15,000 FREE USA validations!
 Tap <b>HQ SMS Lead</b> to start!
 
 -----
-RDP, VPS or cPanel hosting?
-Visit @hostbay_bot`,
+Shorten your campaign links — tap <b>URL Shortener</b> for 5 free links`,
 
       `<b>STOP WASTING MONEY ON BAD LEADS</b>
 
@@ -378,8 +369,7 @@ Your campaigns are only as good as your list.
 Tap <b>HQ SMS Lead</b> now!
 
 -----
-Need RDP, VPS or hosting?
-@hostbay_bot`,
+Register offshore domains — tap <b>Register Domain Names</b>`,
 
       `<b>VALIDATE BEFORE YOU SEND</b>
 
@@ -392,7 +382,7 @@ Sending to dead numbers? You're burning cash.
 <b>HQ SMS Lead</b> then tap <b>Validate PhoneLeads</b>
 
 -----
-Need hosting? Visit @hostbay_bot`,
+Brand your links with Shortit — tap <b>URL Shortener</b>`,
 
       `<b>FRESH LEADS = FRESH REVENUE</b>
 
@@ -401,12 +391,12 @@ USA | UK | Canada | Australia & more
 - SMS & Voice leads available
 - Filter: state, area code, carrier
 - 1,000 to 5,000+ per order
+- Request custom institution targets!
 
 <b>HQ SMS Lead</b> then tap <b>Buy PhoneLeads</b>
 
 -----
-RDP, VPS or cPanel hosting?
-@hostbay_bot`,
+Need DMCA-ignored domains? Tap <b>Register Domain Names</b>`,
 
       `<b>SCALE YOUR SMS MARKETING TODAY</b>
 
@@ -421,8 +411,7 @@ Subscribers get FREE USA validations!
 Tap <b>HQ SMS Lead</b>
 
 -----
-Need cPanel hosting or VPS?
-@hostbay_bot`,
+Shorten campaign links — tap <b>URL Shortener</b>`,
     ],
   },
 
