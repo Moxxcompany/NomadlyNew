@@ -174,6 +174,29 @@ async function handleCallAnswered(payload) {
   // 3. Voicemail — Pro/Business
   if (vmConfig?.enabled && canAccessFeature(num.plan, 'voicemail')) {
     session.phase = 'voicemail_greeting'
+    
+    // Check for custom audio greeting first
+    if (vmConfig.greetingType === 'custom' && vmConfig.customAudioGreetingUrl) {
+      // Play the custom audio file via Telnyx playback
+      try {
+        const axios = require('axios')
+        await axios.post(`https://api.telnyx.com/v2/calls/${callControlId}/actions/playback_start`, {
+          audio_url: vmConfig.customAudioGreetingUrl,
+        }, {
+          headers: {
+            'Authorization': `Bearer ${process.env.TELNYX_API_KEY}`,
+            'Content-Type': 'application/json',
+          }
+        })
+      } catch (e) {
+        log(`[Voice] Custom audio playback failed, falling back to TTS: ${e.message}`)
+        const fallback = vmConfig.customGreetingText || `The person at ${formatPhone(num.phoneNumber)} is unavailable. Please leave a message after the tone.`
+        await _telnyxApi.speakOnCall(callControlId, fallback)
+      }
+      return
+    }
+    
+    // Text-to-speech greeting
     const greeting = vmConfig.greetingType === 'custom' && vmConfig.customGreetingText
       ? vmConfig.customGreetingText
       : `The person at ${formatPhone(num.phoneNumber)} is unavailable. Please leave a message after the tone.`
