@@ -5129,6 +5129,21 @@ bot?.on('message', async msg => {
     return
   }
 
+  // Helper: Build feature-gated manage menu keyboard
+  function buildManageMenu(num) {
+    const pc = phoneConfig.btn
+    const plan = num.plan || 'starter'
+    const rows = [[pc.callForwarding]]
+    rows.push([pc.smsSettings])
+    if (phoneConfig.canAccessFeature(plan, 'voicemail')) rows.push([pc.voicemail])
+    if (phoneConfig.canAccessFeature(plan, 'sipCredentials')) rows.push([pc.sipCredentials])
+    if (phoneConfig.canAccessFeature(plan, 'callRecording')) rows.push([pc.callRecording])
+    if (phoneConfig.canAccessFeature(plan, 'ivr')) rows.push([pc.ivrAutoAttendant])
+    rows.push([pc.callSmsLogs])
+    rows.push([pc.renewChangePlan], [pc.releaseNumber])
+    return rows
+  }
+
   // ━━━ MY NUMBERS ━━━
   if (action === a.cpMyNumbers) {
     const pc = phoneConfig.btn
