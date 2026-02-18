@@ -4454,8 +4454,7 @@ bot?.on('message', async msg => {
   if (action === a.phoneNumberLeads) {
     const phoneNumberLeads = trans('phoneNumberLeads')
     if (phoneNumberLeads[1] === message) return goto.validatorSelectCountry()
-    if (phoneNumberLeads[0] === message) return goto.buyLeadsSelectCountry()
-    if (phoneNumberLeads[2] === message) return goto.targetSelectTarget()
+    if (phoneNumberLeads[0] === message) return goto.targetSelectTarget()
 
     return send(chatId, t.what)
   }
