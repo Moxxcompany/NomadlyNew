@@ -4586,7 +4586,12 @@ bot?.on('message', async msg => {
     saveInfo('amount', amount)
     let cnam = info?.country === 'USA' ? info?.cnam : false
     const price = amount * RATE_LEAD + (cnam ? amount * RATE_CNAM : 0)
-    saveInfo('price', price)
+    await saveInfo('price', price)
+    if (info?.targetName) {
+      await saveInfo('format', 'International Format')
+      await saveInfo('lastStep', a.buyLeadsSelectFormat)
+      return goto.targetLeadsConfirm()
+    }
     return goto.buyLeadsSelectFormat()
   }
   if (action === a.buyLeadsSelectFormat) {
