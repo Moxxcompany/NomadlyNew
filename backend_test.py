@@ -322,7 +322,7 @@ class OverageRatesTestier:
                 limit_text = limit_msg_match.group(1)
                 # Look for the rate variable calculation and usage  
                 limit_msg_ok = ('OVERAGE_RATE_SMS' in limit_text and 'OVERAGE_RATE_MIN' in limit_text) or 'const rate = type === \'SMS\' ?' in limit_text
-                service_pauses_found = service_pauses_found or ('service pauses if wallet' in limit_text.lower() and 'runs out' in limit_text.lower())
+                service_pauses_found = service_pauses_found or ('service pauses if wallet balance runs out' in limit_text.lower())
             
             self.log_result(
                 "phone-scheduler.js buildUsageAlertMsg uses dynamic rates from OVERAGE_RATE_SMS/MIN",
