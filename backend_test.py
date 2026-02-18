@@ -231,6 +231,11 @@ def main():
     tester.run_test("FastAPI proxy functionality", tester.test_proxy_functionality)
     tester.run_test("Root endpoint accessible through proxy", tester.test_root_endpoint)
     
+    # New tests for Cloud Phone service endpoints
+    tester.run_test("Telnyx SMS webhook endpoint accepts POST requests", tester.test_telnyx_sms_webhook_endpoint)
+    tester.run_test("Telnyx Voice webhook endpoint accepts POST requests", tester.test_telnyx_voice_webhook_endpoint)
+    tester.run_test("Backend proxy correctly strips /api prefix", tester.test_api_prefix_stripping)
+    
     # Print summary
     print("\n" + "=" * 80)
     print(f"📊 Test Results: {tester.tests_passed}/{tester.tests_run} tests passed")
