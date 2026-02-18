@@ -710,6 +710,7 @@ const userKeyboard = {
     keyboard: [
       [user.urlShortenerMain],
       [user.hostingDomainsRedirect],
+      [user.cloudPhone],
       [user.phoneNumberLeads],
       HIDE_SMS_APP === 'true' ? [user.domainNames] : [user.freeTrialAvailable, user.domainNames],
       [user.wallet, user.viewPlan],
