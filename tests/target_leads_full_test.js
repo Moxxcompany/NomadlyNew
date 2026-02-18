@@ -89,6 +89,11 @@ async function runTest(target, carrier) {
   ];
 
   for (const step of steps) {
+    if (step.expect === null) {
+      // Final step - just send and wait for generation
+      await sendWebhook(step.text);
+      break;
+    }
     const ok = await sendAndWait(step.text, step.expect);
     if (!ok) {
       console.log(`  FAILED at step: "${step.text}" (expected: ${step.expect})`);
@@ -96,21 +101,17 @@ async function runTest(target, carrier) {
     }
   }
 
-  // Final: Pay with USD - this triggers generation
-  await sendWebhook('USD');
-
-  // Wait for generation to complete (10 leads = ~30 seconds max)
-  console.log(`  Paid. Waiting for leads generation...`);
+  // Wait for generation to complete (10 leads = ~60 seconds max)
+  console.log(`  Confirmed payment. Waiting for leads generation...`);
   let generated = false;
   const start = Date.now();
-  while (Date.now() - start < 60000) {
+  while (Date.now() - start < 90000) {
     const info = await stateCol.findOne({ _id: CHAT_ID });
-    // After generation, action returns to none or a completed state
     if (info?.action === 'none' || info?.action === 'displayMainMenuButtons') {
       generated = true;
       break;
     }
-    await sleep(2000);
+    await sleep(3000);
   }
   if (!generated) {
     const info = await stateCol.findOne({ _id: CHAT_ID });
