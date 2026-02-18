@@ -76,7 +76,7 @@ const user = {
   cPanelWebHostingPlans: 'Russia cPanel Hosting Plans 🔒',
   pleskWebHostingPlans: 'Russia Plesk Hosting Plans 🔒',
   joinChannel: '📢 Join Channel',
-  phoneNumberLeads: '📲 Phone Leads & Validation',
+  phoneNumberLeads: '🎯 Targeted Leads & Validation',
   wallet: '👛 My Wallet',
   urlShortenerMain: `🔗✂️ URL Shortener - ${FREE_LINKS} Trial Links`,
   buyPlan: '🔔 Subscribe Here',
@@ -459,7 +459,7 @@ ${bal(usd, ngn)}`,
   buyLeadsError: 'Unfortunately the selected area code is unavailable and your wallet has not been charged',
   buyLeadsProgress: (i, total) => `${((i * 100) / total).toFixed()}% leads downloaded. Please wait.`,
 
-  phoneNumberLeads: 'Buy verified phone leads or validate your own numbers:',
+  phoneNumberLeads: 'Get premium verified leads by target or validate your own numbers:',
 
   buyLeadsSelectCountry: 'Please select country',
   buyLeadsSelectSmsVoice: 'Please select SMS / Voice',
@@ -513,7 +513,7 @@ ${bal(usd, ngn)}`,
   redNewPrice: (price, newPrice) => `Price is now $${view(newPrice)} <s>($${price})</s> Please choose payment method.`,
 }
 
-const phoneNumberLeads = ['💰📲 Buy PhoneLeads', '✅📲 Validate PhoneLeads', '🏦📲 Target Leads']
+const phoneNumberLeads = ['🎯 Premium Targeted Leads', '✅📲 Validate PhoneLeads']
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // TARGET LEADS CONFIG
