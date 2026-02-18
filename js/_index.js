@@ -394,6 +394,9 @@ let adminDomains = [],
 
 let autoPromo = null
 
+// Telnyx resources (set during init)
+let telnyxResources = { sipConnectionId: null, messagingProfileId: null, callControlAppId: null }
+
 // restoreData(); // can be use when there is no db
 
 let db
