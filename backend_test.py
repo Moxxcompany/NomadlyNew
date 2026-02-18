@@ -371,33 +371,29 @@ class DomainSmsFeaturesTester:
             with open('/app/js/_index.js', 'r') as f:
                 content = f.read()
             
-            # Look for choose-dns-action handler
-            dns_action_pattern = r'choose-dns-action[\'"`]?\s*:'
-            dns_action_match = re.search(dns_action_pattern, content)
+            # Look for the specific line with activateShortener validation
+            # Pattern: if (![t.addDns, t.updateDns, t.deleteDns, t.activateShortener].includes(message))
+            validation_pattern = r'if\s*\(\s*!\s*\[[^\]]*t\.activateShortener[^\]]*\]\.includes\s*\(\s*message\s*\)\s*\)'
+            validation_match = re.search(validation_pattern, content)
             
-            if dns_action_match:
-                # Find the handler code block
-                start_pos = dns_action_match.end()
-                
-                # Look for the next 2000 characters for the handler logic
-                handler_block = content[start_pos:start_pos+2000]
-                
-                # Check if activateShortener is included in valid messages
-                includes_activate_shortener = 't.activateShortener' in handler_block
-                
-                self.log_result(
-                    "_index.js: choose-dns-action handler includes t.activateShortener in valid messages array",
-                    includes_activate_shortener,
-                    f"Handler includes activateShortener: {includes_activate_shortener}",
-                    "CRITICAL" if not includes_activate_shortener else "INFO"
-                )
+            if validation_match:
+                includes_activate_shortener = True
             else:
-                self.log_result(
-                    "_index.js: choose-dns-action handler found",
-                    False,
-                    "choose-dns-action handler not found in _index.js",
-                    "CRITICAL"
-                )
+                # Alternative check - look for choose-dns-action handler and check if it handles activateShortener
+                dns_action_start = content.find("action === 'choose-dns-action'")
+                if dns_action_start != -1:
+                    # Get next 1000 characters of the handler
+                    handler_block = content[dns_action_start:dns_action_start+1000]
+                    includes_activate_shortener = 't.activateShortener' in handler_block and 'includes(message)' in handler_block
+                else:
+                    includes_activate_shortener = False
+            
+            self.log_result(
+                "_index.js: choose-dns-action handler includes t.activateShortener in valid messages array",
+                includes_activate_shortener,
+                f"Handler includes activateShortener in validation: {includes_activate_shortener}",
+                "CRITICAL" if not includes_activate_shortener else "INFO"
+            )
                 
         except Exception as e:
             self.log_result(
