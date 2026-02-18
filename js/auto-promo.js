@@ -1280,6 +1280,22 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
 
     log(`[AutoPromo] Starting ${theme} broadcast (${usedAI ? 'AI-generated' : 'static #' + (variationIndex + 1)}) to ${targetChatIds.length} ${lang} users`)
 
+    // Attach daily coupon to afternoon promos (slot 1)
+    let couponLine = null
+    if (dailyCouponSystem) {
+      try {
+        const codes = await dailyCouponSystem.getTodayCoupons()
+        const codeEntries = Object.entries(codes)
+        if (codeEntries.length > 0) {
+          // Pick one coupon randomly for this broadcast
+          const [code, info] = codeEntries[Math.floor(Math.random() * codeEntries.length)]
+          couponLine = `<b>TODAY ONLY:</b> Use code <code>${code}</code> for ${info.discount}% off any purchase!`
+        }
+      } catch (err) {
+        log(`[AutoPromo] Coupon fetch error: ${err.message}`)
+      }
+    }
+
     const { BATCH_SIZE, DELAY_BETWEEN_BATCHES, DELAY_BETWEEN_MESSAGES } = BROADCAST_CONFIG
     let successCount = 0
     let errorCount = 0
