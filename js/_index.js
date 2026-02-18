@@ -761,6 +761,7 @@ bot?.on('message', async msg => {
     targetSelectTarget: 'targetSelectTarget',
     targetSelectCity: 'targetSelectCity',
     targetSelectAreaCode: 'targetSelectAreaCode',
+    targetLeadsConfirm: 'targetLeadsConfirm',
     //validatePhoneNumbers
     validatorSelectCountry: 'validatorSelectCountry',
     validatorPhoneNumber: 'validatorPhoneNumber',
