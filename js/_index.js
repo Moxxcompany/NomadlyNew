@@ -1012,6 +1012,9 @@ bot?.on('message', async msg => {
     cpIvrAddOption: 'cpIvrAddOption',
     cpIvrRemoveOption: 'cpIvrRemoveOption',
     cpCallRecording: 'cpCallRecording',
+    cpVmGreeting: 'cpVmGreeting',
+    cpVmAudioUpload: 'cpVmAudioUpload',
+    cpVmTextGreeting: 'cpVmTextGreeting',
   }
 
   const firstSteps = [
