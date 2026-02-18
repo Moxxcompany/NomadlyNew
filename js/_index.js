@@ -4818,6 +4818,825 @@ bot?.on('message', async msg => {
     }
     return goto.submenu5()
   }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // CLOUD PHONE — STATE MACHINE HANDLERS
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  if (action === a.submenu5) {
+    const pc = phoneConfig.btn
+    if (message === t.back || message === pc.back || message === t.cancel || message === pc.cancel) return send(chatId, t.userPressedBtn(message), trans('o'))
+    if (message === pc.buyPhoneNumber) {
+      set(state, chatId, 'action', a.cpSelectCountry)
+      const countryBtns = phoneConfig.countries.map(c => c.name)
+      const rows = []
+      for (let i = 0; i < countryBtns.length; i += 2) {
+        rows.push(countryBtns.slice(i, i + 2))
+      }
+      rows.push([pc.moreCountries])
+      return send(chatId, phoneConfig.txt.selectCountry, k.of(rows))
+    }
+    if (message === pc.myNumbers) {
+      const userData = await get(phoneNumbersOf, chatId)
+      const numbers = (userData?.numbers || []).filter(n => n.status === 'active' || n.status === 'suspended')
+      if (!numbers.length) {
+        return send(chatId, phoneConfig.txt.noNumbers, k.of([[pc.buyPhoneNumber]]))
+      }
+      set(state, chatId, 'action', a.cpMyNumbers)
+      await saveInfo('cpNumbers', numbers)
+      const numBtns = numbers.map((_, i) => String(i + 1))
+      return send(chatId, phoneConfig.txt.myNumbersList(numbers), k.of([numBtns, [pc.buyAnother]]))
+    }
+    if (message === pc.sipSettings) {
+      return send(chatId, phoneConfig.txt.softphoneGuide(phoneConfig.SIP_DOMAIN), k.of([[pc.back]]))
+    }
+    if (message === pc.usageBilling) {
+      // Show overall usage if they have numbers
+      const userData = await get(phoneNumbersOf, chatId)
+      const numbers = (userData?.numbers || []).filter(n => n.status === 'active')
+      if (!numbers.length) return send(chatId, 'No active numbers. Buy one first!', k.of([[pc.buyPhoneNumber]]))
+      // Show list to pick a number
+      set(state, chatId, 'action', a.cpMyNumbers)
+      await saveInfo('cpNumbers', numbers)
+      const numBtns = numbers.map((_, i) => String(i + 1))
+      return send(chatId, phoneConfig.txt.myNumbersList(numbers), k.of([numBtns]))
+    }
+    return send(chatId, 'Please select an option.')
+  }
+
+  // ── BUY FLOW: Select Country ──
+  if (action === a.cpSelectCountry) {
+    const pc = phoneConfig.btn
+    if (message === t.back || message === pc.back) return goto.submenu5()
+    if (message === pc.moreCountries) {
+      const moreBtns = phoneConfig.moreCountries.map(c => c.name)
+      const rows = []
+      for (let i = 0; i < moreBtns.length; i += 2) {
+        rows.push(moreBtns.slice(i, i + 2))
+      }
+      return send(chatId, '🌍 More countries:', k.of(rows))
+    }
+    const countryCode = phoneConfig.countryByName[message]
+    if (!countryCode) return send(chatId, 'Please select a valid country.')
+    await saveInfo('cpCountryCode', countryCode)
+    await saveInfo('cpCountryName', message)
+    set(state, chatId, 'action', a.cpSelectType)
+    return send(chatId, phoneConfig.txt.selectType(message), k.of([[pc.localNumber], [pc.tollFreeNumber]]))
+  }
+
+  // ── BUY FLOW: Select Type ──
+  if (action === a.cpSelectType) {
+    const pc = phoneConfig.btn
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpSelectCountry)
+      const countryBtns = phoneConfig.countries.map(c => c.name)
+      const rows = []
+      for (let i = 0; i < countryBtns.length; i += 2) rows.push(countryBtns.slice(i, i + 2))
+      rows.push([pc.moreCountries])
+      return send(chatId, phoneConfig.txt.selectCountry, k.of(rows))
+    }
+    let numberType = null
+    if (message === pc.localNumber) numberType = 'local'
+    if (message === pc.tollFreeNumber) numberType = 'toll_free'
+    if (!numberType) return send(chatId, 'Please select Local or Toll-Free.')
+    await saveInfo('cpNumberType', numberType)
+
+    // If US, show area codes. Otherwise, skip to search.
+    const cc = info?.cpCountryCode || 'US'
+    if (cc === 'US' && numberType === 'local') {
+      set(state, chatId, 'action', a.cpSelectArea)
+      const areaBtns = phoneConfig.usAreaCodes.map(a => `${a.city} (${a.code})`)
+      const rows = []
+      for (let i = 0; i < areaBtns.length; i += 2) rows.push(areaBtns.slice(i, i + 2))
+      rows.push([pc.searchByArea])
+      return send(chatId, phoneConfig.txt.selectArea, k.of(rows))
+    }
+    // Non-US or toll-free: search directly
+    set(state, chatId, 'action', a.cpSelectNumber)
+    send(chatId, phoneConfig.txt.searching)
+    const results = await telnyxApi.searchNumbers(cc, numberType, null, 5)
+    if (!results.length) return send(chatId, phoneConfig.txt.noNumbers, k.of([[pc.back]]))
+    await saveInfo('cpSearchResults', results)
+    const location = info?.cpCountryName || cc
+    const numBtns = results.map((_, i) => String(i + 1))
+    return send(chatId, phoneConfig.txt.showNumbers(location, results), k.of([numBtns, [pc.showMore]]))
+  }
+
+  // ── BUY FLOW: Select Area ──
+  if (action === a.cpSelectArea) {
+    const pc = phoneConfig.btn
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpSelectType)
+      return send(chatId, phoneConfig.txt.selectType(info?.cpCountryName || ''), k.of([[pc.localNumber], [pc.tollFreeNumber]]))
+    }
+    if (message === pc.searchByArea) {
+      set(state, chatId, 'action', a.cpEnterAreaCode)
+      return send(chatId, phoneConfig.txt.enterAreaCode)
+    }
+    const areaCode = phoneConfig.areaByLabel[message]
+    if (!areaCode) return send(chatId, 'Please select a valid area or use Search.')
+    await saveInfo('cpAreaCode', areaCode)
+    await saveInfo('cpAreaName', message)
+
+    set(state, chatId, 'action', a.cpSelectNumber)
+    send(chatId, phoneConfig.txt.searching)
+    const results = await telnyxApi.searchNumbers(info?.cpCountryCode || 'US', info?.cpNumberType || 'local', areaCode, 5)
+    if (!results.length) return send(chatId, phoneConfig.txt.noNumbers, k.of([[pc.back]]))
+    await saveInfo('cpSearchResults', results)
+    const numBtns = results.map((_, i) => String(i + 1))
+    return send(chatId, phoneConfig.txt.showNumbers(message, results), k.of([numBtns, [pc.showMore]]))
+  }
+
+  // ── BUY FLOW: Enter Area Code ──
+  if (action === a.cpEnterAreaCode) {
+    const pc = phoneConfig.btn
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpSelectArea)
+      const areaBtns = phoneConfig.usAreaCodes.map(a => `${a.city} (${a.code})`)
+      const rows = []
+      for (let i = 0; i < areaBtns.length; i += 2) rows.push(areaBtns.slice(i, i + 2))
+      rows.push([pc.searchByArea])
+      return send(chatId, phoneConfig.txt.selectArea, k.of(rows))
+    }
+    const areaCode = message.replace(/\D/g, '')
+    if (!areaCode || areaCode.length < 2) return send(chatId, 'Enter a valid area code (e.g. 415).')
+    await saveInfo('cpAreaCode', areaCode)
+    await saveInfo('cpAreaName', `Area ${areaCode}`)
+
+    set(state, chatId, 'action', a.cpSelectNumber)
+    send(chatId, phoneConfig.txt.searching)
+    const results = await telnyxApi.searchNumbers(info?.cpCountryCode || 'US', info?.cpNumberType || 'local', areaCode, 5)
+    if (!results.length) return send(chatId, phoneConfig.txt.noNumbers + '\nTry a different area code.', k.of([[pc.back]]))
+    await saveInfo('cpSearchResults', results)
+    const numBtns = results.map((_, i) => String(i + 1))
+    return send(chatId, phoneConfig.txt.showNumbers(`Area ${areaCode}`, results), k.of([numBtns, [pc.showMore]]))
+  }
+
+  // ── BUY FLOW: Select Number ──
+  if (action === a.cpSelectNumber) {
+    const pc = phoneConfig.btn
+    if (message === t.back || message === pc.back) {
+      const cc = info?.cpCountryCode || 'US'
+      if (cc === 'US' && info?.cpNumberType === 'local') {
+        set(state, chatId, 'action', a.cpSelectArea)
+        const areaBtns = phoneConfig.usAreaCodes.map(a => `${a.city} (${a.code})`)
+        const rows = []
+        for (let i = 0; i < areaBtns.length; i += 2) rows.push(areaBtns.slice(i, i + 2))
+        rows.push([pc.searchByArea])
+        return send(chatId, phoneConfig.txt.selectArea, k.of(rows))
+      }
+      set(state, chatId, 'action', a.cpSelectType)
+      return send(chatId, phoneConfig.txt.selectType(info?.cpCountryName || ''), k.of([[pc.localNumber], [pc.tollFreeNumber]]))
+    }
+    if (message === pc.showMore) {
+      send(chatId, phoneConfig.txt.searching)
+      const results = await telnyxApi.searchNumbers(info?.cpCountryCode || 'US', info?.cpNumberType || 'local', info?.cpAreaCode, 5)
+      if (!results.length) return send(chatId, phoneConfig.txt.noNumbers, k.of([[pc.back]]))
+      await saveInfo('cpSearchResults', results)
+      const location = info?.cpAreaName || info?.cpCountryName || ''
+      const numBtns = results.map((_, i) => String(i + 1))
+      return send(chatId, phoneConfig.txt.showNumbers(location, results), k.of([numBtns, [pc.showMore]]))
+    }
+    const idx = parseInt(message) - 1
+    const results = info?.cpSearchResults || []
+    if (isNaN(idx) || idx < 0 || idx >= results.length) return send(chatId, 'Tap a number (1-5) to select.')
+    const selected = results[idx]
+    await saveInfo('cpSelectedNumber', selected.phone_number)
+
+    set(state, chatId, 'action', a.cpSelectPlan)
+    return send(chatId, phoneConfig.txt.selectPlan(selected.phone_number), k.of([
+      [pc.starterPlan], [pc.proPlan], [pc.businessPlan]
+    ]))
+  }
+
+  // ── BUY FLOW: Select Plan ──
+  if (action === a.cpSelectPlan) {
+    const pc = phoneConfig.btn
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpSelectNumber)
+      const results = info?.cpSearchResults || []
+      if (!results.length) return goto.submenu5()
+      const location = info?.cpAreaName || info?.cpCountryName || ''
+      const numBtns = results.map((_, i) => String(i + 1))
+      return send(chatId, phoneConfig.txt.showNumbers(location, results), k.of([numBtns, [pc.showMore]]))
+    }
+    const planKey = phoneConfig.planByButton[message]
+    if (!planKey) return send(chatId, 'Please select a plan.')
+    const plan = phoneConfig.plans[planKey]
+    await saveInfo('cpPlanKey', planKey)
+    await saveInfo('cpPrice', plan.price)
+    await saveInfo('price', plan.price)
+
+    set(state, chatId, 'action', a.cpOrderSummary)
+    return send(chatId, phoneConfig.txt.orderSummary(
+      info?.cpSelectedNumber, info?.cpCountryName || 'US', plan, plan.price
+    ), k.of([[pc.proceedPayment], [pc.applyCoupon]]))
+  }
+
+  // ── BUY FLOW: Order Summary → Payment ──
+  if (action === a.cpOrderSummary) {
+    const pc = phoneConfig.btn
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpSelectPlan)
+      return send(chatId, phoneConfig.txt.selectPlan(info?.cpSelectedNumber), k.of([
+        [pc.starterPlan], [pc.proPlan], [pc.businessPlan]
+      ]))
+    }
+    if (message === pc.applyCoupon) {
+      return goto.askCoupon('cpOrderSummary')
+    }
+    if (message === pc.proceedPayment) {
+      return goto['phone-pay']()
+    }
+    return send(chatId, 'Please proceed to payment or go back.')
+  }
+
+  // ── PHONE PAY ──
+  if (action === 'phone-pay') {
+    if (message === t.back) {
+      set(state, chatId, 'action', a.cpOrderSummary)
+      const plan = phoneConfig.plans[info?.cpPlanKey]
+      return send(chatId, phoneConfig.txt.orderSummary(
+        info?.cpSelectedNumber, info?.cpCountryName || 'US', plan, plan?.price || info?.cpPrice
+      ), k.of([[phoneConfig.btn.proceedPayment], [phoneConfig.btn.applyCoupon]]))
+    }
+    const payOption = message
+    if (payOption === payIn.crypto) {
+      set(state, chatId, 'action', 'crypto-pay-phone')
+      return send(chatId, t.selectCryptoToDeposit, trans('k.of', trans('supportedCryptoViewOf')))
+    }
+    if (payOption === payIn.bank) {
+      set(state, chatId, 'action', 'bank-pay-phone')
+      return send(chatId, t.askEmail, bc)
+    }
+    if (payOption === payIn.wallet) {
+      set(state, chatId, 'lastStep', 'phone-pay')
+      return goto.walletSelectCurrency()
+    }
+    return send(chatId, t.askValidPayOption)
+  }
+  if (action === 'bank-pay-phone') {
+    if (message === t.back) return goto['phone-pay']()
+    const email = message
+    const price = info?.cpPrice
+    if (!isValidEmail(email)) return send(chatId, t.askValidEmail)
+    const ref = nanoid()
+    set(state, chatId, 'action', 'none')
+    const priceNGN = Number(await usdToNgn(price))
+    set(chatIdOfPayment, ref, { chatId, price, cpData: { selectedNumber: info?.cpSelectedNumber, planKey: info?.cpPlanKey }, endpoint: '/bank-pay-phone' })
+    const { url, error } = await createCheckout(priceNGN, `/ok?a=b&ref=${ref}&`, email, username, ref)
+    if (error) return send(chatId, error, trans('o'))
+    return send(chatId, `Cloud Phone ₦${priceNGN.toLocaleString()}`, trans('payBank', url))
+  }
+  if (action === 'crypto-pay-phone') {
+    if (message === t.back) return goto['phone-pay']()
+    const tickerView = message
+    const supportedCryptoView = trans('supportedCryptoView')
+    const ticker = supportedCryptoView[tickerView]
+    if (!ticker) return send(chatId, t.askValidCrypto)
+    const price = info?.cpPrice
+    const ref = nanoid()
+    if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
+      const coin = tickerOf[ticker]
+      set(chatIdOfPayment, ref, { chatId, price, cpData: { selectedNumber: info?.cpSelectedNumber, planKey: info?.cpPlanKey } })
+      const url = await generateBlockBeeAddress(price, coin, `${SELF_URL}/crypto-pay-phone?ref=${ref}`, { chatId, coin })
+      if (!url) return send(chatId, t.cryptoPayError)
+      send(chatId, t.cryptoPayWaiting(url, coin.toUpperCase()), { parse_mode: 'HTML' })
+    }
+    return
+  }
+
+  // ━━━ MY NUMBERS ━━━
+  if (action === a.cpMyNumbers) {
+    const pc = phoneConfig.btn
+    if (message === t.back || message === pc.back) return goto.submenu5()
+    if (message === pc.buyAnother || message === pc.buyPhoneNumber) {
+      set(state, chatId, 'action', a.cpSelectCountry)
+      const countryBtns = phoneConfig.countries.map(c => c.name)
+      const rows = []
+      for (let i = 0; i < countryBtns.length; i += 2) rows.push(countryBtns.slice(i, i + 2))
+      rows.push([pc.moreCountries])
+      return send(chatId, phoneConfig.txt.selectCountry, k.of(rows))
+    }
+    const idx = parseInt(message) - 1
+    const numbers = info?.cpNumbers || []
+    if (isNaN(idx) || idx < 0 || idx >= numbers.length) return send(chatId, 'Select a number by tapping its index.')
+    const num = numbers[idx]
+    await saveInfo('cpActiveNumber', num)
+    set(state, chatId, 'action', a.cpManageNumber)
+    return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
+      [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
+      [pc.sipCredentials], [pc.callSmsLogs],
+      [pc.renewChangePlan], [pc.releaseNumber],
+    ]))
+  }
+
+  // ━━━ MANAGE NUMBER ━━━
+  if (action === a.cpManageNumber) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      // Go back to my numbers list
+      const userData = await get(phoneNumbersOf, chatId)
+      const numbers = (userData?.numbers || []).filter(n => n.status === 'active' || n.status === 'suspended')
+      await saveInfo('cpNumbers', numbers)
+      set(state, chatId, 'action', a.cpMyNumbers)
+      const numBtns = numbers.map((_, i) => String(i + 1))
+      return send(chatId, phoneConfig.txt.myNumbersList(numbers), k.of([numBtns, [pc.buyAnother]]))
+    }
+
+    // Call Forwarding
+    if (message === pc.callForwarding) {
+      set(state, chatId, 'action', a.cpCallForwarding)
+      const fwd = num.features?.callForwarding || {}
+      const btns = fwd.enabled
+        ? [[pc.alwaysForward], [pc.forwardBusy], [pc.forwardNoAnswer], ['📲 Change Forward-To Number'], [pc.disableForwarding]]
+        : [[pc.alwaysForward], [pc.forwardBusy], [pc.forwardNoAnswer]]
+      return send(chatId, phoneConfig.txt.forwardingStatus(num.phoneNumber, fwd), k.of(btns))
+    }
+
+    // SMS Settings
+    if (message === pc.smsSettings) {
+      set(state, chatId, 'action', a.cpSmsSettings)
+      const smsConf = num.features?.smsForwarding || {}
+      const tgLabel = `📲 SMS to Telegram ${smsConf.toTelegram !== false ? '✅ ON' : '❌ OFF'}`
+      const emLabel = `📧 SMS to Email ${smsConf.toEmail ? '✅ ' + smsConf.toEmail : '❌ OFF'}`
+      const whLabel = `🔗 Webhook URL ${smsConf.webhookUrl ? '✅ Set' : '❌ Not Set'}`
+      return send(chatId, phoneConfig.txt.smsSettingsMenu(num.phoneNumber, smsConf), k.of([[tgLabel], [emLabel], [whLabel]]))
+    }
+
+    // Voicemail
+    if (message === pc.voicemail) {
+      set(state, chatId, 'action', a.cpVoicemail)
+      const vm = num.features?.voicemail || {}
+      const btns = vm.enabled
+        ? [['📲 VM to Telegram ' + (vm.forwardToTelegram !== false ? '✅ ON' : '❌ OFF')],
+           ['📧 VM to Email ' + (vm.forwardToEmail ? '✅ ' + vm.forwardToEmail : '❌ OFF')],
+           [`⏰ Ring Time: ${vm.ringTimeout || 25}s`],
+           [pc.disableVoicemail]]
+        : [[pc.enableVoicemail]]
+      return send(chatId, phoneConfig.txt.voicemailMenu(num.phoneNumber, vm), k.of(btns))
+    }
+
+    // SIP Credentials
+    if (message === pc.sipCredentials) {
+      set(state, chatId, 'action', a.cpSipCredentials)
+      return send(chatId, phoneConfig.txt.sipCredentialsMsg(num.phoneNumber, num.sipUsername, phoneConfig.SIP_DOMAIN), k.of([
+        [pc.revealPassword], [pc.resetPassword], [pc.softphoneGuide]
+      ]))
+    }
+
+    // Call & SMS Logs
+    if (message === pc.callSmsLogs) {
+      const logs = await phoneLogs.find({ phoneNumber: num.phoneNumber.replace(/[^+\d]/g, ''), chatId }).sort({ timestamp: -1 }).limit(10).toArray()
+      let text = `📊 <b>Recent Activity</b>\n${phoneConfig.formatPhone(num.phoneNumber)}\n\n`
+      if (!logs.length) {
+        text += 'No activity yet.'
+      } else {
+        const calls = logs.filter(l => l.type === 'call')
+        const sms = logs.filter(l => l.type === 'sms')
+        if (calls.length) {
+          text += '📞 <b>Calls:</b>\n'
+          calls.forEach(c => {
+            const dir = c.direction === 'inbound' ? '↙️' : '↗️'
+            const status = c.status === 'voicemail' ? '🎙️' : dir
+            text += `  ${status} ${phoneConfig.formatPhone(c.from)} ${phoneConfig.formatDuration(c.duration)} ${phoneConfig.shortDate(c.timestamp)}\n`
+          })
+          text += '\n'
+        }
+        if (sms.length) {
+          text += '📩 <b>SMS:</b>\n'
+          sms.forEach(s => {
+            text += `  ↙️ ${phoneConfig.formatPhone(s.from)} "${(s.body || '').substring(0, 30)}..." ${phoneConfig.shortDate(s.timestamp)}\n`
+          })
+        }
+      }
+      return send(chatId, text, k.of([[pc.back]]))
+    }
+
+    // Renew / Change Plan
+    if (message === pc.renewChangePlan) {
+      set(state, chatId, 'action', a.cpRenewPlan)
+      const plan = phoneConfig.plans[num.plan] || { name: num.plan, price: num.planPrice }
+      return send(chatId, phoneConfig.txt.renewMenu(num.phoneNumber, plan.name, num.planPrice, num.expiresAt, num.autoRenew), k.of([
+        ['🔄 Renew Now ($' + num.planPrice + ')'],
+        [pc.changePlan],
+        ['🔁 Auto-Renew: ' + (num.autoRenew ? '✅ ON' : '❌ OFF')],
+      ]))
+    }
+
+    // Release Number
+    if (message === pc.releaseNumber) {
+      set(state, chatId, 'action', a.cpReleaseConfirm)
+      return send(chatId, phoneConfig.txt.releaseConfirm(num.phoneNumber), k.of([
+        [pc.yesRelease, pc.noKeep]
+      ]))
+    }
+
+    return send(chatId, 'Please select an option.')
+  }
+
+  // ━━━ CALL FORWARDING ━━━
+  if (action === a.cpCallForwarding) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
+        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
+        [pc.sipCredentials], [pc.callSmsLogs],
+        [pc.renewChangePlan], [pc.releaseNumber],
+      ]))
+    }
+    if (message === pc.disableForwarding) {
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'callForwarding', { enabled: false, mode: 'disabled', forwardTo: null })
+      num.features.callForwarding = { enabled: false, mode: 'disabled', forwardTo: null }
+      await saveInfo('cpActiveNumber', num)
+      send(chatId, phoneConfig.txt.forwardingDisabled(num.phoneNumber))
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
+        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
+        [pc.sipCredentials], [pc.callSmsLogs],
+        [pc.renewChangePlan], [pc.releaseNumber],
+      ]))
+    }
+    let mode = null
+    if (message === pc.alwaysForward) mode = 'always'
+    if (message === pc.forwardBusy) mode = 'busy'
+    if (message === pc.forwardNoAnswer) mode = 'no_answer'
+    if (message === '📲 Change Forward-To Number') mode = num.features?.callForwarding?.mode || 'always'
+    if (mode) {
+      await saveInfo('cpForwardMode', mode)
+      set(state, chatId, 'action', a.cpEnterForwardNumber)
+      return send(chatId, phoneConfig.txt.enterForwardNumber)
+    }
+    return send(chatId, 'Select a forwarding mode.')
+  }
+  if (action === a.cpEnterForwardNumber) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpCallForwarding)
+      const fwd = num.features?.callForwarding || {}
+      const btns = fwd.enabled
+        ? [[pc.alwaysForward], [pc.forwardBusy], [pc.forwardNoAnswer], ['📲 Change Forward-To Number'], [pc.disableForwarding]]
+        : [[pc.alwaysForward], [pc.forwardBusy], [pc.forwardNoAnswer]]
+      return send(chatId, phoneConfig.txt.forwardingStatus(num.phoneNumber, fwd), k.of(btns))
+    }
+    const forwardTo = message.replace(/[^+\d]/g, '')
+    if (!forwardTo || forwardTo.length < 7) return send(chatId, 'Enter a valid phone number with country code (e.g. +14155551234).')
+    const mode = info?.cpForwardMode || 'always'
+    await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'callForwarding', { enabled: true, mode, forwardTo, ringTimeout: 25 })
+    num.features.callForwarding = { enabled: true, mode, forwardTo, ringTimeout: 25 }
+    await saveInfo('cpActiveNumber', num)
+    const modeLabel = mode === 'always' ? 'Always Forward' : mode === 'busy' ? 'Forward When Busy' : 'Forward If No Answer'
+    send(chatId, phoneConfig.txt.forwardingUpdated(num.phoneNumber, forwardTo, modeLabel))
+    set(state, chatId, 'action', a.cpManageNumber)
+    return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
+      [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
+      [pc.sipCredentials], [pc.callSmsLogs],
+      [pc.renewChangePlan], [pc.releaseNumber],
+    ]))
+  }
+
+  // ━━━ SMS SETTINGS ━━━
+  if (action === a.cpSmsSettings) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
+        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
+        [pc.sipCredentials], [pc.callSmsLogs],
+        [pc.renewChangePlan], [pc.releaseNumber],
+      ]))
+    }
+    const smsConf = num.features?.smsForwarding || {}
+    // Toggle Telegram
+    if (message.startsWith('📲 SMS to Telegram')) {
+      const newState = smsConf.toTelegram === false
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'smsForwarding', { ...smsConf, toTelegram: newState })
+      num.features.smsForwarding = { ...smsConf, toTelegram: newState }
+      await saveInfo('cpActiveNumber', num)
+      send(chatId, phoneConfig.txt.smsToggled('📲 SMS to Telegram', newState))
+      const tgLabel = `📲 SMS to Telegram ${newState ? '✅ ON' : '❌ OFF'}`
+      const emLabel = `📧 SMS to Email ${smsConf.toEmail ? '✅ ' + smsConf.toEmail : '❌ OFF'}`
+      const whLabel = `🔗 Webhook URL ${smsConf.webhookUrl ? '✅ Set' : '❌ Not Set'}`
+      return send(chatId, phoneConfig.txt.smsSettingsMenu(num.phoneNumber, { ...smsConf, toTelegram: newState }), k.of([[tgLabel], [emLabel], [whLabel]]))
+    }
+    // Email
+    if (message.startsWith('📧 SMS to Email')) {
+      set(state, chatId, 'action', a.cpEnterEmail)
+      return send(chatId, phoneConfig.txt.enterEmail)
+    }
+    // Webhook
+    if (message.startsWith('🔗 Webhook URL')) {
+      set(state, chatId, 'action', a.cpEnterWebhook)
+      return send(chatId, phoneConfig.txt.enterWebhook)
+    }
+    return send(chatId, 'Select an option.')
+  }
+  if (action === a.cpEnterEmail) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpSmsSettings)
+      const smsConf = num.features?.smsForwarding || {}
+      const tgLabel = `📲 SMS to Telegram ${smsConf.toTelegram !== false ? '✅ ON' : '❌ OFF'}`
+      const emLabel = `📧 SMS to Email ${smsConf.toEmail ? '✅ ' + smsConf.toEmail : '❌ OFF'}`
+      const whLabel = `🔗 Webhook URL ${smsConf.webhookUrl ? '✅ Set' : '❌ Not Set'}`
+      return send(chatId, phoneConfig.txt.smsSettingsMenu(num.phoneNumber, smsConf), k.of([[tgLabel], [emLabel], [whLabel]]))
+    }
+    if (!isValidEmail(message)) return send(chatId, 'Enter a valid email address.')
+    const smsConf = num.features?.smsForwarding || {}
+    await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'smsForwarding', { ...smsConf, toEmail: message })
+    num.features.smsForwarding = { ...smsConf, toEmail: message }
+    await saveInfo('cpActiveNumber', num)
+    send(chatId, phoneConfig.txt.emailSet(message))
+    set(state, chatId, 'action', a.cpManageNumber)
+    return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
+      [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
+      [pc.sipCredentials], [pc.callSmsLogs],
+      [pc.renewChangePlan], [pc.releaseNumber],
+    ]))
+  }
+  if (action === a.cpEnterWebhook) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpSmsSettings)
+      const smsConf = num.features?.smsForwarding || {}
+      const tgLabel = `📲 SMS to Telegram ${smsConf.toTelegram !== false ? '✅ ON' : '❌ OFF'}`
+      const emLabel = `📧 SMS to Email ${smsConf.toEmail ? '✅ ' + smsConf.toEmail : '❌ OFF'}`
+      const whLabel = `🔗 Webhook URL ${smsConf.webhookUrl ? '✅ Set' : '❌ Not Set'}`
+      return send(chatId, phoneConfig.txt.smsSettingsMenu(num.phoneNumber, smsConf), k.of([[tgLabel], [emLabel], [whLabel]]))
+    }
+    if (!message.startsWith('http')) return send(chatId, 'Enter a valid URL starting with http:// or https://.')
+    const smsConf = num.features?.smsForwarding || {}
+    await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'smsForwarding', { ...smsConf, webhookUrl: message })
+    num.features.smsForwarding = { ...smsConf, webhookUrl: message }
+    await saveInfo('cpActiveNumber', num)
+    send(chatId, phoneConfig.txt.webhookSet(message))
+    set(state, chatId, 'action', a.cpManageNumber)
+    return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
+      [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
+      [pc.sipCredentials], [pc.callSmsLogs],
+      [pc.renewChangePlan], [pc.releaseNumber],
+    ]))
+  }
+
+  // ━━━ VOICEMAIL ━━━
+  if (action === a.cpVoicemail) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
+        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
+        [pc.sipCredentials], [pc.callSmsLogs],
+        [pc.renewChangePlan], [pc.releaseNumber],
+      ]))
+    }
+    if (message === pc.enableVoicemail) {
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'voicemail', { enabled: true, greetingType: 'default', forwardToTelegram: true, forwardToEmail: null, ringTimeout: 25 })
+      num.features.voicemail = { enabled: true, greetingType: 'default', forwardToTelegram: true, forwardToEmail: null, ringTimeout: 25 }
+      await saveInfo('cpActiveNumber', num)
+      send(chatId, phoneConfig.txt.voicemailEnabled(num.phoneNumber))
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
+        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
+        [pc.sipCredentials], [pc.callSmsLogs],
+        [pc.renewChangePlan], [pc.releaseNumber],
+      ]))
+    }
+    if (message === pc.disableVoicemail) {
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'voicemail', { enabled: false })
+      num.features.voicemail = { enabled: false }
+      await saveInfo('cpActiveNumber', num)
+      send(chatId, phoneConfig.txt.voicemailDisabled(num.phoneNumber))
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
+        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
+        [pc.sipCredentials], [pc.callSmsLogs],
+        [pc.renewChangePlan], [pc.releaseNumber],
+      ]))
+    }
+    // Toggle VM to Telegram
+    if (message.startsWith('📲 VM to Telegram')) {
+      const vm = num.features?.voicemail || {}
+      const newState = vm.forwardToTelegram === false
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'voicemail', { ...vm, forwardToTelegram: newState })
+      num.features.voicemail = { ...vm, forwardToTelegram: newState }
+      await saveInfo('cpActiveNumber', num)
+      send(chatId, `📲 Voicemail to Telegram is now ${newState ? '✅ ON' : '❌ OFF'}`)
+    }
+    // Ring time
+    if (message.startsWith('⏰ Ring Time')) {
+      return send(chatId, 'How long should the phone ring before voicemail?', k.of([['15s', '20s', '25s', '30s']]))
+    }
+    const ringMatch = message.match(/^(\d+)s$/)
+    if (ringMatch) {
+      const seconds = parseInt(ringMatch[1])
+      const vm = num.features?.voicemail || {}
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'voicemail', { ...vm, ringTimeout: seconds })
+      num.features.voicemail = { ...vm, ringTimeout: seconds }
+      await saveInfo('cpActiveNumber', num)
+      send(chatId, `✅ Ring time updated to ${seconds} seconds.`)
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
+        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
+        [pc.sipCredentials], [pc.callSmsLogs],
+        [pc.renewChangePlan], [pc.releaseNumber],
+      ]))
+    }
+    return send(chatId, 'Select an option.')
+  }
+
+  // ━━━ SIP CREDENTIALS ━━━
+  if (action === a.cpSipCredentials) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
+        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
+        [pc.sipCredentials], [pc.callSmsLogs],
+        [pc.renewChangePlan], [pc.releaseNumber],
+      ]))
+    }
+    if (message === pc.revealPassword) {
+      const msg = await bot?.sendMessage(chatId, phoneConfig.txt.sipRevealed(num.sipPassword), { parse_mode: 'HTML' })
+      // Auto-delete after 30 seconds
+      if (msg?.message_id) {
+        setTimeout(() => {
+          bot?.deleteMessage(chatId, msg.message_id)?.catch(() => {})
+        }, 30000)
+      }
+      return
+    }
+    if (message === pc.resetPassword) {
+      const newPassword = phoneConfig.generateSipPassword()
+      await updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'sipPassword', newPassword)
+      num.sipPassword = newPassword
+      await saveInfo('cpActiveNumber', num)
+      // Create new SIP credential on Telnyx
+      if (telnyxResources.sipConnectionId) {
+        await telnyxApi.createSIPCredential(telnyxResources.sipConnectionId, num.sipUsername, newPassword)
+      }
+      const msg = await bot?.sendMessage(chatId, phoneConfig.txt.sipReset(newPassword), { parse_mode: 'HTML' })
+      if (msg?.message_id) {
+        setTimeout(() => {
+          bot?.deleteMessage(chatId, msg.message_id)?.catch(() => {})
+        }, 60000)
+      }
+      return
+    }
+    if (message === pc.softphoneGuide) {
+      return send(chatId, phoneConfig.txt.softphoneGuide(phoneConfig.SIP_DOMAIN), k.of([[pc.back]]))
+    }
+    return send(chatId, 'Select an option.')
+  }
+
+  // ━━━ RENEW / CHANGE PLAN ━━━
+  if (action === a.cpRenewPlan) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
+        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
+        [pc.sipCredentials], [pc.callSmsLogs],
+        [pc.renewChangePlan], [pc.releaseNumber],
+      ]))
+    }
+    // Toggle Auto-Renew
+    if (message.startsWith('🔁 Auto-Renew')) {
+      const newState = !num.autoRenew
+      await updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'autoRenew', newState)
+      num.autoRenew = newState
+      await saveInfo('cpActiveNumber', num)
+      send(chatId, `🔁 Auto-Renew is now ${newState ? '✅ ON' : '❌ OFF'}`)
+      const plan = phoneConfig.plans[num.plan] || { name: num.plan, price: num.planPrice }
+      return send(chatId, phoneConfig.txt.renewMenu(num.phoneNumber, plan.name, num.planPrice, num.expiresAt, newState), k.of([
+        ['🔄 Renew Now ($' + num.planPrice + ')'],
+        [pc.changePlan],
+        ['🔁 Auto-Renew: ' + (newState ? '✅ ON' : '❌ OFF')],
+      ]))
+    }
+    // Renew Now
+    if (message.startsWith('🔄 Renew Now')) {
+      await saveInfo('cpPrice', num.planPrice)
+      await saveInfo('cpPlanKey', num.plan)
+      await saveInfo('cpSelectedNumber', num.phoneNumber)
+      await saveInfo('price', num.planPrice)
+      return goto['phone-pay']()
+    }
+    // Change Plan
+    if (message === pc.changePlan) {
+      set(state, chatId, 'action', a.cpChangePlan)
+      const currentPlan = num.plan
+      const btns = []
+      if (currentPlan !== 'starter') btns.push([`💡 Downgrade to Starter — $${phoneConfig.PHONE_STARTER_PRICE}/mo`])
+      if (currentPlan !== 'pro') btns.push([`⭐ ${currentPlan === 'starter' ? 'Upgrade' : 'Change'} to Pro — $${phoneConfig.PHONE_PRO_PRICE}/mo`])
+      if (currentPlan !== 'business') btns.push([`👑 Upgrade to Business — $${phoneConfig.PHONE_BUSINESS_PRICE}/mo`])
+      return send(chatId, `📦 Change plan for ${phoneConfig.formatPhone(num.phoneNumber)}\n\nCurrent: ${num.plan.charAt(0).toUpperCase() + num.plan.slice(1)} — $${num.planPrice}/mo`, k.of(btns))
+    }
+    return send(chatId, 'Select an option.')
+  }
+  if (action === a.cpChangePlan) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpRenewPlan)
+      const plan = phoneConfig.plans[num.plan] || { name: num.plan, price: num.planPrice }
+      return send(chatId, phoneConfig.txt.renewMenu(num.phoneNumber, plan.name, num.planPrice, num.expiresAt, num.autoRenew), k.of([
+        ['🔄 Renew Now ($' + num.planPrice + ')'],
+        [pc.changePlan],
+        ['🔁 Auto-Renew: ' + (num.autoRenew ? '✅ ON' : '❌ OFF')],
+      ]))
+    }
+    let newPlan = null
+    if (message.includes('Starter')) newPlan = 'starter'
+    if (message.includes('Pro')) newPlan = 'pro'
+    if (message.includes('Business')) newPlan = 'business'
+    if (!newPlan) return send(chatId, 'Select a valid plan.')
+    const newPrice = phoneConfig.plans[newPlan].price
+    await updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'plan', newPlan)
+    await updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'planPrice', newPrice)
+    num.plan = newPlan
+    num.planPrice = newPrice
+    await saveInfo('cpActiveNumber', num)
+    send(chatId, `✅ Plan changed to ${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)} — $${newPrice}/mo`)
+    set(state, chatId, 'action', a.cpManageNumber)
+    return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
+      [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
+      [pc.sipCredentials], [pc.callSmsLogs],
+      [pc.renewChangePlan], [pc.releaseNumber],
+    ]))
+  }
+
+  // ━━━ RELEASE NUMBER ━━━
+  if (action === a.cpReleaseConfirm) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === pc.noKeep || message === t.back) {
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
+        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
+        [pc.sipCredentials], [pc.callSmsLogs],
+        [pc.renewChangePlan], [pc.releaseNumber],
+      ]))
+    }
+    if (message === pc.yesRelease) {
+      const last4 = num.phoneNumber.replace(/\D/g, '').slice(-4)
+      set(state, chatId, 'action', a.cpReleaseDigits)
+      return send(chatId, phoneConfig.txt.releaseConfirmDigits(last4))
+    }
+    return send(chatId, 'Please confirm or cancel.')
+  }
+  if (action === a.cpReleaseDigits) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpReleaseConfirm)
+      return send(chatId, phoneConfig.txt.releaseConfirm(num.phoneNumber), k.of([[pc.yesRelease, pc.noKeep]]))
+    }
+    const last4 = num.phoneNumber.replace(/\D/g, '').slice(-4)
+    if (message !== last4) return send(chatId, `Type the last 4 digits: ${last4}`)
+
+    // Release on Telnyx
+    if (num.telnyxOrderId) {
+      await telnyxApi.releaseNumber(num.telnyxOrderId)
+    }
+
+    // Update DB
+    await updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'status', 'released')
+    const name = await get(nameOf, chatId)
+    notifyGroup(phoneConfig.txt.adminRelease(maskName(name), num.phoneNumber, num.plan))
+    
+    // Log transaction
+    await phoneTransactions.insertOne({
+      chatId, phoneNumber: num.phoneNumber,
+      action: 'release', plan: num.plan,
+      amount: 0, paymentMethod: 'none',
+      timestamp: new Date().toISOString(),
+    })
+
+    send(chatId, phoneConfig.txt.released(num.phoneNumber), trans('o'))
+    return
+  }
   if (action === a.phoneNumberLeads) {
     const phoneNumberLeads = trans('phoneNumberLeads')
     if (phoneNumberLeads[1] === message) return goto.validatorSelectCountry()
