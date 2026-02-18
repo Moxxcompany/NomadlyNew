@@ -232,6 +232,49 @@ async function startRecording(callControlId, channels = 'single', format = 'mp3'
   }
 }
 
+// ── Call Control: Gather (DTMF for IVR) ──
+async function gatherDTMF(callControlId, payload, options = {}) {
+  try {
+    const body = {
+      payload: payload,
+      voice: options.voice || 'female',
+      language: options.language || 'en-US',
+      minimum_digits: options.minDigits || 1,
+      maximum_digits: options.maxDigits || 1,
+      timeout_millis: options.timeout || 10000,
+      inter_digit_timeout_millis: options.interDigitTimeout || 5000,
+      valid_digits: options.validDigits || '0123456789*#',
+    }
+    const res = await axios.post(`${BASE}/calls/${callControlId}/actions/gather_using_speak`, body, { headers: headers() })
+    return res.data?.data || null
+  } catch (e) {
+    log('Telnyx gatherDTMF error:', e.response?.data || e.message)
+    return null
+  }
+}
+
+// ── Call Control: Playback Stop ──
+async function playbackStop(callControlId) {
+  try {
+    const res = await axios.post(`${BASE}/calls/${callControlId}/actions/playback_stop`, {}, { headers: headers() })
+    return res.data?.data || null
+  } catch (e) {
+    log('Telnyx playbackStop error:', e.response?.data || e.message)
+    return null
+  }
+}
+
+// ── Call Control: Record Stop ──
+async function stopRecording(callControlId) {
+  try {
+    const res = await axios.post(`${BASE}/calls/${callControlId}/actions/record_stop`, {}, { headers: headers() })
+    return res.data?.data || null
+  } catch (e) {
+    log('Telnyx stopRecording error:', e.response?.data || e.message)
+    return null
+  }
+}
+
 // ── Call Control: Hangup ──
 async function hangupCall(callControlId) {
   try {
@@ -331,6 +374,9 @@ module.exports = {
   transferCall,
   speakOnCall,
   startRecording,
+  stopRecording,
   hangupCall,
+  gatherDTMF,
+  playbackStop,
   initializeTelnyxResources,
 }
