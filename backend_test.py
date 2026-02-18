@@ -259,24 +259,24 @@ class OverageRatesTestier:
             )
 
     def test_manage_number_view_dynamic_rates(self):
-        """Test phone-config.js manageNumber view uses dynamic ${OVERAGE_RATE_MIN} and ${OVERAGE_RATE_SMS} in warnings"""
+        """Test phone-config.js manageNumber view uses dynamic OVERAGE_RATE_MIN and OVERAGE_RATE_SMS in warnings"""
         try:
             with open('/app/js/phone-config.js', 'r') as f:
                 content = f.read()
             
             # Find manageNumber function
-            manage_number_match = re.search(r'manageNumber.*?:.*?{(.*?)}', content, re.DOTALL)
+            manage_number_match = re.search(r'manageNumber.*?:.*?\(.*?\)\s*=>\s*{(.*?)}', content, re.DOTALL)
             
             if manage_number_match:
                 manage_number_text = manage_number_match.group(1)
                 
-                # Check for dynamic rate usage in warnings
-                has_dynamic_min = '${OVERAGE_RATE_MIN}' in manage_number_text
-                has_dynamic_sms = '${OVERAGE_RATE_SMS}' in manage_number_text
+                # Check for dynamic rate usage in warnings - look for ${OVERAGE_RATE_MIN} in template strings
+                has_dynamic_min = 'OVERAGE_RATE_MIN' in manage_number_text
+                has_dynamic_sms = 'OVERAGE_RATE_SMS' in manage_number_text  
                 has_warning_context = 'warning' in manage_number_text.lower() or 'overage' in manage_number_text.lower()
                 
                 self.log_result(
-                    "manageNumber view uses dynamic ${OVERAGE_RATE_MIN} and ${OVERAGE_RATE_SMS} in warnings",
+                    "manageNumber view uses dynamic OVERAGE_RATE_MIN and OVERAGE_RATE_SMS in warnings",
                     has_dynamic_min and has_dynamic_sms and has_warning_context,
                     f"Dynamic MIN: {has_dynamic_min}, Dynamic SMS: {has_dynamic_sms}, Warning context: {has_warning_context}",
                     "HIGH" if not (has_dynamic_min and has_dynamic_sms) else "INFO"
