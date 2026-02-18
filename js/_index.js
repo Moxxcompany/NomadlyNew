@@ -4465,8 +4465,8 @@ bot?.on('message', async msg => {
   if (action === a.targetSelectTarget) {
     if (message === t.back) return goto.phoneNumberLeads()
     if (!targetLeadsTargets.includes(message)) return send(chatId, t.what)
-    saveInfo('targetName', message)
-    saveInfo('country', 'USA')
+    await saveInfo('targetName', message)
+    await saveInfo('country', 'USA')
     return goto.targetSelectCity()
   }
   if (action === a.targetSelectCity) {
@@ -4474,7 +4474,7 @@ bot?.on('message', async msg => {
     const target = info?.targetName
     const validCities = ['All Cities', ...targetLeadsCities(target)]
     if (!validCities.includes(message)) return send(chatId, t.what)
-    saveInfo('targetCity', message)
+    await saveInfo('targetCity', message)
     return goto.targetSelectAreaCode()
   }
   if (action === a.targetSelectAreaCode) {
@@ -4490,9 +4490,9 @@ bot?.on('message', async msg => {
     } else {
       areaCodes = [parse('1', message)]
     }
-    saveInfo('areaCode', message === 'Mixed Area Codes' ? message : parse('1', message))
-    saveInfo('targetAreaCodes', areaCodes)
-    saveInfo('cameFrom', a.targetSelectAreaCode)
+    await saveInfo('areaCode', message === 'Mixed Area Codes' ? message : parse('1', message))
+    await saveInfo('targetAreaCodes', areaCodes)
+    await saveInfo('cameFrom', a.targetSelectAreaCode)
     return goto.buyLeadsSelectCarrier()
   }
   if (action === a.buyLeadsSelectCountry) {
