@@ -126,6 +126,49 @@ const plans = {
   business: { name: 'Business', price: PHONE_BUSINESS_PRICE, minutes: 'Unlimited', sms: 1000, features: ['All Pro features', 'Call recording', 'IVR / Auto-attendant'] },
 }
 
+// Feature gating per plan — which features each plan unlocks
+const planFeatureAccess = {
+  starter: {
+    callForwarding: true,
+    smsToTelegram: true,
+    smsToEmail: false,
+    smsWebhook: false,
+    voicemail: false,
+    sipCredentials: false,
+    callRecording: false,
+    ivr: false,
+  },
+  pro: {
+    callForwarding: true,
+    smsToTelegram: true,
+    smsToEmail: true,
+    smsWebhook: true,
+    voicemail: true,
+    sipCredentials: true,
+    callRecording: false,
+    ivr: false,
+  },
+  business: {
+    callForwarding: true,
+    smsToTelegram: true,
+    smsToEmail: true,
+    smsWebhook: true,
+    voicemail: true,
+    sipCredentials: true,
+    callRecording: true,
+    ivr: true,
+  },
+}
+
+const canAccessFeature = (planKey, feature) => {
+  return planFeatureAccess[planKey]?.[feature] === true
+}
+
+const upgradeMessage = (feature, currentPlan) => {
+  const needed = feature === 'callRecording' || feature === 'ivr' ? 'Business' : 'Pro'
+  return `🔒 <b>${feature === 'voicemail' ? 'Voicemail' : feature === 'sipCredentials' ? 'SIP Credentials' : feature === 'smsToEmail' ? 'SMS to Email' : feature === 'smsWebhook' ? 'SMS Webhook' : feature === 'callRecording' ? 'Call Recording' : 'IVR / Auto-attendant'}</b> requires the <b>${needed}</b> plan or higher.\n\nYour current plan: <b>${currentPlan}</b>\n\nUpgrade via 🔄 Renew / Change Plan.`
+}
+
 const planByButton = {}
 planByButton[btn.starterPlan] = 'starter'
 planByButton[btn.proPlan] = 'pro'
