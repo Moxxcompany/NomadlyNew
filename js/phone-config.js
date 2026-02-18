@@ -27,6 +27,7 @@ const btn = {
   // Management
   callForwarding: '📞 Call Forwarding',
   smsSettings: '📩 SMS Settings',
+  smsInbox: '📨 SMS Inbox',
   voicemail: '🎙️ Voicemail',
   sipCredentials: '🔑 SIP Credentials',
   callRecording: '🔴 Call Recording',
