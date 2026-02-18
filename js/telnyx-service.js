@@ -72,6 +72,28 @@ async function releaseNumber(phoneNumberId) {
   }
 }
 
+// ── Release by phone number string (lookup then delete) ──
+async function releaseByPhoneNumber(phoneNumber) {
+  try {
+    const clean = phoneNumber.replace(/[^+\d]/g, '')
+    const res = await axios.get(`${BASE}/phone_numbers`, {
+      headers: headers(),
+      params: { 'filter[phone_number]': clean, 'page[size]': 1 }
+    })
+    const found = res.data?.data?.[0]
+    if (found) {
+      await axios.delete(`${BASE}/phone_numbers/${found.id}`, { headers: headers() })
+      log(`Telnyx releaseByPhoneNumber: released ${clean} (id=${found.id})`)
+      return true
+    }
+    log(`Telnyx releaseByPhoneNumber: number ${clean} not found on account`)
+    return false
+  } catch (e) {
+    log('Telnyx releaseByPhoneNumber error:', e.response?.data || e.message)
+    return false
+  }
+}
+
 // ── List owned phone numbers ──
 async function listNumbers() {
   try {
@@ -363,6 +385,7 @@ module.exports = {
   buyNumber,
   updateNumber,
   releaseNumber,
+  releaseByPhoneNumber,
   listNumbers,
   createSIPConnection,
   getSIPConnection,
