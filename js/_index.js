@@ -4264,12 +4264,14 @@ bot?.on('message', async msg => {
     if (message === t.skip) return (await saveInfo('couponApplied', false)) || goto['plan-pay']()
 
     const coupon = message.toUpperCase()
-    const discount = discountOn[coupon]
-    if (isNaN(discount)) return send(chatId, t.couponInvalid)
+    const couponResult = await resolveCoupon(coupon, chatId)
+    if (!couponResult) return send(chatId, t.couponInvalid)
+    if (couponResult.error === 'already_used') return send(chatId, '⚠️ You have already used this coupon today.')
 
-    const newPrice = price - (price * discount) / 100
+    const newPrice = price - (price * couponResult.discount) / 100
     await saveInfo('newPrice', newPrice)
     await saveInfo('couponApplied', true)
+    if (couponResult.type === 'daily') await dailyCouponSystem.markCouponUsed(couponResult.code, chatId)
 
     return goto['plan-pay']()
   }
