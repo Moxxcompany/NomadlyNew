@@ -7882,8 +7882,7 @@ app.post('/telnyx/sms-webhook', async (req, res) => {
 app.post('/telnyx/voice-webhook', async (req, res) => {
   try {
     log('📞 Telnyx voice webhook received:', req.body?.data?.event_type || 'unknown')
-    await handleVoiceWebhook(req.body, bot, phoneNumbersOf, phoneLogs)
-    res.sendStatus(200)
+    await handleVoiceWebhook(req, res)
   } catch (error) {
     log('Telnyx voice webhook error:', error.message)
     res.sendStatus(200)
