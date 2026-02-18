@@ -4818,7 +4818,18 @@ bot?.on('message', async msg => {
   if (message === user.viewPlan) {
     const subscribedPlan = await get(planOf, chatId)
     if (subscribedPlan) {
-      const timeEnd = new Date(await get(planEndingTime, chatId))
+      const rawTime = await get(planEndingTime, chatId)
+      const timeEnd = new Date(rawTime)
+
+      // Sanity check: reject plans expiring more than 31 days out
+      const MAX_REASONABLE_MS = 31 * 86400 * 1000
+      if (rawTime > Date.now() + MAX_REASONABLE_MS) {
+        log(`[viewPlan] Anomalous planEndingTime for chatId ${chatId}: ${timeEnd.toISOString()} — auto-expiring`)
+        set(planEndingTime, chatId, 0)
+        send(chatId, t.subscriptionExpire(subscribedPlan, timeEnd))
+        return
+      }
+
       if (!(await isSubscribed(chatId))) {
         send(chatId, t.subscriptionExpire(subscribedPlan, timeEnd))
         return
