@@ -398,6 +398,8 @@ const loadData = async () => {
 
   freeDomainNamesAvailableFor = db.collection('freeDomainNamesAvailableFor')
   freeValidationsAvailableFor = db.collection('freeValidationsAvailableFor')
+  supportSessions = db.collection('supportSessions')
+  leadRequests = db.collection('leadRequests')
 
   // variables to view system information
   nameOf = db.collection('nameOf')
