@@ -5162,11 +5162,7 @@ bot?.on('message', async msg => {
     const num = numbers[idx]
     await saveInfo('cpActiveNumber', num)
     set(state, chatId, 'action', a.cpManageNumber)
-    return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
-      [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
-      [pc.sipCredentials], [pc.callSmsLogs],
-      [pc.renewChangePlan], [pc.releaseNumber],
-    ]))
+    return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
   }
 
   // ━━━ MANAGE NUMBER ━━━
@@ -5333,11 +5329,7 @@ bot?.on('message', async msg => {
     const modeLabel = mode === 'always' ? 'Always Forward' : mode === 'busy' ? 'Forward When Busy' : 'Forward If No Answer'
     send(chatId, phoneConfig.txt.forwardingUpdated(num.phoneNumber, forwardTo, modeLabel))
     set(state, chatId, 'action', a.cpManageNumber)
-    return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
-      [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
-      [pc.sipCredentials], [pc.callSmsLogs],
-      [pc.renewChangePlan], [pc.releaseNumber],
-    ]))
+    return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
   }
 
   // ━━━ SMS SETTINGS ━━━
@@ -5397,11 +5389,7 @@ bot?.on('message', async msg => {
     await saveInfo('cpActiveNumber', num)
     send(chatId, phoneConfig.txt.emailSet(message))
     set(state, chatId, 'action', a.cpManageNumber)
-    return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
-      [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
-      [pc.sipCredentials], [pc.callSmsLogs],
-      [pc.renewChangePlan], [pc.releaseNumber],
-    ]))
+    return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
   }
   if (action === a.cpEnterWebhook) {
     const pc = phoneConfig.btn
@@ -5422,11 +5410,7 @@ bot?.on('message', async msg => {
     await saveInfo('cpActiveNumber', num)
     send(chatId, phoneConfig.txt.webhookSet(message))
     set(state, chatId, 'action', a.cpManageNumber)
-    return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
-      [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
-      [pc.sipCredentials], [pc.callSmsLogs],
-      [pc.renewChangePlan], [pc.releaseNumber],
-    ]))
+    return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
   }
 
   // ━━━ VOICEMAIL ━━━
@@ -5616,11 +5600,7 @@ bot?.on('message', async msg => {
     await saveInfo('cpActiveNumber', num)
     send(chatId, `✅ Plan changed to ${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)} — $${newPrice}/mo`)
     set(state, chatId, 'action', a.cpManageNumber)
-    return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
-      [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
-      [pc.sipCredentials], [pc.callSmsLogs],
-      [pc.renewChangePlan], [pc.releaseNumber],
-    ]))
+    return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
   }
 
   // ━━━ RELEASE NUMBER ━━━
