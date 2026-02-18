@@ -524,6 +524,7 @@ const loadData = async () => {
       phoneLogs,
       telnyxApi,
       telnyxResources,
+      ivrAnalytics,
     })
     log('[CloudPhone] Voice Service initialized with IVR + Recording')
   }
