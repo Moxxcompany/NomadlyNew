@@ -245,9 +245,10 @@ Beyond plan limits: $${OVERAGE_RATE_MIN}/min and $${OVERAGE_RATE_SMS}/SMS charge
 📞 Number: ${formatPhone(number)}
 📍 Location: ${country}
 📦 Plan: ${plan.name} — $${price}/mo
-📩 Inbound SMS: ${plan.sms}/mo (receive only, no outbound)
+📩 Inbound SMS: ${plan.sms}/mo (receive only)
 📞 Inbound Minutes: ${plan.minutes}/mo (includes forwarded calls)
 ⚡ Features: ${plan.features.join(', ')}
+💰 Overage: $${OVERAGE_RATE_MIN}/min + $${OVERAGE_RATE_SMS}/SMS beyond plan limits (from wallet)
 
 💰 Total: <b>$${price}/mo</b>
 First month billed now.`,
