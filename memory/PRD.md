@@ -1,50 +1,56 @@
-# NomadlyBot PRD
+# NomadlyBot - PRD & Architecture Document
 
 ## Original Problem Statement
-User requested setup and configuration of existing NomadlyBot codebase - a Telegram bot platform for URL shortening, domain sales, phone leads, crypto payments, and web hosting.
+User requested: "setup" - analyze code and set up the existing codebase.
+
+## Application Overview
+**NomadlyBot** is a Telegram bot platform for URL shortening, domain registration, phone lead generation, crypto payments, and web hosting management. It includes:
 
 ## Architecture
-- **Backend**: FastAPI (server.py) acting as proxy to Node.js Express server
-- **Node.js**: Telegram bot + Express API on port 5000 (`js/start-bot.js` → `js/_index.js`)
-- **Frontend**: React dashboard showing bot status and feature overview
-- **Database**: MongoDB (Railway-hosted remote instance)
-- **Bot Framework**: node-telegram-bot-api with webhook mode
+- **Frontend**: React 18 dashboard (port 3000) - Admin panel showing bot status, DB connectivity, and feature overview
+- **Backend**: FastAPI (port 8001) - Acts as a reverse proxy, spawning a Node.js process and forwarding all requests
+- **Node.js Bot Engine**: Express server (port 5000) - Core Telegram bot with full business logic
+- **Database**: MongoDB (Railway-hosted) - Stores user state, wallets, domains, leads, payments, etc.
 
-## Core Requirements
-- Telegram bot with multi-language support (EN, FR, ZH, HI)
-- URL shortening (Bit.ly, Cuttly, custom domains)
-- Domain name registration and DNS management (Connect Reseller API)
-- Phone number leads and validation
-- Wallet system (USD & NGN via crypto/bank)
-- Web hosting plans (cPanel/Plesk) with free trials
-- VPS management
-- Crypto payments (BlockBee, DynoPay)
-- Bank payments (Fincra)
+## Tech Stack
+- React 18 + Tailwind CSS + Craco (frontend)
+- FastAPI + Python (backend proxy)
+- Node.js + Express + node-telegram-bot-api (bot engine)
+- MongoDB (database)
+- Various integrations: BlockBee (crypto), Fincra (bank payments), Connect Reseller (domains), Twilio, OpenAI
 
-## What's Been Implemented (Jan 2026)
-- [x] Node.js dependencies installed
-- [x] Root `.env` configured with all 90+ environment variables
-- [x] `SELF_URL` and `SELF_URL_PROD` pointed to pod URL with /api prefix
-- [x] Backend `server.py` updated with dotenv loading
-- [x] Telegram webhook set and verified (with /api prefix for K8s ingress)
-- [x] MongoDB connected
-- [x] All services running (FastAPI, Node.js, React)
-- [x] AutoPromo system initialized (12 scheduled jobs)
-- [x] **Target Leads feature** — 5 bank targets (JPMorgan C, BOA, Wfargo Bnk, Citi Bnk, U.S Bnk) with city→area code flow joining buy leads pipeline
-- [x] Multi-language support for Target Leads (EN, FR, HI, ZH)
+## Core Features
+1. **URL Shortener** - Bit.ly and custom domain shortening with analytics
+2. **Domain Names** - Purchase, DNS management via Connect Reseller API
+3. **Phone Leads** - Targeted leads by area code, carrier filtering, CNAM lookup
+4. **Wallet System** - USD & NGN deposits via crypto (BlockBee) and bank (Fincra)
+5. **Web Hosting** - cPanel & Plesk plans with free trials
+6. **VPS Plans** - Virtual private servers on demand
+7. **Subscription Plans** - Daily/Weekly/Monthly with free domains and validations
 
-## User Personas
-- **Bot Admin**: Manages bot settings, views analytics, broadcasts messages
-- **Bot Users**: Telegram users who shorten URLs, buy domains, purchase leads, manage wallets
-- **Resellers**: Users who resell bot services
+## What's Been Implemented (Setup - Jan 2026)
+- Installed Node.js dependencies (`npm install`)
+- Created root `.env` with MONGO_URL, DB_NAME, and essential config
+- Set TELEGRAM_BOT_ON=false (no live bot token provided)
+- All services running: Frontend (3000), Backend/Proxy (8001), Node.js Express (5000)
+- Health check passing: Bot Running, DB Connected, REST APIs Active
+- Frontend dashboard loading correctly
+
+## Current Status
+- All services: RUNNING
+- Database: CONNECTED
+- Telegram Bot: DISABLED (no real token)
+- Express REST API: ACTIVE
+
+## Next Action Items
+- P0: Provide real TELEGRAM_BOT_TOKEN to enable live bot functionality
+- P0: Add Connect Reseller API credentials for domain operations
+- P1: Configure BlockBee/DynoPay API keys for crypto payments
+- P1: Set up Fincra credentials for bank payments
+- P2: Configure email (SMTP) for sending hosting credentials
+- P2: Set real admin chat IDs (TELEGRAM_ADMIN_CHAT_ID, TELEGRAM_DEV_CHAT_ID)
 
 ## Backlog
-- P0: End-to-end Telegram bot flow testing
-- P1: Enhanced admin dashboard with real-time analytics
-- P2: Payment flow verification (crypto + bank)
-- P2: Domain purchase and DNS management testing
-
-## Next Tasks
-1. Test Telegram bot commands via Telegram
-2. Verify webhook message processing
-3. Test specific business flows (URL shortening, domains, leads, wallet)
+- P2: Enhanced admin dashboard with real-time analytics
+- P3: Add user management UI to frontend
+- P3: Payment history and transaction logs in dashboard
