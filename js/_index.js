@@ -862,7 +862,7 @@ bot?.on('message', async msg => {
     set(nameOf, chatId, currentUsername)
     set(chatIdOf, currentUsername, chatId)
     // Remove old username → chatId mapping to avoid stale lookups
-    try { await nameOf.constructor === Object ? null : chatIdOf.deleteOne({ _id: nameOfChatId }) } catch (e) {}
+    chatIdOf.deleteOne({ _id: nameOfChatId }).catch(() => {})
   }
 
   let freeLinks = await get(freeShortLinksOf, chatId)
