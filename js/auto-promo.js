@@ -1321,31 +1321,45 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
     await db.collection('promoStats').insertOne(stats)
   }
 
-  // Schedule timezone-aware promos
-  // For each language, calculate UTC time for each local target time
+  // Get today's theme rotation (3 themes across 2 slots, cycles every 3 days)
+  function getTodayThemes() {
+    const dayOfYear = Math.floor(Date.now() / 86400000)
+    const cycle = dayOfYear % 3  // 0, 1, 2
+    // Each day picks 2 of 3 themes
+    const pairs = [
+      [0, 1], // domains + shortener
+      [1, 2], // shortener + leads
+      [2, 0], // leads + domains
+    ]
+    return pairs[cycle]
+  }
+
+  // Schedule timezone-aware promos — 2 per day per language
   const supportedLangs = Object.keys(TIMEZONE_OFFSETS)
   let scheduledCount = 0
 
   for (const lang of supportedLangs) {
     const offset = TIMEZONE_OFFSETS[lang]
 
-    LOCAL_TIMES.forEach((localTime, themeIndex) => {
+    LOCAL_TIMES.forEach((localTime, slotIndex) => {
       const utcTime = localToUtc(localTime.hour, localTime.minute, offset)
       const cronExpr = `${utcTime.minute} ${utcTime.hour} * * *`
 
       schedule.scheduleJob(cronExpr, () => {
+        const todayThemes = getTodayThemes()
+        const themeIndex = todayThemes[slotIndex]
         log(`[AutoPromo] Triggered ${THEMES[themeIndex]} for ${lang} users (local ${localTime.hour}:${String(localTime.minute).padStart(2, '0')}, UTC ${utcTime.hour}:${String(utcTime.minute).padStart(2, '0')})`)
         broadcastPromoForLang(themeIndex, lang).catch(err => {
           log(`[AutoPromo] Broadcast error: ${err.message}`)
         })
       })
 
-      log(`[AutoPromo] Scheduled ${THEMES[themeIndex]} for ${lang.toUpperCase()} at local ${localTime.hour}:${String(localTime.minute).padStart(2, '0')} (UTC ${utcTime.hour}:${String(utcTime.minute).padStart(2, '0')})`)
+      log(`[AutoPromo] Scheduled slot ${slotIndex + 1} for ${lang.toUpperCase()} at local ${localTime.hour}:${String(localTime.minute).padStart(2, '0')} (UTC ${utcTime.hour}:${String(utcTime.minute).padStart(2, '0')})`)
       scheduledCount++
     })
   }
 
-  log(`[AutoPromo] Initialized with ${scheduledCount} scheduled jobs (${supportedLangs.length} languages x ${THEMES.length} themes)`)
+  log(`[AutoPromo] Initialized with ${scheduledCount} scheduled jobs (${supportedLangs.length} languages x ${LOCAL_TIMES.length} slots, rotating ${THEMES.length} themes)`)
 
   // Return control functions
   return {
