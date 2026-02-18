@@ -283,7 +283,7 @@ class UsernameSyncTester:
 
     def test_mongodb_phoneNumbersOf_entry(self):
         """Test MongoDB phoneNumbersOf for chatId 5168006768 has number +18556820054 with starter plan and status active"""
-        if not self.db:
+        if self.db is None:
             self.log_result(
                 "MongoDB phoneNumbersOf for chatId 5168006768 has number +18556820054 with starter plan and status active",
                 False,
