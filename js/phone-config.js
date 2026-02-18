@@ -532,6 +532,16 @@ Wallet: $${oldBal} → $${newBal}`,
   },
   recordingEnabled: (number) => `✅ Call recording enabled for ${formatPhone(number)}!\n\nAll calls will be recorded and sent to this chat.`,
   recordingDisabled: (number) => `✅ Call recording disabled for ${formatPhone(number)}.`,
+
+  // SMS Inbox
+  smsInboxHeader: (number, total) => `📨 <b>SMS Inbox</b> for <b>${formatPhone(number)}</b>\n\n${total === 0 ? 'No messages received yet.' : `${total} message${total > 1 ? 's' : ''} received:`}`,
+  smsInboxEntry: (i, from, name, body, time) => {
+    const nameDisplay = name && name !== 'None' ? ` (${name})` : ''
+    const bodyPreview = body.length > 80 ? body.substring(0, 80) + '...' : body
+    return `\n<b>${i}.</b> ${formatPhone(from)}${nameDisplay}\n   💬 "${bodyPreview}"\n   🕐 ${time}\n`
+  },
+  smsInboxEmpty: 'No inbound SMS received yet for this number.\n\n<i>When someone texts your number, messages will appear here.</i>',
+  smsInboxFooter: (page, totalPages) => totalPages > 1 ? `\n📄 Page ${page}/${totalPages}` : '',
 }
 
 // ── Helpers ──
