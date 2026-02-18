@@ -83,7 +83,9 @@ async function runTest(target, carrier) {
     { text: 'No', expect: 'buyLeadsSelectAmount' },
     { text: '10', expect: 'buyLeadsSelectFormat' },
     { text: 'International Format', expect: 'askCouponbuyLeadsSelectFormat' },
-    { text: 'Skip', expect: 'walletPayUsd' },
+    { text: 'Skip', expect: 'walletSelectCurrency' },
+    { text: 'USD', expect: 'walletSelectCurrencyConfirm' },
+    { text: 'Yes', expect: null },
   ];
 
   for (const step of steps) {
