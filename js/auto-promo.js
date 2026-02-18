@@ -41,7 +41,7 @@ const SERVICE_CONTEXT = {
       'Free .sbs/.xyz domains with subscription plans',
     ],
     cta: 'Register Domain Names',
-    crossPromo: '@hostbay_bot for RDP, VPS and cPanel/Plesk hosting',
+    crossPromo: 'Need targeted phone leads? Tap HQ SMS Lead to buy verified leads by area code',
   },
   shortener: {
     services: 'Shortit — URL shortener with custom domain branding',
@@ -54,7 +54,7 @@ const SERVICE_CONTEXT = {
       'Unlimited links with subscription plans (Daily/Weekly/Monthly)',
     ],
     cta: 'URL Shortener',
-    crossPromo: '@hostbay_bot for RDP, VPS and cPanel/Plesk hosting',
+    crossPromo: 'Register DMCA-ignored domains for your branded short links — tap Register Domain Names',
   },
   leads: {
     services: 'Phone number lead generation and validation',
@@ -66,9 +66,10 @@ const SERVICE_CONTEXT = {
       'Buy leads starting from $20 per 1000',
       'CNAM lookup available',
       'Bulk download with instant delivery',
+      'Request custom institution targets directly from the bot',
     ],
     cta: 'HQ SMS Lead',
-    crossPromo: '@hostbay_bot for RDP, VPS and cPanel/Plesk hosting',
+    crossPromo: 'Shorten your campaign links with Shortit — 5 free links, tap URL Shortener',
   },
 }
 
