@@ -421,22 +421,24 @@ Auto-Renew: ${num.autoRenew ? '✅ ON' : '❌ OFF'}
 Wallet Balance: $${balance.toFixed(2)}
 Plan Price: $${price}/mo${lowBal ? `
 
-⚠️ Insufficient balance! Please deposit at least $${(price - balance).toFixed(2)} to renew.` : ''}${num.autoRenew && !lowBal ? `
+⚠️ Insufficient balance! Deposit at least $${(price - balance).toFixed(2)} to renew.
+If not renewed, your number will be <b>permanently deleted</b> and cannot be recovered.` : ''}${num.autoRenew && !lowBal ? `
 
 ✅ Your number will auto-renew from your wallet.` : ''}`
 }
 
 function buildFinalWarningMsg(num, plan, balance) {
   const price = num.planPrice
-  return `🚨 <b>Final Renewal Warning</b>
+  return `🚨 <b>FINAL Renewal Warning</b>
 
 Your number ${formatPhone(num.phoneNumber)} expires <b>TOMORROW</b> (${shortDate(num.expiresAt)}).
 
-If not renewed:
-• Incoming calls will stop
-• SMS forwarding will stop
-• SIP credentials will be deactivated
-• Number will be released after 7 days
+If not renewed, your number will be:
+• <b>Permanently deleted</b> from our system
+• Calls, SMS forwarding & SIP will stop
+• The number <b>cannot be recovered</b>
+
+⚠️ This is irreversible — renew now to keep your number.
 
 Wallet: $${balance.toFixed(2)} | Need: $${price}`
 }
@@ -455,22 +457,24 @@ Wallet: $${oldBal.toFixed(2)} → $${newBal.toFixed(2)}`
 
 function buildAutoRenewFailedMsg(num) {
   const plan = plans[num.plan] || { name: num.plan }
-  return `❌ <b>Auto-Renewal Failed</b>
+  return `❌ <b>Auto-Renewal Failed — Number Deleted</b>
 
 📞 ${formatPhone(num.phoneNumber)}
 📦 Plan: ${plan.name} ($${num.planPrice}/mo)
 
-⚠️ Insufficient wallet balance. Your number is now <b>SUSPENDED</b>.
+⚠️ Insufficient wallet balance. Your number has been <b>permanently deleted</b> to prevent further billing.
 
-Incoming calls and SMS are paused. Deposit funds and renew within 7 days to keep your number. After 7 days, the number will be permanently released.`
+This action is irreversible. To get a new number, visit 📞☁️ Cloud Phone → Buy Phone Number.`
 }
 
 function buildSuspendedMsg(num) {
-  return `⚠️ <b>Number Suspended</b>
+  return `⚠️ <b>Number Expired — Permanently Deleted</b>
 
-📞 ${formatPhone(num.phoneNumber)} has expired and is now suspended.
+📞 ${formatPhone(num.phoneNumber)} has expired and been <b>permanently deleted</b>.
 
-Renew within 7 days to keep your number. Go to 📱 My Numbers → 🔄 Renew.`
+Auto-Renew was OFF. To avoid losing numbers in the future, enable Auto-Renew on your next number.
+
+Get a new number: 📞☁️ Cloud Phone → Buy Phone Number.`
 }
 
 function buildUsageAlertMsg(num, type, used, limit, percent) {
