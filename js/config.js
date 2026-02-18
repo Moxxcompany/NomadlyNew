@@ -292,7 +292,11 @@ ${CHAT_BOT_NAME}`,
 
   chooseDomainToBuy: text =>
     `<b>Claim Your Corner of the Web!</b>  Please share the domain name you wish to purchase, like "abcpay.com".${text}`,
-  askDomainToUseWithShortener: `Do you wish to use domain with the shortener?`,
+  askDomainToUseWithShortener: `Do you wish to use this domain as a <b>custom URL shortener</b>?
+
+<b>Yes</b> — DNS will be auto-configured to point this domain to our shortener. Your short links will use this domain (e.g. <code>yourdomain.com/abc</code>).
+
+<b>No</b> — Domain is registered only. You can activate it for the shortener later from Manage Domains.`,
   blockUser: `Please share the username of the user that needs to be blocked.`,
   unblockUser: `Please share the username of the user that needs to be unblocked.`,
   blockedUser: `You are currently blocked from using the bot. Please contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
@@ -792,7 +796,7 @@ const bc = {
 const dns = {
   parse_mode: 'HTML',
   reply_markup: {
-    keyboard: [[t.addDns], [t.updateDns], [t.deleteDns], _bc],
+    keyboard: [[t.addDns], [t.updateDns], [t.deleteDns], [t.activateShortener], _bc],
   },
   disable_web_page_preview: true,
 }
