@@ -422,6 +422,9 @@ const loadData = async () => {
   hostingTransactions = db.collection('hostingTransactions')
   vpsTransactions = db.collection('vpsTransactions')
   notifyGroupsCol = db.collection('notifyGroups')
+  phoneNumbersOf = db.collection('phoneNumbersOf')
+  phoneTransactions = db.collection('phoneTransactions')
+  phoneLogs = db.collection('phoneLogs')
 
   freeDomainNamesAvailableFor = db.collection('freeDomainNamesAvailableFor')
   freeValidationsAvailableFor = db.collection('freeValidationsAvailableFor')
