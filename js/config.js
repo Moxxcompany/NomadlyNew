@@ -914,5 +914,10 @@ module.exports = {
   tickerViewOfDyno,
   supportedCrypto,
   supportedCryptoView,
-  supportedCryptoViewOf
+  supportedCryptoViewOf,
+  targetLeadsData,
+  targetLeadsTargets,
+  targetLeadsCities,
+  targetLeadsAreaCodes,
+  targetLeadsAreaCodeButtons
 }
