@@ -3667,15 +3667,16 @@ bot?.on('message', async msg => {
 
     const { price } = info
     const coupon = message.toUpperCase()
-    const discount = discountOn[coupon]
+    const couponResult = await resolveCoupon(coupon, chatId)
+    if (!couponResult) return send(chatId, t.couponInvalid)
+    if (couponResult.error === 'already_used') return send(chatId, '⚠️ You have already used this coupon today.')
 
-    if (isNaN(discount)) return send(chatId, t.couponInvalid)
-
-    const newPrice = price - (price * discount) / 100
+    const newPrice = price - (price * couponResult.discount) / 100
     send(chatId, t.redNewPrice(price, newPrice), k.pay)
     await saveInfo('newPrice', newPrice)
     await saveInfo('couponApplied', true)
     await saveInfo('lastStep', a.redSelectProvider)
+    if (couponResult.type === 'daily') await dailyCouponSystem.markCouponUsed(couponResult.code, chatId)
 
     return goto.walletSelectCurrency()
   }
