@@ -168,6 +168,10 @@ async function handleInboundSms(webhookData, bot, phoneNumbersOf, phoneLogs) {
       }
       if (!overageAllowed) {
         log(`handleInboundSms: SMS limit reached for ${cleanTo} (${numberConfig.smsUsed || 0}/${plans[numberConfig.plan]?.sms || 0}), no wallet balance — dropping`)
+        // Notify user once that SMS is being dropped
+        if (_bot && ownerChatId && !numberConfig._smsDropNotified) {
+          _bot.sendMessage(ownerChatId, `🚫 <b>Inbound SMS Dropped — Wallet Empty</b>\n\n📞 ${formatPhone(cleanTo)}\nFrom: ${formatPhone(cleanFrom)}\n\nPlan SMS exhausted and wallet balance is insufficient for overage ($${OVERAGE_RATE_SMS}/SMS). Top up your wallet or upgrade your plan to resume receiving SMS.`, { parse_mode: 'HTML' }).catch(() => {})
+        }
         return
       }
     }
