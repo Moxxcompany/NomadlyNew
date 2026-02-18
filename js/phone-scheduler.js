@@ -384,6 +384,8 @@ async function runMonthlyReset() {
           numbers[i]._smsAlert100 = false
           numbers[i]._minAlert80 = false
           numbers[i]._minAlert100 = false
+          numbers[i]._smsLimitNotified = false
+          numbers[i]._minLimitNotified = false
           modified = true
           resetCount++
           log(`[PhoneScheduler] Monthly reset: ${chatId} ${num.phoneNumber}`)
