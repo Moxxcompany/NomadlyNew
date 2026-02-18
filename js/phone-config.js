@@ -195,7 +195,10 @@ planByButton[btn.businessPlan] = 'business'
 const txt = {
   hubWelcome: `📞 <b>Cloud Phone Service</b>
 
-Buy virtual phone numbers, receive SMS directly in Telegram, configure call forwarding, voicemail, and connect via SIP.
+Buy virtual phone numbers, receive inbound SMS directly in Telegram, configure call forwarding, voicemail, and connect via SIP.
+
+📩 SMS: <b>Inbound only</b> — receive SMS, not send.
+📞 Minutes: All inbound calls (including forwarded calls) count toward your plan minutes.
 
 Select an option:`,
 
