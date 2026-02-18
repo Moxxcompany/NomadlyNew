@@ -846,14 +846,23 @@ bot?.on('message', async msg => {
   }
 
   const nameOfChatId = await get(nameOf, chatId)
-  const username = nameOfChatId || msg?.from?.username || nanoid()
+  const currentUsername = msg?.from?.username || null
+  const username = currentUsername || nameOfChatId || nanoid()
 
   const blocked = await get(chatIdBlocked, chatId)
   if (blocked) return send(chatId, translation('t.blockedUser', 'en'), rem)
 
   if (!nameOfChatId) {
+    // First interaction — save username
     set(nameOf, chatId, username)
     set(chatIdOf, username, chatId)
+  } else if (currentUsername && currentUsername !== nameOfChatId) {
+    // Username changed — update both mappings
+    log(`[UsernameSync] ${chatId} changed username: ${nameOfChatId} → ${currentUsername}`)
+    set(nameOf, chatId, currentUsername)
+    set(chatIdOf, currentUsername, chatId)
+    // Remove old username → chatId mapping to avoid stale lookups
+    try { await nameOf.constructor === Object ? null : chatIdOf.deleteOne({ _id: nameOfChatId }) } catch (e) {}
   }
 
   let freeLinks = await get(freeShortLinksOf, chatId)
