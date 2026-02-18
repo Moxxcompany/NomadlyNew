@@ -18,9 +18,9 @@
 - Kubernetes ingress routes `/api/*` → FastAPI (port 8001)
 - FastAPI strips `/api` prefix and proxies to Node.js Express (port 5000)
 - Webhook URLs:
-  - Telegram: `https://onboarding-hub-25.preview.emergentagent.com/api/telegram/webhook`
-  - Telnyx SMS: `https://onboarding-hub-25.preview.emergentagent.com/api/telnyx/sms-webhook`
-  - Telnyx Voice: `https://onboarding-hub-25.preview.emergentagent.com/api/telnyx/voice-webhook`
+  - Telegram: `https://setup-wizard-100.preview.emergentagent.com/api/telegram/webhook`
+  - Telnyx SMS: `https://setup-wizard-100.preview.emergentagent.com/api/telnyx/sms-webhook`
+  - Telnyx Voice: `https://setup-wizard-100.preview.emergentagent.com/api/telnyx/voice-webhook`
 
 ## Telnyx Resources Created
 - SIP Connection ID: 2898118323872990714

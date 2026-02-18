@@ -659,8 +659,8 @@ These routes exist in Node.js Express (port 5000). The proxy will forward:
 `POST /api/telnyx/voice-webhook` → strips /api → `POST /telnyx/voice-webhook`
 
 Webhook URLs registered in Telnyx:
-- Voice: `https://onboarding-hub-25.preview.emergentagent.com/api/telnyx/voice-webhook`
-- SMS: `https://onboarding-hub-25.preview.emergentagent.com/api/telnyx/sms-webhook`
+- Voice: `https://setup-wizard-100.preview.emergentagent.com/api/telnyx/voice-webhook`
+- SMS: `https://setup-wizard-100.preview.emergentagent.com/api/telnyx/sms-webhook`
 
 ---
 
