@@ -423,6 +423,38 @@ Wallet: $${oldBal} → $${newBal}`,
 💰 Wallet: $${balance} (need $${price})
 
 ⚠️ Your number is now SUSPENDED. Deposit funds and renew within 7 days.`,
+
+  // IVR / Auto-attendant (Business Plan)
+  ivrMenu: (number, config) => {
+    if (!config?.enabled) {
+      return `🤖 <b>IVR / Auto-attendant</b> for <b>${formatPhone(number)}</b>\n\nStatus: ❌ Disabled\n\nWhen enabled, callers hear a greeting menu and can press keys to reach the right destination.`
+    }
+    let text = `🤖 <b>IVR / Auto-attendant</b> for <b>${formatPhone(number)}</b>\n\nStatus: ✅ Enabled\n\n🎤 Greeting: "${config.greeting || 'Default'}"\n\n📋 <b>Menu Options:</b>\n`
+    if (config.options && Object.keys(config.options).length > 0) {
+      Object.entries(config.options).forEach(([key, opt]) => {
+        text += `  Press <b>${key}</b> → ${opt.action === 'forward' ? '📲 Forward to ' + formatPhone(opt.forwardTo) : opt.action === 'voicemail' ? '🎙️ Voicemail' : '🔊 ' + (opt.message || 'Play message')}\n`
+      })
+    } else {
+      text += '  No options configured yet.\n'
+    }
+    return text
+  },
+  ivrEnabled: (number) => `✅ IVR / Auto-attendant enabled for ${formatPhone(number)}!\n\nCallers will hear your greeting and can press keys to navigate.`,
+  ivrDisabled: (number) => `✅ IVR / Auto-attendant disabled for ${formatPhone(number)}.`,
+  ivrSetGreeting: 'Enter the IVR greeting message (what callers will hear):\n\nExample: "Thank you for calling. Press 1 for support, press 2 for sales, or stay on the line."',
+  ivrGreetingSet: (greeting) => `✅ IVR greeting updated!\n\n"${greeting}"`,
+  ivrAddOption: 'Enter the key and action in this format:\n\n<code>KEY ACTION DESTINATION</code>\n\nExamples:\n• <code>1 forward +14155551234</code>\n• <code>2 voicemail</code>\n• <code>3 message We will call you back</code>\n• <code>0 forward +14155559999</code>',
+  ivrOptionAdded: (key, action, destination) => `✅ IVR option added!\n\nPress <b>${key}</b> → ${action === 'forward' ? '📲 Forward to ' + formatPhone(destination) : action === 'voicemail' ? '🎙️ Voicemail' : '🔊 ' + destination}`,
+  ivrOptionRemoved: (key) => `✅ IVR option for key <b>${key}</b> removed.`,
+  ivrInvalidFormat: '❌ Invalid format. Please use:\n<code>KEY ACTION DESTINATION</code>\n\nExample: <code>1 forward +14155551234</code>',
+
+  // Call Recording (Business Plan)
+  recordingMenu: (number, config) => {
+    const enabled = config?.recording === true
+    return `🔴 <b>Call Recording</b> for <b>${formatPhone(number)}</b>\n\nStatus: ${enabled ? '✅ Enabled' : '❌ Disabled'}\n\nWhen enabled, all incoming and outgoing calls will be automatically recorded. Recordings are sent to your Telegram chat.`
+  },
+  recordingEnabled: (number) => `✅ Call recording enabled for ${formatPhone(number)}!\n\nAll calls will be recorded and sent to this chat.`,
+  recordingDisabled: (number) => `✅ Call recording disabled for ${formatPhone(number)}.`,
 }
 
 // ── Helpers ──
@@ -467,6 +499,9 @@ module.exports = {
   txt,
   plans,
   planByButton,
+  planFeatureAccess,
+  canAccessFeature,
+  upgradeMessage,
   countries,
   moreCountries,
   countryByName,
