@@ -5100,10 +5100,6 @@ bot?.on('message', async msg => {
     send(chatId, `Analytics Data:\n${analyticsData.join('\n')}`)
     return
   }
-  if (message === user.getSupport) {
-    send(chatId, t.support)
-    return
-  }
   if (message === user.freeTrialAvailable) {
     sendQr(
       bot,
