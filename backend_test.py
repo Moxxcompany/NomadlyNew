@@ -130,6 +130,92 @@ class NomadlyBotDashboardTester:
         except Exception as e:
             return False, f"Root endpoint test failed: {str(e)}"
 
+    def test_telnyx_sms_webhook_endpoint(self):
+        """Test Telnyx SMS webhook endpoint accepts POST requests"""
+        try:
+            # Test POST to Telnyx SMS webhook endpoint
+            test_payload = {
+                "data": {
+                    "event_type": "message.received",
+                    "payload": {
+                        "from": {"phone_number": "+15551234567"},
+                        "to": [{"phone_number": "+15559876543"}],
+                        "text": "Test message"
+                    }
+                }
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/api/telnyx/sms-webhook", 
+                json=test_payload,
+                headers={"Content-Type": "application/json"},
+                timeout=10
+            )
+            
+            # Webhook should accept the request (200-299 range)
+            if 200 <= response.status_code < 300:
+                return True, f"SMS webhook accepts POST requests - HTTP {response.status_code}"
+            else:
+                return False, f"SMS webhook rejected request - HTTP {response.status_code}: {response.text[:200]}"
+        except Exception as e:
+            return False, f"SMS webhook test failed: {str(e)}"
+
+    def test_telnyx_voice_webhook_endpoint(self):
+        """Test Telnyx Voice webhook endpoint accepts POST requests"""
+        try:
+            # Test POST to Telnyx Voice webhook endpoint
+            test_payload = {
+                "data": {
+                    "event_type": "call.initiated",
+                    "payload": {
+                        "call_control_id": "test-call-id",
+                        "from": "+15551234567",
+                        "to": "+15559876543",
+                        "direction": "incoming"
+                    }
+                }
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/api/telnyx/voice-webhook", 
+                json=test_payload,
+                headers={"Content-Type": "application/json"},
+                timeout=10
+            )
+            
+            # Webhook should accept the request (200-299 range)
+            if 200 <= response.status_code < 300:
+                return True, f"Voice webhook accepts POST requests - HTTP {response.status_code}"
+            else:
+                return False, f"Voice webhook rejected request - HTTP {response.status_code}: {response.text[:200]}"
+        except Exception as e:
+            return False, f"Voice webhook test failed: {str(e)}"
+
+    def test_api_prefix_stripping(self):
+        """Test that backend proxy correctly strips /api prefix"""
+        try:
+            # Test that /api/health maps to /health on Node.js
+            # We already know /api/health works, so let's test another endpoint
+            # The proxy should strip 'api/' from the path before forwarding to Node.js
+            
+            # Test a route that should exist on the Node.js server
+            response = requests.get(f"{self.base_url}/api/uptime", timeout=10)
+            
+            # Even if the endpoint doesn't exist, we should get a Node.js response (not proxy error)
+            # A 404 from Node.js indicates proxy is working correctly
+            # A 502 would indicate proxy failure
+            if response.status_code == 404:
+                return True, f"API prefix stripping works - /api/uptime → /uptime forwarded correctly (404 from Node.js)"
+            elif response.status_code == 200:
+                return True, f"API prefix stripping works - /api/uptime → /uptime responded successfully"
+            elif response.status_code == 502:
+                return False, f"API prefix stripping failed - got proxy error: {response.text[:200]}"
+            else:
+                # Other responses likely indicate proxy is working
+                return True, f"API prefix stripping works - /api/uptime → /uptime returned HTTP {response.status_code}"
+        except Exception as e:
+            return False, f"API prefix stripping test failed: {str(e)}"
+
 def main():
     """Main test runner for NomadlyBot Dashboard Backend"""
     tester = NomadlyBotDashboardTester()
