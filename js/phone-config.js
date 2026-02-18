@@ -237,7 +237,8 @@ ${plans.pro.features.join(' · ')}
 ${plans.business.minutes} inbound min · ${plans.business.sms} inbound SMS
 ${plans.business.features.join(' · ')}
 
-📌 <i>SMS is inbound only (receive, not send). All incoming calls including forwarded ones count toward inbound minutes.</i>`,
+📌 <i>SMS is inbound only. All incoming calls including forwarded ones count toward minutes.
+Beyond plan limits: $${OVERAGE_RATE_MIN}/min and $${OVERAGE_RATE_SMS}/SMS charged from wallet. Service pauses if wallet balance is insufficient.</i>`,
 
   orderSummary: (number, country, plan, price) => `📋 <b>Order Summary</b>
 
