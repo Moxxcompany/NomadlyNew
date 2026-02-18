@@ -35,20 +35,20 @@ const cnamViaMultitel = async phone => {
 }
 
 const validatePhoneSignalwire = async phone => {
-  // Primary: SignalWire
+  // Primary: Multitel
   try {
-    return await cnamViaSignalwire(phone)
+    return await cnamViaMultitel(phone)
   } catch (e) {
-    console.log(`[CNAM] SignalWire failed for ${phone}: ${e?.message}`)
+    console.log(`[CNAM] Multitel failed for ${phone}: ${e?.message}`)
   }
 
-  // Backup: Multitel
+  // Backup: SignalWire
   try {
-    const name = await cnamViaMultitel(phone)
-    console.log(`[CNAM] Multitel backup used for ${phone}`)
+    const name = await cnamViaSignalwire(phone)
+    console.log(`[CNAM] SignalWire backup used for ${phone}`)
     return name
   } catch (e) {
-    console.log(`[CNAM] Multitel also failed for ${phone}: ${e?.message}`)
+    console.log(`[CNAM] SignalWire also failed for ${phone}: ${e?.message}`)
   }
 
   return 'Not Found'
