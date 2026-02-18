@@ -569,7 +569,7 @@ const buyLeadsSelectAreaCode = (country, area) => {
 const _buyLeadsSelectAreaCode = (country, area) => areasOfCountry?.[country]?.[area]
 const buyLeadsSelectCnam = yesNo
 const buyLeadsSelectCarrier = country => carriersOf[country]
-const buyLeadsSelectAmount = ['1000', '2000', '3000', '4000', '5000']
+const buyLeadsSelectAmount = ['10', '50', '100', '500', '1000', '2000', '3000', '4000', '5000']
 const buyLeadsSelectFormat = ['स्थानीय प्रारूप', 'अंतर्राष्ट्रीय प्रारूप']
 
 const validatorSelectCountry = Object.keys(areasOfCountry)
