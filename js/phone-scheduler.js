@@ -473,22 +473,24 @@ Get a new number: 📞☁️ Cloud Phone → Buy Phone Number.`
 }
 
 function buildUsageAlertMsg(num, type, used, limit, percent) {
+  const rate = type === 'SMS' ? OVERAGE_RATE_SMS : OVERAGE_RATE_MIN
   return `⚠️ <b>Usage Alert</b>
 
 📞 ${formatPhone(num.phoneNumber)}
 
 You've used <b>${used}/${limit}</b> inbound ${type} this month (${percent}%).
-Once exhausted, overage billing kicks in at <b>$${type === 'SMS' ? '0.02/SMS' : '0.03/min'}</b> from your wallet.`
+Once exhausted, overage billing kicks in at <b>$${rate}/${type === 'SMS' ? 'SMS' : 'min'}</b> from your wallet. Service pauses if wallet is empty.`
 }
 
 function buildUsageLimitMsg(num, type, used, limit) {
+  const rate = type === 'SMS' ? OVERAGE_RATE_SMS : OVERAGE_RATE_MIN
   return `💰 <b>Inbound ${type} — Overage Active</b>
 
 📞 ${formatPhone(num.phoneNumber)}
 
 You've used all <b>${limit}</b> inbound ${type} in your plan this month.
-Overage billing is now active — <b>$${type === 'SMS' ? '0.02/SMS' : '0.03/min'}</b> charged from your wallet per use.
-Top up your wallet or upgrade your plan to avoid interruptions.`
+Overage billing is now active — <b>$${rate}/${type === 'SMS' ? 'SMS' : 'min'}</b> charged from your wallet per use.
+Service pauses if wallet balance runs out. Top up or upgrade your plan.`
 }
 
 function sendToUser(chatId, text) {
