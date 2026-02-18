@@ -329,10 +329,12 @@ All incoming calls will now be forwarded.`,
     const tg = config?.toTelegram ? '✅ ON' : '❌ OFF'
     const em = config?.toEmail ? '✅ ' + config.toEmail : '❌ OFF'
     const wh = config?.webhookUrl ? '✅ Set' : '❌ Not Set'
-    return `📩 SMS Settings for <b>${formatPhone(number)}</b>
+    return `📩 <b>Inbound SMS Settings</b> for <b>${formatPhone(number)}</b>
 
-📲 SMS to Telegram: ${tg}
-📧 SMS to Email: ${em}
+📌 SMS is <b>inbound only</b> — you receive SMS to this number but cannot send outbound.
+
+📲 Forward to Telegram: ${tg}
+📧 Forward to Email: ${em}
 🔗 Webhook URL: ${wh}`
   },
   smsToggled: (channel, state) => `${channel} is now ${state ? '✅ ON' : '❌ OFF'}`,
