@@ -83,6 +83,7 @@ const btn = {
   ivrAddOption: '➕ Add Menu Option',
   ivrRemoveOption: '➖ Remove Option',
   ivrViewOptions: '📋 View Menu Options',
+  ivrAnalytics: '📊 IVR Analytics',
 
   // Recording
   enableRecording: '✅ Enable Recording',
