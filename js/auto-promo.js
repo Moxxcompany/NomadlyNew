@@ -1387,6 +1387,7 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
     setOptOut,
     isOptedOut,
     broadcastPromoForLang,
+    setDailyCouponSystem,
     getPromoMessages: () => promoMessages,
     getThemes: () => THEMES,
   }
