@@ -70,6 +70,7 @@ const {
   continueAtHostbayKeyboard,
   freeDomainsOf,
   freeValidationsOf,
+  view,
   targetLeadsTargets,
   targetLeadsCities,
   targetLeadsAreaCodes,
