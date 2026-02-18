@@ -1,44 +1,33 @@
 # Nomadly Bot - PRD & Progress
 
 ## Original Problem Statement
-Nomadly Telegram Bot — URL shortener, domain registration, phone leads, crypto payments, cloud phone, hosting. Hosted on Emergent pod with FastAPI proxy + Node.js bot + React dashboard.
+Nomadly Telegram Bot — URL shortener, domain registration, phone leads, crypto payments, cloud phone, hosting.
 
 ## Architecture
 - **Backend**: Python FastAPI proxy (port 8001) → Node.js Express + Telegram Bot (port 5000)
 - **Frontend**: React dashboard (port 3000)
 - **Database**: MongoDB (Railway-hosted)
-- **Bot**: Telegram webhook at `{SELF_URL}/telegram/webhook`
 
 ## What's Been Implemented
 
-### Session 1 (2026-02-18): Initial Setup
-- Installed Node.js dependencies, updated .env with 90+ variables
-- Configured SELF_URL to use pod URL with /api prefix
+### Session 1: Initial Setup
+- Installed deps, updated .env, configured pod URL with /api prefix
 
-### Session 2 (2026-02-18): 6 Major Changes
-1. Immediate Telnyx release on renewal failure (no 7-day grace)
-2. Pre-expiry notifications warn about permanent deletion
-3. Reliable release via releaseByPhoneNumber fallback
-4. Compliance-free numbers only (US, CA, GB)
-5. Overage billing ($0.02/SMS, $0.03/min from wallet)
-6. Promo messages 50% shorter
-- Speechcue branding on Cloud Phone button
+### Session 2: 6 Major Cloud Phone Changes
+- Immediate Telnyx release on renewal failure, pre-expiry deletion warnings, reliable release via releaseByPhoneNumber fallback, compliance-free countries only (US/CA/GB), overage billing, promos 50% shorter, Speechcue branding
 
-### Session 3 (2026-02-18): Overage Rates + Wallet-Empty Notifications
-- **OVERAGE_RATE_SMS and OVERAGE_RATE_MIN now driven from .env** (configurable)
-- **Plan selection text** shows overage rates and "Service pauses if wallet balance is insufficient"
-- **Order summary** includes overage rate line
-- **Hub welcome** mentions overage billing and wallet pause behavior
-- **Manage number view** shows dynamic overage rates when limits exceeded
-- **Calls blocked with notification** when minutes exhausted + wallet empty (user gets Telegram alert with rate info)
-- **Mid-call disconnect with notification** when wallet runs out during overage call
-- **SMS dropped with notification** when SMS limit exhausted + wallet empty
-- **Usage alerts & limit messages** all reference dynamic .env rates and wallet pause behavior
+### Session 3: Overage Rates from .env + Wallet-Empty Notifications
+- OVERAGE_RATE_SMS/MIN driven from .env, plan text shows overage rates, calls/SMS stop with notification when wallet empty
 
-### Testing: 100% pass rate (18/18 tests, iteration 23)
+### Session 4: Toll-Free Setup + Username Sync (2026-02-18)
+- **Toll-free +1 (855) 682-0054** bought on Telnyx, configured with SIP connection + messaging profile, assigned to @Hostbay_support (chat_id: 5168006768) as Starter plan ($5/mo, auto-renew ON, expires 2026-03-20)
+- **Old toll-free +18777000068 released** from Telnyx to stop billing
+- **Username updated** in DB: nameOf → Hostbay_support, chatIdOf → Hostbay_support, stale onarrival2 mapping removed
+- **Username change detection** implemented: on every message, bot compares msg.from.username with stored nameOf value. If changed: updates nameOf, creates new chatIdOf mapping, deletes stale old mapping. Logs `[UsernameSync]` for auditing.
+
+### Testing: 100% pass (11/11 iteration 24)
 
 ## Prioritized Backlog
 - P0: None
-- P1: Monitor overage billing accuracy in production
-- P2: Add overage spending cap per user
-- P2: Add overage charge summary in usage/billing view
+- P1: Monitor overage billing in production
+- P2: Per-user overage spending cap
