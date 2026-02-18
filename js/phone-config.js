@@ -50,6 +50,8 @@ const btn = {
   enableVoicemail: '✅ Enable Voicemail',
   disableVoicemail: '🚫 Disable Voicemail',
   vmGreeting: '🔊 Greeting',
+  vmCustomGreeting: '🎤 Custom Greeting (Audio)',
+  vmDefaultGreeting: '🔄 Default Greeting',
   vmToTelegram: '📲 Send to Telegram',
   vmToEmail: '📧 Send to Email',
   vmRingTime: '⏰ Ring Time',
