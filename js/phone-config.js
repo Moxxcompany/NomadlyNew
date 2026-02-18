@@ -463,6 +463,31 @@ Wallet: $${oldBal} → $${newBal}`,
   ivrOptionRemoved: (key) => `✅ IVR option for key <b>${key}</b> removed.`,
   ivrInvalidFormat: '❌ Invalid format. Please use:\n<code>KEY ACTION DESTINATION</code>\n\nExample: <code>1 forward +14155551234</code>',
 
+  ivrAnalyticsReport: (number, data) => {
+    let text = `📊 <b>IVR Analytics</b> for <b>${formatPhone(number)}</b>\n(Last 30 days)\n\n`
+    text += `📞 Total IVR calls: <b>${data.totalCalls}</b>\n`
+    if (data.topOption) {
+      text += `🏆 Most pressed: Key <b>${data.topOption.digit}</b> (${data.topOption.count} times, ${data.topOption.percent}%)\n`
+    }
+    text += '\n'
+    if (data.optionBreakdown.length > 0) {
+      text += '📋 <b>Option Breakdown:</b>\n'
+      data.optionBreakdown.forEach(o => {
+        const bar = '█'.repeat(Math.max(1, Math.round(o.percent / 10))) + '░'.repeat(Math.max(0, 10 - Math.round(o.percent / 10)))
+        text += `  Key <b>${o.digit}</b>: ${bar} ${o.count} (${o.percent}%)\n`
+      })
+      text += '\n'
+    }
+    if (data.recentCalls.length > 0) {
+      text += '📱 <b>Recent IVR Calls:</b>\n'
+      data.recentCalls.forEach(c => {
+        text += `  ${formatPhone(c.from)} → Key <b>${c.digit}</b> (${c.action}) ${shortDate(c.time)}\n`
+      })
+    }
+    if (data.totalCalls === 0) text += '\nNo IVR calls recorded yet.'
+    return text
+  },
+
   // Call Recording (Business Plan)
   recordingMenu: (number, config) => {
     const enabled = config?.recording === true
