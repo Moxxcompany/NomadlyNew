@@ -529,6 +529,15 @@ const loadData = async () => {
     log('[CloudPhone] Voice Service initialized with IVR + Recording')
   }
 
+  // Initialize SMS Service limits (real-time enforcement)
+  if (process.env.PHONE_SERVICE_ON === 'true') {
+    initSmsLimits({
+      incrementSmsUsed,
+      isSmsLimitReached,
+    })
+    log('[CloudPhone] SMS Service limits initialized')
+  }
+
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // Scheduled auto-cleanup: reset stale user states every 6 hours
   // Users idle in a flow for >24h get reset to 'none' so they see fresh keyboards
