@@ -369,7 +369,8 @@ let state = {},
   phoneNumbersOf = {},
   phoneTransactions = {},
   phoneLogs = {},
-  ivrAnalytics = {}
+  ivrAnalytics = {},
+  cnamCache = {}
 
 
 // variables to view system information
