@@ -5286,6 +5286,13 @@ bot?.on('message', async msg => {
       return send(chatId, phoneConfig.txt.smsSettingsMenu(num.phoneNumber, smsConf), k.of(smsBtns))
     }
 
+    // SMS Inbox
+    if (message === pc.smsInbox) {
+      set(state, chatId, 'action', a.cpSmsInbox)
+      await saveInfo('cpInboxPage', 1)
+      return showSmsInbox(chatId, num, 1)
+    }
+
     // Voicemail — Pro/Business only (gated by buildManageMenu, but double-check)
     if (message === pc.voicemail) {
       if (!phoneConfig.canAccessFeature(num.plan, 'voicemail')) {
