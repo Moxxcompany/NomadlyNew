@@ -178,7 +178,7 @@ const { initAutoPromo } = require('./auto-promo.js')
 const { initDailyCoupons } = require('./daily-coupons.js')
 const telnyxApi = require('./telnyx-service.js')
 const { handleInboundSms } = require('./sms-service.js')
-const { handleVoiceWebhook } = require('./voice-service.js')
+const { handleVoiceWebhook, initVoiceService } = require('./voice-service.js')
 const phoneConfig = require('./phone-config.js')
 const { initPhoneScheduler } = require('./phone-scheduler.js')
 
