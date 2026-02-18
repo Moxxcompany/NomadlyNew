@@ -1,9 +1,9 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// Voice Service — Call Handling with IVR, Recording & Feature-Gating
+// Voice Service — Call Handling with IVR, Recording, Limits & Feature-Gating
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const { log } = require('console')
 const { get, set } = require('./db.js')
-const { formatPhone, formatDuration, canAccessFeature } = require('./phone-config.js')
+const { formatPhone, formatDuration, canAccessFeature, plans } = require('./phone-config.js')
 
 let _bot = null
 let _phoneNumbersOf = null
@@ -24,7 +24,81 @@ function initVoiceService(deps) {
   _telnyxResources = deps.telnyxResources
   _translation = deps.translation
   _ivrAnalytics = deps.ivrAnalytics
-  log('[VoiceService] Initialized with IVR + Recording + Analytics support')
+  log('[VoiceService] Initialized with IVR + Recording + Analytics + Limits enforcement')
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// USAGE LIMIT HELPERS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+function getMinuteLimit(planKey) {
+  const plan = plans[planKey]
+  if (!plan) return 0
+  if (plan.minutes === 'Unlimited') return Infinity
+  return plan.minutes || 0
+}
+
+function getSmsLimit(planKey) {
+  const plan = plans[planKey]
+  if (!plan) return 0
+  return plan.sms || 0
+}
+
+function isMinuteLimitReached(num) {
+  const limit = getMinuteLimit(num.plan)
+  if (limit === Infinity) return false
+  const used = num.minutesUsed || 0
+  return used >= limit
+}
+
+function isSmsLimitReached(num) {
+  const limit = getSmsLimit(num.plan)
+  const used = num.smsUsed || 0
+  return used >= limit
+}
+
+// Atomically increment minutesUsed for a phone number in DB
+async function incrementMinutesUsed(chatId, phoneNumber, minutes) {
+  try {
+    const userData = await get(_phoneNumbersOf, chatId)
+    const numbers = userData?.numbers || []
+    const idx = numbers.findIndex(n => n.phoneNumber === phoneNumber)
+    if (idx === -1) return
+    numbers[idx].minutesUsed = (numbers[idx].minutesUsed || 0) + minutes
+    // Check if just hit limit and notify
+    const limit = getMinuteLimit(numbers[idx].plan)
+    const used = numbers[idx].minutesUsed
+    if (limit !== Infinity && used >= limit && !numbers[idx]._minLimitNotified) {
+      numbers[idx]._minLimitNotified = true
+      const msg = `🚫 <b>Inbound Minutes Limit Reached</b>\n\n📞 ${formatPhone(phoneNumber)}\nUsed: <b>${used}/${limit}</b> minutes this billing cycle.\n\nIncoming calls will no longer be forwarded or go to voicemail until your plan resets or you upgrade.\n\nNote: Call forwarding counts toward your inbound minutes.`
+      _bot?.sendMessage(chatId, msg, { parse_mode: 'HTML' }).catch(() => {})
+    }
+    await set(_phoneNumbersOf, chatId, { numbers })
+  } catch (e) {
+    log(`[Voice] incrementMinutesUsed error: ${e.message}`)
+  }
+}
+
+// Atomically increment smsUsed for a phone number in DB
+async function incrementSmsUsed(chatId, phoneNumber) {
+  try {
+    const userData = await get(_phoneNumbersOf, chatId)
+    const numbers = userData?.numbers || []
+    const idx = numbers.findIndex(n => n.phoneNumber === phoneNumber)
+    if (idx === -1) return
+    numbers[idx].smsUsed = (numbers[idx].smsUsed || 0) + 1
+    // Check if just hit limit and notify
+    const limit = getSmsLimit(numbers[idx].plan)
+    const used = numbers[idx].smsUsed
+    if (used >= limit && !numbers[idx]._smsLimitNotified) {
+      numbers[idx]._smsLimitNotified = true
+      const msg = `🚫 <b>Inbound SMS Limit Reached</b>\n\n📞 ${formatPhone(phoneNumber)}\nUsed: <b>${used}/${limit}</b> inbound SMS this billing cycle.\n\nIncoming SMS will no longer be forwarded until your plan resets or you upgrade.`
+      _bot?.sendMessage(chatId, msg, { parse_mode: 'HTML' }).catch(() => {})
+    }
+    await set(_phoneNumbersOf, chatId, { numbers })
+  } catch (e) {
+    log(`[Voice] incrementSmsUsed error: ${e.message}`)
+  }
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -60,11 +134,9 @@ async function handleVoiceWebhook(req, res) {
         await handleRecordingSaved(payload)
         break
       case 'call.speak.ended':
-        // Speak finished — used for IVR greeting flow
         await handleSpeakEnded(payload)
         break
       case 'call.playback.ended':
-        // Audio playback finished — used for custom voicemail greeting
         await handleSpeakEnded(payload)
         break
       default:
@@ -76,7 +148,7 @@ async function handleVoiceWebhook(req, res) {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// CALL INITIATED — Answer incoming calls
+// CALL INITIATED — Answer or reject based on limits
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 async function handleCallInitiated(payload) {
@@ -87,11 +159,31 @@ async function handleCallInitiated(payload) {
 
   if (direction !== 'incoming') return
 
-  // Lookup number owner
+  // Lookup number owner — get FRESH data from DB
   const { chatId, num } = await findNumberOwner(to)
   if (!chatId || !num) {
-    log(`[Voice] No owner found for ${to}, answering and hanging up`)
+    log(`[Voice] No owner found for ${to}, rejecting`)
     await _telnyxApi.answerCall(callControlId)
+    setTimeout(() => _telnyxApi.hangupCall(callControlId), 1000)
+    return
+  }
+
+  // ── CHECK: Number suspended? ──
+  if (num.status !== 'active') {
+    log(`[Voice] Number ${to} is ${num.status}, rejecting call`)
+    await _telnyxApi.answerCall(callControlId)
+    await _telnyxApi.speakOnCall(callControlId, 'This number is no longer in service.')
+    setTimeout(() => _telnyxApi.hangupCall(callControlId), 4000)
+    return
+  }
+
+  // ── CHECK: Inbound minutes limit reached? ──
+  if (isMinuteLimitReached(num)) {
+    log(`[Voice] Minutes limit reached for ${to} (${num.minutesUsed || 0}/${getMinuteLimit(num.plan)}), rejecting call`)
+    await _telnyxApi.answerCall(callControlId)
+    await _telnyxApi.speakOnCall(callControlId, 'This number is temporarily unavailable. Please try again later.')
+    setTimeout(() => _telnyxApi.hangupCall(callControlId), 5000)
+    // Notify owner (only once, handled by incrementMinutesUsed)
     return
   }
 
@@ -148,7 +240,7 @@ async function handleCallAnswered(payload) {
     return
   }
 
-  // 2. Call Forwarding
+  // 2. Call Forwarding (counts toward inbound minutes)
   if (fwdConfig?.enabled && fwdConfig.forwardTo) {
     session.phase = 'forwarding'
     const mode = fwdConfig.mode || 'always'
@@ -158,7 +250,6 @@ async function handleCallAnswered(payload) {
       await _telnyxApi.transferCall(callControlId, fwdConfig.forwardTo)
       return
     }
-    // For 'no_answer' mode, wait then forward
     if (mode === 'no_answer') {
       session.phase = 'ringing'
       session.forwardAfterTimeout = true
@@ -175,13 +266,12 @@ async function handleCallAnswered(payload) {
     }
   }
 
-  // 3. Voicemail — Pro/Business
+  // 3. Voicemail — Pro/Business (also counts toward minutes)
   if (vmConfig?.enabled && canAccessFeature(num.plan, 'voicemail')) {
     session.phase = 'voicemail_greeting'
     
     // Check for custom audio greeting first
     if (vmConfig.greetingType === 'custom' && vmConfig.customAudioGreetingUrl) {
-      // Play the custom audio file via Telnyx playback
       try {
         const axios = require('axios')
         await axios.post(`https://api.telnyx.com/v2/calls/${callControlId}/actions/playback_start`, {
@@ -200,7 +290,6 @@ async function handleCallAnswered(payload) {
       return
     }
     
-    // Text-to-speech greeting
     const greeting = vmConfig.greetingType === 'custom' && vmConfig.customGreetingText
       ? vmConfig.customGreetingText
       : `The person at ${formatPhone(num.phoneNumber)} is unavailable. Please leave a message after the tone.`
@@ -237,7 +326,6 @@ async function handleGatherEnded(payload) {
   trackIvrAnalytics(num.phoneNumber, chatId, session.from, digits, ivrConfig?.options?.[digits]?.action || 'invalid')
 
   if (!digits || !ivrConfig?.options?.[digits]) {
-    // Invalid or no input — replay or hang up
     if (!session.ivrRetried) {
       session.ivrRetried = true
       await _telnyxApi.gatherDTMF(callControlId, 'Sorry, that was not a valid option. Please try again.', {
@@ -255,7 +343,6 @@ async function handleGatherEnded(payload) {
 
   const option = ivrConfig.options[digits]
 
-  // Execute the IVR option
   switch (option.action) {
     case 'forward':
       session.phase = 'ivr_forward'
@@ -292,12 +379,10 @@ async function handleSpeakEnded(payload) {
   if (!session) return
 
   if (session.phase === 'voicemail_greeting') {
-    // Start recording voicemail
     session.phase = 'voicemail_recording'
     log(`[Voice] Starting voicemail recording for ${session.num.phoneNumber}`)
     await _telnyxApi.startRecording(callControlId, 'single')
 
-    // Auto-stop after 60 seconds
     setTimeout(async () => {
       const current = activeCalls[callControlId]
       if (current && current.phase === 'voicemail_recording') {
@@ -323,7 +408,6 @@ async function handleRecordingSaved(payload) {
   const time = new Date().toLocaleString()
 
   if (session.phase === 'voicemail_recording') {
-    // Voicemail
     log(`[Voice] Voicemail saved for ${to} from ${from}: ${recordingUrl}`)
 
     if (num.features?.voicemail?.forwardToTelegram && recordingUrl) {
@@ -336,12 +420,10 @@ async function handleRecordingSaved(payload) {
       }
     }
 
-    // Log
     logEvent(to, from, 'voicemail', duration, recordingUrl)
     return
   }
 
-  // Regular call recording (Business plan)
   if (session.isRecording && recordingUrl) {
     log(`[Voice] Call recording saved for ${to} from ${from}: ${recordingUrl}`)
     const caption = `🔴 <b>Call Recording</b>\n\n📞 To: ${formatPhone(to)}\n👤 From: ${formatPhone(from)}\n⏱️ Duration: ${formatDuration(duration)}\n🕐 ${time}`
@@ -357,7 +439,7 @@ async function handleRecordingSaved(payload) {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// CALL HANGUP — Cleanup
+// CALL HANGUP — Cleanup + REAL-TIME minute tracking
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 async function handleCallHangup(payload) {
@@ -369,10 +451,18 @@ async function handleCallHangup(payload) {
   const { chatId, num, from, to } = session
   const time = new Date().toLocaleString()
 
+  // ── REAL-TIME MINUTE TRACKING ──
+  // Round up to nearest minute (even 1 second = 1 minute billed)
+  const minutesBilled = duration > 0 ? Math.ceil(duration / 60) : 0
+  if (minutesBilled > 0) {
+    await incrementMinutesUsed(chatId, num.phoneNumber, minutesBilled)
+    log(`[Voice] Billed ${minutesBilled} min for ${to} (${duration}s call, ${session.phase})`)
+  }
+
   // Notify based on phase
   if (session.phase === 'forwarding' || session.phase === 'ivr_forward') {
     const forwardTo = num.features?.callForwarding?.forwardTo || 'unknown'
-    const msg = `📞 <b>Call Forwarded</b>\n\n📞 To: ${formatPhone(to)}\n👤 From: ${formatPhone(from)}\n📲 Forwarded: ${formatPhone(forwardTo)}\n⏱️ Duration: ${formatDuration(duration)}\n🕐 ${time}`
+    const msg = `📞 <b>Call Forwarded</b>\n\n📞 To: ${formatPhone(to)}\n👤 From: ${formatPhone(from)}\n📲 Forwarded: ${formatPhone(forwardTo)}\n⏱️ Duration: ${formatDuration(duration)} (${minutesBilled} min billed)\n🕐 ${time}`
     _bot.sendMessage(chatId, msg, { parse_mode: 'HTML' }).catch(() => {})
     logEvent(to, from, 'forwarded', duration)
   } else if (session.phase === 'missed' || session.phase === 'answering') {
@@ -396,7 +486,7 @@ async function findNumberOwner(phoneNumber) {
     for (const user of allUsers) {
       const numbers = user.val?.numbers || []
       for (const num of numbers) {
-        if (num.phoneNumber?.replace(/[^+\d]/g, '') === clean && num.status === 'active') {
+        if (num.phoneNumber?.replace(/[^+\d]/g, '') === clean && (num.status === 'active' || num.status === 'suspended')) {
           return { chatId: user._id, num }
         }
       }
@@ -463,21 +553,18 @@ async function getIvrAnalytics(phoneNumber, days = 30) {
 
     const totalCalls = all.length
 
-    // Count per digit
     const digitCounts = {}
     for (const entry of all) {
       const d = entry.digit || '?'
       digitCounts[d] = (digitCounts[d] || 0) + 1
     }
 
-    // Sort by count descending
     const optionBreakdown = Object.entries(digitCounts)
       .map(([digit, count]) => ({ digit, count, percent: totalCalls > 0 ? Math.round((count / totalCalls) * 100) : 0 }))
       .sort((a, b) => b.count - a.count)
 
     const topOption = optionBreakdown.length > 0 ? optionBreakdown[0] : null
 
-    // Recent 5 calls
     const recentCalls = all.slice(0, 5).map(e => ({
       from: e.callerFrom,
       digit: e.digit,
@@ -497,4 +584,9 @@ module.exports = {
   initVoiceService,
   activeCalls,
   getIvrAnalytics,
+  incrementSmsUsed,
+  isSmsLimitReached,
+  isMinuteLimitReached,
+  getMinuteLimit,
+  getSmsLimit,
 }
