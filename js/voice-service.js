@@ -201,6 +201,7 @@ async function handleCallInitiated(payload) {
       await _telnyxApi.answerCall(callControlId)
       await _telnyxApi.speakOnCall(callControlId, 'Your inbound minutes limit has been reached and wallet balance is insufficient. Please top up your wallet or upgrade your plan.')
       setTimeout(() => _telnyxApi.hangupCall(callControlId), 6000)
+      _bot?.sendMessage(chatId, `🚫 <b>Incoming Call Blocked — Wallet Empty</b>\n\n📞 ${formatPhone(to)}\n👤 Caller: ${formatPhone(from)}\n\nPlan minutes exhausted and wallet balance is insufficient for overage ($${OVERAGE_RATE_MIN}/min). Top up your wallet or upgrade your plan to resume receiving calls.`, { parse_mode: 'HTML' }).catch(() => {})
       return
     }
   }
