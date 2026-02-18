@@ -4645,6 +4645,49 @@ bot?.on('message', async msg => {
     }
     return send(chatId, t.what)
   }
+  // ═══════════════════════════════════════════════════
+  // Custom Lead Request Flow
+  // ═══════════════════════════════════════════════════
+  if (action === a.customLeadRequestName) {
+    if (message === (t.back || '⬅️ Back')) return goto.targetSelectTarget()
+    if (message.length < 2 || message.length > 100) return send(chatId, '⚠️ Please enter a valid institution name (2-100 characters).')
+    await saveInfo('customLeadTarget', message)
+    return goto.customLeadRequestCity()
+  }
+  if (action === a.customLeadRequestCity) {
+    if (message === (t.back || '⬅️ Back')) return goto.customLeadRequestName()
+    if (message.length < 2 || message.length > 100) return send(chatId, '⚠️ Please enter a valid city name.')
+    await saveInfo('customLeadCity', message)
+    return goto.customLeadRequestDetails()
+  }
+  if (action === a.customLeadRequestDetails) {
+    if (message === (t.back || '⬅️ Back')) return goto.customLeadRequestCity()
+    const details = message === 'None' ? '' : message
+    const target = info?.customLeadTarget
+    const city = info?.customLeadCity
+    const name = await get(nameOf, chatId)
+
+    // Save request to DB
+    const requestId = nanoid()
+    await set(leadRequests, requestId, {
+      chatId,
+      username: name || msg?.from?.username || 'unknown',
+      target,
+      city,
+      details,
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    })
+
+    // Notify admin — direct message only, not groups
+    send(TELEGRAM_ADMIN_CHAT_ID, `📝 <b>New Lead Request</b>\n\nFrom: <b>${name || 'unknown'}</b> (${chatId})\n@${msg?.from?.username || 'no_username'}\n\n🎯 Target: <b>${target}</b>\n🏙️ Area: <b>${city}</b>\n📋 Details: ${details || '<i>none</i>'}\n\nID: <code>${requestId}</code>`, { parse_mode: 'HTML' })
+
+    // Confirm to user
+    set(state, chatId, 'action', 'none')
+    send(chatId, `✅ <b>Request Submitted!</b>\n\n🎯 Target: <b>${target}</b>\n🏙️ Area: <b>${city}</b>${details ? `\n📋 Details: ${details}` : ''}\n\nOur team will review your request and notify you once these leads are available. Thank you!`, { parse_mode: 'HTML', ...trans('o') })
+    log(`[LeadRequest] ${chatId} requested: ${target} — ${city} (${details || 'no details'})`)
+    return
+  }
   if (action === a.buyLeadsSelectCountry) {
     if (message === t.back) goto.phoneNumberLeads()
     if (!buyLeadsSelectCountry.includes(message)) return send(chatId, t.what)
