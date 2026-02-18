@@ -992,6 +992,11 @@ bot?.on('message', async msg => {
     cpChangePlan: 'cpChangePlan',
     cpReleaseConfirm: 'cpReleaseConfirm',
     cpReleaseDigits: 'cpReleaseDigits',
+    cpIvr: 'cpIvr',
+    cpIvrGreeting: 'cpIvrGreeting',
+    cpIvrAddOption: 'cpIvrAddOption',
+    cpIvrRemoveOption: 'cpIvrRemoveOption',
+    cpCallRecording: 'cpCallRecording',
   }
 
   const firstSteps = [
