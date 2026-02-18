@@ -5510,13 +5510,189 @@ bot?.on('message', async msg => {
       await saveInfo('cpActiveNumber', num)
       send(chatId, `✅ Ring time updated to ${seconds} seconds.`)
       set(state, chatId, 'action', a.cpManageNumber)
-      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
-        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
-        [pc.sipCredentials], [pc.callSmsLogs],
-        [pc.renewChangePlan], [pc.releaseNumber],
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
+    }
+    return send(chatId, 'Select an option.')
+  }
+
+  // ━━━ CALL RECORDING (Business) ━━━
+  if (action === a.cpCallRecording) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
+    }
+    if (message === pc.enableRecording) {
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'recording', true)
+      num.features = num.features || {}
+      num.features.recording = true
+      await saveInfo('cpActiveNumber', num)
+      send(chatId, phoneConfig.txt.recordingEnabled(num.phoneNumber))
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
+    }
+    if (message === pc.disableRecording) {
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'recording', false)
+      num.features = num.features || {}
+      num.features.recording = false
+      await saveInfo('cpActiveNumber', num)
+      send(chatId, phoneConfig.txt.recordingDisabled(num.phoneNumber))
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
+    }
+    return send(chatId, 'Select an option.')
+  }
+
+  // ━━━ IVR / AUTO-ATTENDANT (Business) ━━━
+  if (action === a.cpIvr) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
+    }
+    if (message === pc.enableIvr) {
+      const ivrConf = { enabled: true, greeting: 'Thank you for calling. Please listen to the following options.', options: {} }
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'ivr', ivrConf)
+      num.features = num.features || {}
+      num.features.ivr = ivrConf
+      await saveInfo('cpActiveNumber', num)
+      send(chatId, phoneConfig.txt.ivrEnabled(num.phoneNumber))
+      return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
+      ]))
+    }
+    if (message === pc.disableIvr) {
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'ivr', { enabled: false })
+      num.features = num.features || {}
+      num.features.ivr = { enabled: false }
+      await saveInfo('cpActiveNumber', num)
+      send(chatId, phoneConfig.txt.ivrDisabled(num.phoneNumber))
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
+    }
+    if (message === pc.ivrGreeting) {
+      set(state, chatId, 'action', a.cpIvrGreeting)
+      return send(chatId, phoneConfig.txt.ivrSetGreeting)
+    }
+    if (message === pc.ivrAddOption) {
+      set(state, chatId, 'action', a.cpIvrAddOption)
+      return send(chatId, phoneConfig.txt.ivrAddOption)
+    }
+    if (message === pc.ivrRemoveOption) {
+      set(state, chatId, 'action', a.cpIvrRemoveOption)
+      const ivrConf = num.features?.ivr || {}
+      const keys = Object.keys(ivrConf.options || {})
+      if (!keys.length) return send(chatId, 'No IVR options to remove.')
+      return send(chatId, 'Which key do you want to remove?', k.of([keys.map(k2 => `Key ${k2}`)]))
+    }
+    if (message === pc.ivrViewOptions) {
+      const ivrConf = num.features?.ivr || {}
+      return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
       ]))
     }
     return send(chatId, 'Select an option.')
+  }
+
+  // IVR Greeting input
+  if (action === a.cpIvrGreeting) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpIvr)
+      const ivrConf = num.features?.ivr || {}
+      return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
+      ]))
+    }
+    const ivrConf = num.features?.ivr || { enabled: true, options: {} }
+    ivrConf.greeting = message
+    await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'ivr', ivrConf)
+    num.features.ivr = ivrConf
+    await saveInfo('cpActiveNumber', num)
+    send(chatId, phoneConfig.txt.ivrGreetingSet(message))
+    set(state, chatId, 'action', a.cpIvr)
+    return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
+      [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
+    ]))
+  }
+
+  // IVR Add Option input
+  if (action === a.cpIvrAddOption) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpIvr)
+      const ivrConf = num.features?.ivr || {}
+      return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
+      ]))
+    }
+    // Parse: KEY ACTION DESTINATION
+    const parts = message.trim().split(/\s+/)
+    if (parts.length < 2) return send(chatId, phoneConfig.txt.ivrInvalidFormat)
+    const key = parts[0]
+    const action2 = parts[1].toLowerCase()
+    const destination = parts.slice(2).join(' ')
+
+    if (!['forward', 'voicemail', 'message'].includes(action2)) {
+      return send(chatId, phoneConfig.txt.ivrInvalidFormat)
+    }
+    if (action2 === 'forward' && (!destination || destination.replace(/[^+\d]/g, '').length < 7)) {
+      return send(chatId, 'Please provide a valid forward-to number. E.g: <code>1 forward +14155551234</code>', { parse_mode: 'HTML' })
+    }
+
+    const ivrConf = num.features?.ivr || { enabled: true, greeting: '', options: {} }
+    ivrConf.options = ivrConf.options || {}
+    ivrConf.options[key] = {
+      action: action2,
+      forwardTo: action2 === 'forward' ? destination.replace(/[^+\d]/g, '') : null,
+      message: action2 === 'message' ? destination : null,
+    }
+    await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'ivr', ivrConf)
+    num.features.ivr = ivrConf
+    await saveInfo('cpActiveNumber', num)
+    send(chatId, phoneConfig.txt.ivrOptionAdded(key, action2, destination))
+    set(state, chatId, 'action', a.cpIvr)
+    return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
+      [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
+    ]))
+  }
+
+  // IVR Remove Option
+  if (action === a.cpIvrRemoveOption) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpIvr)
+      const ivrConf = num.features?.ivr || {}
+      return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
+      ]))
+    }
+    const keyMatch = message.match(/Key\s*(\S+)/)
+    const key = keyMatch ? keyMatch[1] : message.trim()
+    const ivrConf = num.features?.ivr || { enabled: true, options: {} }
+    if (ivrConf.options?.[key]) {
+      delete ivrConf.options[key]
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'ivr', ivrConf)
+      num.features.ivr = ivrConf
+      await saveInfo('cpActiveNumber', num)
+      send(chatId, phoneConfig.txt.ivrOptionRemoved(key))
+    } else {
+      send(chatId, `❌ No option found for key "${key}".`)
+    }
+    set(state, chatId, 'action', a.cpIvr)
+    return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
+      [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
+    ]))
   }
 
   // ━━━ SIP CREDENTIALS ━━━
