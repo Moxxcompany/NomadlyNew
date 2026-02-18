@@ -9,58 +9,27 @@
 6. Auto-disable IVR/recording on plan downgrade from Business
 7. IVR analytics (track caller key presses)
 8. Custom voicemail greeting via audio upload
+9. Bug: Selecting area code shows "no numbers yet" instead of search results
 
 ## Architecture
 - **Backend**: Python FastAPI proxy (port 8001) → Node.js Express app (port 5000)
 - **Bot**: Telegram bot (node-telegram-bot-api) with webhook mode
 - **Database**: MongoDB (Railway-hosted)
 - **Collections**: state, walletOf, phoneNumbersOf, phoneTransactions, phoneLogs, ivrAnalytics, + many others
-- **Integrations**: Telegram, Telnyx (Cloud Phone), Fincra (payments), BlockBee (crypto), DynoPay, Connect Reseller (domains), Cloudflare, Brevo (email), Twilio, SignalWire, OpenAI
+
+## Bug Fix (Session 4)
+**Root cause**: Duplicate `noNumbers` key in phone-config.js txt object. The search-failure message (line 214: "No numbers available") was overridden by the My Numbers message (line 272: "You don't have any phone numbers yet"). JavaScript objects take the last value for duplicate keys.
+
+**Fix**:
+1. Renamed search-failure message to `noSearchResults` to avoid key collision
+2. Added `best_effort=true` to Telnyx searchNumbers API — returns nearby numbers when exact area code not available
+3. Updated all 4 references in _index.js to use `noSearchResults`
 
 ## What's Been Implemented
-
-### Session 1 (2026-02-18) — Environment Setup
-- Updated backend/.env with all user-provided API keys and credentials
-- Set SELF_URL and SELF_URL_PROD to current pod URL for webhook routing
-
-### Session 2 (2026-02-18) — Cloud Phone Keyboard + Feature Gating + IVR + Recording
-- Added cloudPhone button to all 4 language files keyboards
-- Implemented planFeatureAccess matrix and canAccessFeature gating
-- Built IVR/Auto-attendant: Telnyx DTMF gather, greeting → menu → route by digit
-- Built call recording for Business plan
-- Dynamic buildManageMenu(num) replaces all static menu instances
-
-### Session 3 (2026-02-18) — Three Additional Features
-#### Feature 1: Auto-disable on Plan Downgrade
-- cpChangePlan handler checks old vs new plan capabilities
-- Automatically disables IVR, recording, voicemail, SMS email/webhook when downgrading
-- User receives a clear notification listing all disabled features
-- Works for all downgrade paths: Business→Pro, Business→Starter, Pro→Starter
-
-#### Feature 2: IVR Analytics
-- New MongoDB collection: ivrAnalytics
-- trackIvrAnalytics() logs every DTMF press: phoneNumber, callerFrom, digit, action, timestamp
-- getIvrAnalytics() queries last 30 days: totalCalls, optionBreakdown (digit/count/percent), topOption, recentCalls
-- ivrAnalyticsReport() renders formatted report with visual bar chart (█░)
-- "📊 IVR Analytics" button added to all IVR management menus
-
-#### Feature 3: Custom Voicemail Greeting via Audio
-- Voice/audio message handler intercepts msg.voice/msg.audio for cpVmAudioUpload state
-- Extracts Telegram file link and saves as customAudioGreetingUrl
-- Telnyx playback_start API plays custom audio file for callers
-- call.playback.ended event triggers voicemail recording after greeting
-- Fallback: if text entered instead of audio, uses TTS with custom text
-- Default greeting restore option
-- Voicemail menu shows greeting type (🎤 Custom Audio / 📝 Custom Text / 🔊 Default)
-- Greeting management sub-menu: Custom Greeting (Audio) / Default Greeting
-
-## Testing Status
-- All tests passed across all 3 sessions
-- New features: 100% validation
-- Backend: 90.9% (only known minor: /api/webhook 404 = expected, correct path is /api/telegram/webhook)
+- Sessions 1-3: env setup, keyboard fix, feature gating, IVR, recording, downgrade auto-disable, IVR analytics, custom VM greeting
+- Session 4: Bug fix for number search showing wrong message
 
 ## Backlog
-- P0: None (all requested features complete)
-- P1: IVR greeting voice preview (play back before saving)
-- P2: Call recording playback in-bot (browse recordings)
-- P2: Plan upgrade promos (smart upsell when Starter user tries locked features)
+- P0: None
+- P1: IVR greeting voice preview, Call recording browser
+- P2: Smart plan upsell prompts
