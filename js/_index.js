@@ -363,7 +363,10 @@ let state = {},
   freeValidationsAvailableFor = {},
   hostingTransactions = {},
   vpsTransactions = {},
-  notifyGroupsCol = {}
+  notifyGroupsCol = {},
+  phoneNumbersOf = {},
+  phoneTransactions = {},
+  phoneLogs = {}
 
 
 // variables to view system information
