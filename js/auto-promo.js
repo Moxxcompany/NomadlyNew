@@ -1,5 +1,5 @@
-// Auto-Promo System - Sends 3 daily promotional messages to all bot users
-// AI-powered dynamic messages with static fallback + admin alerts
+// Auto-Promo System - Sends 2 daily promotional messages to all bot users
+// AI-powered dynamic messages with static fallback + admin alerts + daily coupons
 
 const schedule = require('node-schedule')
 const { log } = require('console')
