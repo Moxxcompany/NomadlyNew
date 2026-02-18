@@ -184,14 +184,25 @@ async function handleCallInitiated(payload) {
     return
   }
 
-  // ── CHECK: Inbound minutes limit reached? ──
+  // ── CHECK: Inbound minutes limit reached? → Try overage billing ──
   if (isMinuteLimitReached(num)) {
-    log(`[Voice] Minutes limit reached for ${to} (${num.minutesUsed || 0}/${getMinuteLimit(num.plan)}), rejecting call`)
-    await _telnyxApi.answerCall(callControlId)
-    await _telnyxApi.speakOnCall(callControlId, 'This number is temporarily unavailable. Please try again later.')
-    setTimeout(() => _telnyxApi.hangupCall(callControlId), 5000)
-    // Notify owner (only once, handled by incrementMinutesUsed)
-    return
+    let overageAllowed = false
+    if (_walletOf) {
+      try {
+        const { usdBal } = await getBalance(_walletOf, chatId)
+        if (usdBal >= OVERAGE_RATE_MIN) {
+          overageAllowed = true
+          log(`[Voice] Minutes limit reached for ${to}, but wallet has $${usdBal} — allowing overage`)
+        }
+      } catch (e) { log(`[Voice] Overage check error: ${e.message}`) }
+    }
+    if (!overageAllowed) {
+      log(`[Voice] Minutes limit reached for ${to} (${num.minutesUsed || 0}/${getMinuteLimit(num.plan)}), no wallet balance — rejecting call`)
+      await _telnyxApi.answerCall(callControlId)
+      await _telnyxApi.speakOnCall(callControlId, 'Your inbound minutes limit has been reached and wallet balance is insufficient. Please top up your wallet or upgrade your plan.')
+      setTimeout(() => _telnyxApi.hangupCall(callControlId), 6000)
+      return
+    }
   }
 
   // Store session data
