@@ -1290,6 +1290,20 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.targetLeadsConfirm)
     },
 
+    // Custom lead request
+    customLeadRequestName: () => {
+      send(chatId, '📝 <b>Request Custom Leads</b>\n\nType the name of the institution or company you want targeted leads for:', { parse_mode: 'HTML', reply_markup: { keyboard: [[t.back || '⬅️ Back']], resize_keyboard: true } })
+      set(state, chatId, 'action', a.customLeadRequestName)
+    },
+    customLeadRequestCity: () => {
+      send(chatId, `🏙️ Which city or area do you want leads from?\n\nTarget: <b>${info?.customLeadTarget}</b>\n\nType the city name or "Nationwide" for all areas:`, { parse_mode: 'HTML', reply_markup: { keyboard: [['Nationwide'], [t.back || '⬅️ Back']], resize_keyboard: true } })
+      set(state, chatId, 'action', a.customLeadRequestCity)
+    },
+    customLeadRequestDetails: () => {
+      send(chatId, `📋 Any additional details? (e.g., preferred area codes, carrier, volume needed)\n\nTarget: <b>${info?.customLeadTarget}</b>\nArea: <b>${info?.customLeadCity}</b>\n\nType details or "None" to skip:`, { parse_mode: 'HTML', reply_markup: { keyboard: [['None'], [t.back || '⬅️ Back']], resize_keyboard: true } })
+      set(state, chatId, 'action', a.customLeadRequestDetails)
+    },
+
     // validator
     validatorSelectCountry: () => {
       send(chatId, t.validatorSelectCountry, k.validatorSelectCountry)
