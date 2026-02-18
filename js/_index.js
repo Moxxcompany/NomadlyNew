@@ -5328,11 +5328,7 @@ bot?.on('message', async msg => {
     if (!num) return goto.submenu5()
     if (message === t.back || message === pc.back) {
       set(state, chatId, 'action', a.cpManageNumber)
-      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
-        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
-        [pc.sipCredentials], [pc.callSmsLogs],
-        [pc.renewChangePlan], [pc.releaseNumber],
-      ]))
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
     if (message === pc.disableForwarding) {
       await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'callForwarding', { enabled: false, mode: 'disabled', forwardTo: null })
@@ -5340,11 +5336,7 @@ bot?.on('message', async msg => {
       await saveInfo('cpActiveNumber', num)
       send(chatId, phoneConfig.txt.forwardingDisabled(num.phoneNumber))
       set(state, chatId, 'action', a.cpManageNumber)
-      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
-        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
-        [pc.sipCredentials], [pc.callSmsLogs],
-        [pc.renewChangePlan], [pc.releaseNumber],
-      ]))
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
     let mode = null
     if (message === pc.alwaysForward) mode = 'always'
@@ -5477,11 +5469,7 @@ bot?.on('message', async msg => {
     if (!num) return goto.submenu5()
     if (message === t.back || message === pc.back) {
       set(state, chatId, 'action', a.cpManageNumber)
-      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
-        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
-        [pc.sipCredentials], [pc.callSmsLogs],
-        [pc.renewChangePlan], [pc.releaseNumber],
-      ]))
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
     if (message === pc.enableVoicemail) {
       await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'voicemail', { enabled: true, greetingType: 'default', forwardToTelegram: true, forwardToEmail: null, ringTimeout: 25 })
@@ -5489,11 +5477,7 @@ bot?.on('message', async msg => {
       await saveInfo('cpActiveNumber', num)
       send(chatId, phoneConfig.txt.voicemailEnabled(num.phoneNumber))
       set(state, chatId, 'action', a.cpManageNumber)
-      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
-        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
-        [pc.sipCredentials], [pc.callSmsLogs],
-        [pc.renewChangePlan], [pc.releaseNumber],
-      ]))
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
     if (message === pc.disableVoicemail) {
       await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'voicemail', { enabled: false })
@@ -5501,11 +5485,7 @@ bot?.on('message', async msg => {
       await saveInfo('cpActiveNumber', num)
       send(chatId, phoneConfig.txt.voicemailDisabled(num.phoneNumber))
       set(state, chatId, 'action', a.cpManageNumber)
-      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
-        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
-        [pc.sipCredentials], [pc.callSmsLogs],
-        [pc.renewChangePlan], [pc.releaseNumber],
-      ]))
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
     // Toggle VM to Telegram
     if (message.startsWith('📲 VM to Telegram')) {
@@ -5721,11 +5701,7 @@ bot?.on('message', async msg => {
     if (!num) return goto.submenu5()
     if (message === t.back || message === pc.back) {
       set(state, chatId, 'action', a.cpManageNumber)
-      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
-        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
-        [pc.sipCredentials], [pc.callSmsLogs],
-        [pc.renewChangePlan], [pc.releaseNumber],
-      ]))
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
     if (message === pc.revealPassword) {
       const msg = await bot?.sendMessage(chatId, phoneConfig.txt.sipRevealed(num.sipPassword), { parse_mode: 'HTML' })
@@ -5767,11 +5743,7 @@ bot?.on('message', async msg => {
     if (!num) return goto.submenu5()
     if (message === t.back || message === pc.back) {
       set(state, chatId, 'action', a.cpManageNumber)
-      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
-        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
-        [pc.sipCredentials], [pc.callSmsLogs],
-        [pc.renewChangePlan], [pc.releaseNumber],
-      ]))
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
     // Toggle Auto-Renew
     if (message.startsWith('🔁 Auto-Renew')) {
