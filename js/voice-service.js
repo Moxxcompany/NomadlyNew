@@ -77,7 +77,7 @@ async function incrementMinutesUsed(chatId, phoneNumber, minutes) {
     const used = numbers[idx].minutesUsed
     if (limit !== Infinity && used >= limit && !numbers[idx]._minLimitNotified) {
       numbers[idx]._minLimitNotified = true
-      const msg = `⚠️ <b>Plan Minutes Exhausted</b>\n\n📞 ${formatPhone(phoneNumber)}\nUsed: <b>${used}/${limit}</b> minutes this cycle.\n\nOverage billing is now active at <b>$${OVERAGE_RATE_MIN}/min</b> from your wallet. Top up your wallet to keep calls flowing, or upgrade your plan.`
+      const msg = `⚠️ <b>Plan Minutes Exhausted</b>\n\n📞 ${formatPhone(phoneNumber)}\nUsed: <b>${used}/${limit}</b> minutes this cycle.\n\nOverage billing is now active at <b>$${OVERAGE_RATE_MIN}/min</b> from your wallet. Service pauses if wallet is empty. Top up or upgrade your plan.`
       _bot?.sendMessage(chatId, msg, { parse_mode: 'HTML' }).catch(() => {})
     }
     await set(_phoneNumbersOf, chatId, { numbers })
