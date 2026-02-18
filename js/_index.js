@@ -5797,13 +5797,48 @@ bot?.on('message', async msg => {
     if (message.includes('Pro')) newPlan = 'pro'
     if (message.includes('Business')) newPlan = 'business'
     if (!newPlan) return send(chatId, 'Select a valid plan.')
+    const oldPlan = num.plan
     const newPrice = phoneConfig.plans[newPlan].price
     await updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'plan', newPlan)
     await updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'planPrice', newPrice)
     num.plan = newPlan
     num.planPrice = newPrice
+
+    // Auto-disable features the new plan doesn't support
+    const downgradeNotices = []
+    if (!phoneConfig.canAccessFeature(newPlan, 'ivr') && num.features?.ivr?.enabled) {
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'ivr', { enabled: false })
+      num.features = num.features || {}
+      num.features.ivr = { enabled: false }
+      downgradeNotices.push('🤖 IVR / Auto-attendant has been disabled')
+    }
+    if (!phoneConfig.canAccessFeature(newPlan, 'callRecording') && num.features?.recording === true) {
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'recording', false)
+      num.features = num.features || {}
+      num.features.recording = false
+      downgradeNotices.push('🔴 Call Recording has been disabled')
+    }
+    if (!phoneConfig.canAccessFeature(newPlan, 'voicemail') && num.features?.voicemail?.enabled) {
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'voicemail', { enabled: false })
+      num.features = num.features || {}
+      num.features.voicemail = { enabled: false }
+      downgradeNotices.push('🎙️ Voicemail has been disabled')
+    }
+    if (!phoneConfig.canAccessFeature(newPlan, 'smsToEmail') && num.features?.smsForwarding?.toEmail) {
+      const smsConf = num.features?.smsForwarding || {}
+      smsConf.toEmail = null
+      smsConf.webhookUrl = null
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'smsForwarding', smsConf)
+      num.features.smsForwarding = smsConf
+      downgradeNotices.push('📧 SMS to Email & Webhook have been disabled')
+    }
+
     await saveInfo('cpActiveNumber', num)
-    send(chatId, `✅ Plan changed to ${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)} — $${newPrice}/mo`)
+    let confirmMsg = `✅ Plan changed to ${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)} — $${newPrice}/mo`
+    if (downgradeNotices.length > 0) {
+      confirmMsg += `\n\n⚠️ <b>Features adjusted for ${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)} plan:</b>\n` + downgradeNotices.join('\n')
+    }
+    send(chatId, confirmMsg)
     set(state, chatId, 'action', a.cpManageNumber)
     return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
   }
