@@ -355,6 +355,10 @@ let nameOf = {},
   chatIdOf = {},
   canLogin = {}
 
+// Support chat & lead request collections
+let supportSessions = {},
+  leadRequests = {}
+
 // some info to use with bot
 let adminDomains = [],
   connect_reseller_working = true,
