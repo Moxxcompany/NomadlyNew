@@ -367,7 +367,8 @@ let state = {},
   notifyGroupsCol = {},
   phoneNumbersOf = {},
   phoneTransactions = {},
-  phoneLogs = {}
+  phoneLogs = {},
+  ivrAnalytics = {}
 
 
 // variables to view system information
