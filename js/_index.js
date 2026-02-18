@@ -360,6 +360,9 @@ let nameOf = {},
 let supportSessions = {},
   leadRequests = {}
 
+// Daily coupon system reference
+let dailyCouponSystem = null
+
 // some info to use with bot
 let adminDomains = [],
   connect_reseller_working = true,
