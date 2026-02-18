@@ -167,14 +167,26 @@ class DomainSmsFeaturesTester:
             with open('/app/js/config.js', 'r') as f:
                 content = f.read()
             
-            # Look for dns keyboard definition
-            dns_keyboard_match = re.search(r'const dns = \{[^}]*keyboard: \[(.*?)\][^}]*\}', content, re.DOTALL)
-            
-            if dns_keyboard_match:
-                keyboard_content = dns_keyboard_match.group(1)
+            # Look for dns keyboard definition - find the dns constant
+            dns_start = content.find('const dns = {')
+            if dns_start != -1:
+                # Find the end of the dns object
+                brace_count = 0
+                i = dns_start
+                while i < len(content):
+                    if content[i] == '{':
+                        brace_count += 1
+                    elif content[i] == '}':
+                        brace_count -= 1
+                        if brace_count == 0:
+                            dns_object = content[dns_start:i+1]
+                            break
+                    i += 1
+                else:
+                    dns_object = content[dns_start:dns_start+500]  # Fallback
                 
                 # Check if it includes t.activateShortener
-                includes_activate_shortener = 't.activateShortener' in keyboard_content
+                includes_activate_shortener = 't.activateShortener' in dns_object
                 
                 self.log_result(
                     "config.js: dns keyboard array includes t.activateShortener button",
