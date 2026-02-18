@@ -552,7 +552,7 @@ class NomadlyBotTester:
     
     def run_all_tests(self):
         """Run all tests"""
-        print(f"🚀 Starting Nomadly Telegram Bot Tests")
+        print(f"🚀 Starting Nomadly Telegram Bot Tests - NEW FEATURES")
         print(f"   Target: {self.base_url}")
         print(f"   Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         
@@ -562,13 +562,19 @@ class NomadlyBotTester:
         results['health'] = self.test_health_endpoint()
         results['webhook'] = self.test_webhook_structure()
         
-        # Code Structure Tests
+        # Code Structure Tests (Existing)
         results['language_files'] = self.test_language_files_validation()
         results['phone_config'] = self.test_phone_config_exports()
         results['action_handlers'] = self.test_index_action_handlers()
         results['voice_service'] = self.test_voice_service_handlers()
         results['telnyx_service'] = self.test_telnyx_service_functions()
         results['webhook_config'] = self.test_webhook_url_configuration()
+        
+        # NEW FEATURE TESTS
+        print(f"\n🆕 TESTING NEW FEATURES:")
+        results['plan_downgrade'] = self.test_plan_downgrade_feature()
+        results['ivr_analytics'] = self.test_ivr_analytics_implementation()
+        results['custom_voicemail'] = self.test_custom_voicemail_greeting()
         
         # Summary
         print(f"\n📊 Test Results Summary")
