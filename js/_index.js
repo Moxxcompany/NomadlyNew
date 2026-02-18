@@ -951,6 +951,29 @@ bot?.on('message', async msg => {
     uploadSShKeyToAttach : 'uploadSShKeyToAttach',
     downloadSSHKey: 'downloadSSHKey',
     confirmVPSRenewDetails: 'confirmVPSRenewDetails',
+
+    // Cloud Phone
+    submenu5: 'submenu5',
+    cpSelectCountry: 'cpSelectCountry',
+    cpSelectType: 'cpSelectType',
+    cpSelectArea: 'cpSelectArea',
+    cpEnterAreaCode: 'cpEnterAreaCode',
+    cpSelectNumber: 'cpSelectNumber',
+    cpSelectPlan: 'cpSelectPlan',
+    cpOrderSummary: 'cpOrderSummary',
+    cpMyNumbers: 'cpMyNumbers',
+    cpManageNumber: 'cpManageNumber',
+    cpCallForwarding: 'cpCallForwarding',
+    cpEnterForwardNumber: 'cpEnterForwardNumber',
+    cpSmsSettings: 'cpSmsSettings',
+    cpEnterEmail: 'cpEnterEmail',
+    cpEnterWebhook: 'cpEnterWebhook',
+    cpVoicemail: 'cpVoicemail',
+    cpSipCredentials: 'cpSipCredentials',
+    cpRenewPlan: 'cpRenewPlan',
+    cpChangePlan: 'cpChangePlan',
+    cpReleaseConfirm: 'cpReleaseConfirm',
+    cpReleaseDigits: 'cpReleaseDigits',
   }
 
   const firstSteps = [
