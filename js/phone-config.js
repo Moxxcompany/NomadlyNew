@@ -211,7 +211,7 @@ Select an option:`,
 
   searching: '🔍 Searching available numbers...',
 
-  noNumbers: '❌ No numbers available for this criteria. Try a different area or country.',
+  noSearchResults: '❌ No numbers available for this criteria. Try a different area or country.',
 
   showNumbers: (location, numbers) => {
     let text = `📞 Available numbers in <b>${location}</b>:\n\n`
