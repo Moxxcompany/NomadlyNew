@@ -174,22 +174,6 @@ async function insert(collection, chatId, key, value) {
   }
 }
 
-async function getLatestTransactionByChatId(collection, chatId) {
-  try {
-    const result = await withRetry(() =>
-      collection.find({ chatId: chatId })
-        .sort({ timestamp: -1 })
-        .limit(1)
-        .toArray(),
-      `getLatestTransactionByChatId(${collection.collectionName}, ${chatId})`
-    )
-    return result.length > 0 ? result[0] : null;
-  } catch (error) {
-    console.error(`Error getting transaction for chatId ${chatId} from ${collection.collectionName}:`, error);
-    return null;
-  }
-}
-
 async function removeKeyFromDocumentById(collection, chatId, key) {
   try {
     const query = { _id: chatId };
