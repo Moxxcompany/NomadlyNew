@@ -4569,7 +4569,9 @@ bot?.on('message', async msg => {
   }
   if (action === a.buyLeadsSelectCarrier) {
     if (message === t.back) {
-      if (info?.targetName) return goto.targetSelectAreaCode()
+      if (info?.targetName) {
+        return info?.targetCity === 'All Cities' ? goto.targetSelectCity() : goto.targetSelectAreaCode()
+      }
       return ['Australia'].includes(info?.country) ? goto.buyLeadsSelectSmsVoice() : goto.buyLeadsSelectAreaCode()
     }
     if (!buyLeadsSelectCarrier(info?.country).includes(message)) return send(chatId, t.what)
