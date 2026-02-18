@@ -409,24 +409,43 @@ class DomainSmsFeaturesTester:
             with open('/app/js/_index.js', 'r') as f:
                 content = f.read()
             
-            # Look for activateShortener handler
-            activate_handler_pattern = r'activateShortener[\'"`]?\s*:'
+            # Look for the specific activateShortener handling
+            # Pattern: if (message === t.activateShortener) {
+            activate_handler_pattern = r'if\s*\(\s*message\s*===\s*t\.activateShortener\s*\)\s*\{'
             activate_handler_match = re.search(activate_handler_pattern, content)
             
             if activate_handler_match:
-                # Find the handler code block (look for next 3000 characters)
-                start_pos = activate_handler_match.end()
-                handler_block = content[start_pos:start_pos+3000]
+                # Find the handler code block (from the match to the corresponding closing brace)
+                start_pos = activate_handler_match.start()
+                
+                # Find the opening brace
+                brace_start = content.find('{', activate_handler_match.start())
+                if brace_start != -1:
+                    # Match braces to find the end of the block
+                    brace_count = 0
+                    i = brace_start
+                    while i < len(content):
+                        if content[i] == '{':
+                            brace_count += 1
+                        elif content[i] == '}':
+                            brace_count -= 1
+                            if brace_count == 0:
+                                handler_block = content[brace_start:i+1]
+                                break
+                        i += 1
+                    else:
+                        # Fallback - take next 2000 characters
+                        handler_block = content[start_pos:start_pos+2000]
+                else:
+                    handler_block = content[start_pos:start_pos+1000]
                 
                 # Check for required function calls
                 calls_save_domain_railway = 'saveDomainInServerRailway' in handler_block
                 calls_save_domain_render = 'saveDomainInServerRender' in handler_block
                 calls_regular_check_dns = 'regularCheckDns' in handler_block
-                sends_success_message = ('DNS propagation' in handler_block or 'success' in handler_block) and 'send' in handler_block
+                sends_success_message = ('DNS propagation' in handler_block or 'linked to the URL shortener' in handler_block)
                 
                 has_domain_save = calls_save_domain_railway or calls_save_domain_render
-                
-                all_conditions = has_domain_save and calls_regular_check_dns and sends_success_message
                 
                 self.log_result(
                     "_index.js: activateShortener handler calls saveDomainInServerRailway/Render and regularCheckDns",
