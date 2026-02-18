@@ -612,7 +612,7 @@ ${bal(usd, ngn)}`,
   paymentSuccessFul: '✅ Payment successful! Your order is being processed. Details will be available shortly.',
 }
 
-const phoneNumberLeads = ['💰📲 Buy PhoneLeads', '✅📲 Validate PhoneLeads']
+const phoneNumberLeads = ['💰📲 Buy PhoneLeads', '✅📲 Validate PhoneLeads', '🏦📲 Target Leads']
 
 const buyLeadsSelectCountry = Object.keys(areasOfCountry)
 const buyLeadsSelectSmsVoice = ['SMS (Price 20$ for 1000)', 'Voice (Price 0$ for 1000)']

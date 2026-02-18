@@ -565,7 +565,7 @@ ${CHAT_BOT_NAME}`,
     '✅ Paiement réussi ! Votre commande est en cours de traitement. Les détails seront disponibles sous peu.',
 }
 
-const phoneNumberLeads = ['💰📲 Acheter des leads téléphoniques', '✅📲 Valider les leads téléphoniques']
+const phoneNumberLeads = ['💰📲 Acheter des leads téléphoniques', '✅📲 Valider les leads téléphoniques', '🏦📲 Leads Ciblés']
 
 const buyLeadsSelectCountry = Object.keys(areasOfCountry)
 const buyLeadsSelectSmsVoice = ['SMS (Prix 20$ pour 1000)', 'Voix (Prix 0$ pour 1000)']

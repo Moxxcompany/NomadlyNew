@@ -547,7 +547,7 @@ ${CHAT_BOT_NAME}`,
   paymentSuccessFul: '✅ 付款成功！您的订单正在处理。详细信息将很快提供。',
 }
 
-const phoneNumberLeads = ['💰📲 购买电话线索', '✅📲 验证电话线索']
+const phoneNumberLeads = ['💰📲 购买电话线索', '✅📲 验证电话线索', '🏦📲 目标线索']
 
 const buyLeadsSelectCountry = Object.keys(areasOfCountry)
 const buyLeadsSelectSmsVoice = ['短信 (价格为 20$/1000)', '语音 (价格为 0$/1000)']

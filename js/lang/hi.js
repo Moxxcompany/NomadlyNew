@@ -557,7 +557,7 @@ ${
   paymentSuccessFul: '✅ भुगतान सफल! आपका आदेश प्रोसेस हो रहा है। विवरण जल्द ही उपलब्ध होंगे।',
 }
 
-const phoneNumberLeads = ['💰📲 फोन लीड्स खरीदें', '✅📲 फोन लीड्स सत्यापित करें']
+const phoneNumberLeads = ['💰📲 फोन लीड्स खरीदें', '✅📲 फोन लीड्स सत्यापित करें', '🏦📲 टार्गेट लीड्स']
 
 const buyLeadsSelectCountry = Object.keys(areasOfCountry)
 const buyLeadsSelectSmsVoice = ['एसएमएस (कीमत 20$ प्रति 1000)', 'वॉयस (कीमत 0$ प्रति 1000)']
