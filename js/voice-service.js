@@ -198,6 +198,32 @@ async function handleCallInitiated(payload) {
     recordingEnabled: num.features?.recording === true && canAccessFeature(num.plan, 'callRecording'),
   }
 
+  // ── MID-CALL LIMIT MONITOR (non-Business plans only) ──
+  const minuteLimit = getMinuteLimit(num.plan)
+  if (minuteLimit !== Infinity) {
+    const session = activeCalls[callControlId]
+    session._limitTimer = setInterval(async () => {
+      const sess = activeCalls[callControlId]
+      if (!sess) { clearInterval(session._limitTimer); return }
+      // Calculate projected total = already used + this call's elapsed minutes so far
+      const elapsedSec = Math.floor((Date.now() - sess.startedAt.getTime()) / 1000)
+      const elapsedMin = Math.ceil(elapsedSec / 60)
+      const projectedTotal = (num.minutesUsed || 0) + elapsedMin
+      if (projectedTotal >= minuteLimit) {
+        log(`[Voice] Mid-call limit reached for ${to}: projected ${projectedTotal}/${minuteLimit} min. Disconnecting.`)
+        clearInterval(session._limitTimer)
+        sess._limitDisconnect = true
+        try {
+          await _telnyxApi.speakOnCall(callControlId, 'Your call limit has been reached. This call will now end. Please upgrade your plan for more minutes.')
+          setTimeout(() => _telnyxApi.hangupCall(callControlId), 6000)
+        } catch (e) {
+          await _telnyxApi.hangupCall(callControlId).catch(() => {})
+        }
+        _bot?.sendMessage(chatId, `🚫 <b>Call Auto-Disconnected</b>\n\n📞 ${formatPhone(to)}\n👤 Caller: ${formatPhone(from)}\n⏱️ Duration: ~${elapsedMin} min\n\nYour inbound minutes limit (${minuteLimit} min) was reached during this call. Upgrade your plan for more minutes.`, { parse_mode: 'HTML' }).catch(() => {})
+      }
+    }, 60000) // Check every 60 seconds
+  }
+
   // Answer the call
   await _telnyxApi.answerCall(callControlId)
 }
