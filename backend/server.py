@@ -81,7 +81,15 @@ async def proxy(path: str, request: Request):
     headers = dict(request.headers)
     headers.pop("host", None)
 
-    url = f"/{path}"
+    # Strip /api prefix since Kubernetes ingress routes /api/* to this backend,
+    # but the Node.js Express app expects paths without the /api prefix
+    node_path = path
+    if node_path.startswith("api/"):
+        node_path = node_path[4:]
+    elif node_path == "api":
+        node_path = ""
+
+    url = f"/{node_path}"
     if request.url.query:
         url = f"{url}?{request.url.query}"
 
