@@ -4487,6 +4487,13 @@ bot?.on('message', async msg => {
     const validCities = ['All Cities', ...targetLeadsCities(target)]
     if (!validCities.includes(message)) return send(chatId, t.what)
     await saveInfo('targetCity', message)
+    if (message === 'All Cities') {
+      const allCodes = targetLeadsAreaCodes(target, 'All Cities')
+      await saveInfo('areaCode', 'Mixed Area Codes')
+      await saveInfo('targetAreaCodes', allCodes)
+      await saveInfo('cameFrom', a.targetSelectAreaCode)
+      return goto.buyLeadsSelectCarrier()
+    }
     return goto.targetSelectAreaCode()
   }
   if (action === a.targetSelectAreaCode) {
