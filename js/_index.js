@@ -6586,6 +6586,13 @@ const auth2 = async (req, res, next) => {
   req.pay = { ...pay, ref }
   next()
 }
+  log(req.hostname + req.originalUrl)
+  const ref = req?.query?.ref || req?.body?.data?.reference // first for crypto and second for webhook fincra
+  const pay = await get(chatIdOfPayment, ref)
+  if (!pay) return log(translation('t.payError', 'en')) || res.send(html(translation('t.payError', 'en')))
+  req.pay = { ...pay, ref }
+  next()
+}
 
 const authDyno = async (req, res, next) => {
   log('=== DYNOPAY WEBHOOK RECEIVED ===')
