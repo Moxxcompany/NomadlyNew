@@ -28,6 +28,7 @@ class PlanLimitsValidator:
                 return False, {}
             
             plans_text = plans_match.group(0)
+            print(f"   DEBUG: Extracted plans text: {plans_text[:200]}...")
             
             # 1. Check Starter plan: 100 minutes, 50 SMS
             if 'minutes: 100' in plans_text and 'sms: 50' in plans_text:
