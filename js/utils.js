@@ -392,15 +392,29 @@ const getBalance = async (walletOf, chatId) => {
   return { usdBal, ngnBal: ngnIn - ngnOut }
 }
 
+const MAX_PLAN_DURATION_MS = {
+  Daily: 86400 * 1000 * 1.5,    // 1.5 days max (buffer for timezone edge cases)
+  Weekly: 7 * 86400 * 1000 * 1.1,  // ~7.7 days max
+  Monthly: 31 * 86400 * 1000,      // 31 days max
+}
+
 const subscribePlan = async (planEndingTime, freeDomainNamesAvailableFor, planOf, chatId, plan, bot, lang, freeValidationsAvailableFor) => {
+  const duration = timeOf[plan]
+  if (!duration) {
+    console.error(`[subscribePlan] Invalid plan type "${plan}" for chatId ${chatId} — aborting subscription`)
+    return
+  }
+
+  const endTime = Date.now() + duration
   set(planOf, chatId, plan)
-  set(planEndingTime, chatId, Date.now() + timeOf[plan])
+  set(planEndingTime, chatId, endTime)
   set(freeDomainNamesAvailableFor, chatId, freeDomainsOf[plan])
   if (freeValidationsAvailableFor) {
     set(freeValidationsAvailableFor, chatId, freeValidationsOf[plan])
   }
   const t = translation('t', lang)
 
+  log(`[subscribePlan] chatId=${chatId} plan=${plan} expires=${new Date(endTime).toISOString()}`)
   sendMessage(chatId, t.planSubscribed.replace('{{plan}}', plan))
   log('reply:\t' + t.planSubscribed.replace('{{plan}}', plan) + '\tto: ' + chatId)
 
