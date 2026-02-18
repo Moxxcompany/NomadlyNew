@@ -406,8 +406,68 @@ function logEvent(to, from, type, duration, recordingUrl) {
   }).catch(e => log(`[Voice] Log error: ${e.message}`))
 }
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// IVR ANALYTICS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+function trackIvrAnalytics(phoneNumber, chatId, callerFrom, digit, action) {
+  if (!_ivrAnalytics) return
+  _ivrAnalytics.insertOne({
+    phoneNumber,
+    chatId,
+    callerFrom,
+    digit,
+    action,
+    timestamp: new Date().toISOString(),
+  }).catch(e => log(`[Voice] IVR analytics log error: ${e.message}`))
+}
+
+async function getIvrAnalytics(phoneNumber, days = 30) {
+  if (!_ivrAnalytics) return { totalCalls: 0, optionBreakdown: [], topOption: null, recentCalls: [] }
+  try {
+    const since = new Date()
+    since.setDate(since.getDate() - days)
+    const sinceStr = since.toISOString()
+
+    const all = await _ivrAnalytics.find({
+      phoneNumber,
+      timestamp: { $gte: sinceStr },
+    }).sort({ timestamp: -1 }).toArray()
+
+    const totalCalls = all.length
+
+    // Count per digit
+    const digitCounts = {}
+    for (const entry of all) {
+      const d = entry.digit || '?'
+      digitCounts[d] = (digitCounts[d] || 0) + 1
+    }
+
+    // Sort by count descending
+    const optionBreakdown = Object.entries(digitCounts)
+      .map(([digit, count]) => ({ digit, count, percent: totalCalls > 0 ? Math.round((count / totalCalls) * 100) : 0 }))
+      .sort((a, b) => b.count - a.count)
+
+    const topOption = optionBreakdown.length > 0 ? optionBreakdown[0] : null
+
+    // Recent 5 calls
+    const recentCalls = all.slice(0, 5).map(e => ({
+      from: e.callerFrom,
+      digit: e.digit,
+      action: e.action,
+      time: e.timestamp,
+    }))
+
+    return { totalCalls, optionBreakdown, topOption, recentCalls }
+  } catch (e) {
+    log(`[Voice] IVR analytics query error: ${e.message}`)
+    return { totalCalls: 0, optionBreakdown: [], topOption: null, recentCalls: [] }
+  }
+}
+
 module.exports = {
   handleVoiceWebhook,
   initVoiceService,
   activeCalls,
+  getIvrAnalytics,
 }
