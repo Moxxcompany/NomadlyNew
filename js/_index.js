@@ -5208,14 +5208,18 @@ bot?.on('message', async msg => {
   function buildManageMenu(num) {
     const pc = phoneConfig.btn
     const plan = num.plan || 'starter'
-    const rows = [[pc.callForwarding]]
-    rows.push([pc.smsSettings])
+    const rows = []
+    // Communication
+    rows.push([pc.callForwarding, pc.smsSettings])
+    rows.push([pc.smsInbox])
     if (phoneConfig.canAccessFeature(plan, 'voicemail')) rows.push([pc.voicemail])
+    // Advanced
     if (phoneConfig.canAccessFeature(plan, 'sipCredentials')) rows.push([pc.sipCredentials])
     if (phoneConfig.canAccessFeature(plan, 'callRecording')) rows.push([pc.callRecording])
     if (phoneConfig.canAccessFeature(plan, 'ivr')) rows.push([pc.ivrAutoAttendant])
+    // Logs & Billing
     rows.push([pc.callSmsLogs])
-    rows.push([pc.renewChangePlan], [pc.releaseNumber])
+    rows.push([pc.renewChangePlan, pc.releaseNumber])
     return rows
   }
 
