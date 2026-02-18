@@ -182,14 +182,13 @@ const TIMEZONE_OFFSETS = {
   hi: 5.5,    // IST (India Standard Time)
 }
 
-// Target local times for each theme
+// Target local times for 2 daily promos
 const LOCAL_TIMES = [
-  { hour: 10, minute: 0 },  // Morning - Domains
-  { hour: 16, minute: 0 },  // Afternoon - URL Shortener
-  { hour: 21, minute: 0 },  // Evening - Phone Leads
+  { hour: 10, minute: 0 },  // Morning
+  { hour: 16, minute: 0 },  // Afternoon
 ]
 
-// Theme order for the 3 daily slots
+// 3 themes rotate across 2 daily slots (cycle every 3 days)
 const THEMES = ['domains', 'shortener', 'leads']
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
