@@ -1,13 +1,7 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Testing for Nomadly Telegram Bot
-Tests the 6 major changes implemented:
-1. Immediate deletion from Telnyx on failed renewal (no 7-day grace)
-2. Pre-expiry warnings about permanent deletion
-3. Reliable manual release with Telnyx deletion
-4. Compliance-free countries only (US, CA, GB)
-5. Overage billing system (pay-per-use above limits)
-6. Shorter promo messages + 'Speechcue' branding
+Backend Testing for Cloud Phone Overage Rates Implementation
+Tests the overage rate system with dynamic rates from .env variables.
 """
 
 import requests
@@ -18,7 +12,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-class NomadlyBotTester:
+class OverageRatesTestier:
     def __init__(self):
         # Read backend URL from frontend .env file
         try:
@@ -55,491 +49,434 @@ class NomadlyBotTester:
             print(f"❌ {test_name}")
             print(f"   Issue: {details}")
 
-    def test_health_endpoint(self):
-        """Test /api/health endpoint returns correct status"""
+    def test_backend_env_overage_rates(self):
+        """Test backend/.env contains OVERAGE_RATE_SMS=0.02 and OVERAGE_RATE_MIN=0.03"""
         try:
-            response = requests.get(f"{self.base_url}/api/health", timeout=10)
-            if response.status_code == 200:
-                data = response.json()
-                required_fields = ["status", "database", "uptime"]
-                has_all_fields = all(field in data for field in required_fields)
-                
-                if has_all_fields and data.get("status") in ["healthy", "ok"]:
-                    self.log_result(
-                        "Health endpoint returns ok with node running and db connected",
-                        True,
-                        f"Status: {data.get('status')}, DB: {data.get('database')}, Uptime: {data.get('uptime')}"
-                    )
-                else:
-                    self.log_result(
-                        "Health endpoint structure", 
-                        False, 
-                        f"Missing fields or incorrect status: {data}",
-                        "MEDIUM"
-                    )
-            else:
-                self.log_result(
-                    "Health endpoint access", 
-                    False, 
-                    f"HTTP {response.status_code}",
-                    "HIGH"
-                )
+            with open('/app/backend/.env', 'r') as f:
+                content = f.read()
+            
+            # Check for OVERAGE_RATE_SMS=0.02
+            sms_rate_match = re.search(r'OVERAGE_RATE_SMS\s*=\s*0\.02', content)
+            min_rate_match = re.search(r'OVERAGE_RATE_MIN\s*=\s*0\.03', content)
+            
+            self.log_result(
+                "backend/.env contains OVERAGE_RATE_SMS=0.02",
+                bool(sms_rate_match),
+                "Found OVERAGE_RATE_SMS=0.02" if sms_rate_match else "OVERAGE_RATE_SMS=0.02 not found",
+                "CRITICAL" if not sms_rate_match else "INFO"
+            )
+            
+            self.log_result(
+                "backend/.env contains OVERAGE_RATE_MIN=0.03",
+                bool(min_rate_match),
+                "Found OVERAGE_RATE_MIN=0.03" if min_rate_match else "OVERAGE_RATE_MIN=0.03 not found",
+                "CRITICAL" if not min_rate_match else "INFO"
+            )
+            
         except Exception as e:
             self.log_result(
-                "Health endpoint access", 
-                False, 
-                f"Connection error: {str(e)}",
+                "backend/.env file analysis",
+                False,
+                f"Error reading .env file: {str(e)}",
                 "CRITICAL"
             )
 
-    def test_bot_logs_initialization(self):
-        """Test bot logs contain required initialization messages"""
-        try:
-            # Check supervisor logs for Node.js bot
-            log_files = [
-                '/var/log/supervisor/node-bot.log',
-                '/app/node-bot.log',
-                'node-bot.log'
-            ]
-            
-            log_content = ""
-            for log_file in log_files:
-                if os.path.exists(log_file):
-                    with open(log_file, 'r') as f:
-                        log_content = f.read()
-                    break
-            
-            if not log_content:
-                self.log_result(
-                    "Bot log file access",
-                    False,
-                    "Could not find bot log file",
-                    "MEDIUM"
-                )
-                return
-                
-            # Check for required messages
-            required_messages = [
-                ("VoiceService Initialized with IVR + Recording + Analytics + Limits + Overage billing", "Voice service overage billing"),
-                ("SMS Service limits initialized with overage billing", "SMS service overage billing"), 
-                ("Speechcue", "Speechcue branding")
-            ]
-            
-            for message, test_name in required_messages:
-                if message in log_content:
-                    self.log_result(f"Bot logs show: {test_name}", True)
-                else:
-                    self.log_result(
-                        f"Bot logs show: {test_name}",
-                        False,
-                        f"Missing message: {message}",
-                        "MEDIUM"
-                    )
-                    
-        except Exception as e:
-            self.log_result(
-                "Bot log analysis",
-                False,
-                f"Error reading logs: {str(e)}",
-                "MEDIUM"
-            )
-
-    def test_phone_config_features(self):
-        """Test phone-config.js contains required changes"""
+    def test_phone_config_reads_env_vars(self):
+        """Test phone-config.js reads OVERAGE_RATE_SMS and OVERAGE_RATE_MIN from process.env"""
         try:
             with open('/app/js/phone-config.js', 'r') as f:
                 content = f.read()
             
-            # Test 1: Cloud Phone button contains 'Speechcue'
-            cloud_phone_match = re.search(r'cloudPhone.*[\'"`].*Speechcue.*[\'"`]', content)
-            self.log_result(
-                "phone-config.js: Cloud Phone button text contains 'Speechcue'",
-                bool(cloud_phone_match),
-                "Found Speechcue in Cloud Phone button" if cloud_phone_match else "Speechcue not found in Cloud Phone button",
-                "HIGH" if not cloud_phone_match else "INFO"
-            )
-            
-            # Test 2: Countries array only contains US, CA, GB
-            countries_section = re.search(r'const countries = \[(.*?)\]', content, re.DOTALL)
-            if countries_section:
-                countries_content = countries_section.group(1)
-                has_us = "'US'" in countries_content or '"US"' in countries_content
-                has_ca = "'CA'" in countries_content or '"CA"' in countries_content  
-                has_gb = "'GB'" in countries_content or '"GB"' in countries_content
-                has_au = "'AU'" in countries_content or '"AU"' in countries_content
-                has_de = "'DE'" in countries_content or '"DE"' in countries_content
-                has_fr = "'FR'" in countries_content or '"FR"' in countries_content
-                
-                compliant = has_us and has_ca and has_gb and not has_au and not has_de and not has_fr
-                self.log_result(
-                    "phone-config.js: countries array only contains US, CA, GB",
-                    compliant,
-                    f"US:{has_us}, CA:{has_ca}, GB:{has_gb}, AU:{has_au}, DE:{has_de}, FR:{has_fr}",
-                    "HIGH" if not compliant else "INFO"
-                )
-            else:
-                self.log_result(
-                    "phone-config.js: countries array analysis",
-                    False,
-                    "Could not find countries array",
-                    "MEDIUM"
-                )
-            
-            # Test 3: Overage rates
-            overage_sms_match = re.search(r'OVERAGE_RATE_SMS.*?=.*?0\.02', content)
-            overage_min_match = re.search(r'OVERAGE_RATE_MIN.*?=.*?0\.03', content)
+            # Check for reading from process.env
+            sms_env_match = re.search(r'OVERAGE_RATE_SMS\s*=.*?process\.env\.OVERAGE_RATE_SMS', content)
+            min_env_match = re.search(r'OVERAGE_RATE_MIN\s*=.*?process\.env\.OVERAGE_RATE_MIN', content)
             
             self.log_result(
-                "phone-config.js: OVERAGE_RATE_SMS=0.02 exported",
-                bool(overage_sms_match),
-                "Found OVERAGE_RATE_SMS=0.02" if overage_sms_match else "OVERAGE_RATE_SMS=0.02 not found",
-                "HIGH" if not overage_sms_match else "INFO"
+                "phone-config.js reads OVERAGE_RATE_SMS from process.env",
+                bool(sms_env_match),
+                "Found process.env.OVERAGE_RATE_SMS read" if sms_env_match else "process.env.OVERAGE_RATE_SMS read not found",
+                "HIGH" if not sms_env_match else "INFO"
             )
             
             self.log_result(
-                "phone-config.js: OVERAGE_RATE_MIN=0.03 exported",
-                bool(overage_min_match),
-                "Found OVERAGE_RATE_MIN=0.03" if overage_min_match else "OVERAGE_RATE_MIN=0.03 not found",
-                "HIGH" if not overage_min_match else "INFO"
+                "phone-config.js reads OVERAGE_RATE_MIN from process.env",
+                bool(min_env_match),
+                "Found process.env.OVERAGE_RATE_MIN read" if min_env_match else "process.env.OVERAGE_RATE_MIN read not found",
+                "HIGH" if not min_env_match else "INFO"
             )
             
-            # Test 4: Release confirmation mentions permanent deletion
-            release_confirm_found = False
-            perm_delete_found = False
-            irreversible_found = False
-            
-            if 'releaseConfirm' in content:
-                release_section = content[content.find('releaseConfirm'):]
-                perm_delete_found = 'permanent' in release_section.lower() and 'delete' in release_section.lower()
-                irreversible_found = 'irreversible' in release_section.lower()
-                release_confirm_found = True
+            # Check if variables are exported in module.exports
+            exports_match = re.search(r'module\.exports\s*=\s*{[^}]*OVERAGE_RATE_SMS[^}]*OVERAGE_RATE_MIN[^}]*}', content, re.DOTALL)
             
             self.log_result(
-                "phone-config.js: releaseConfirm message says 'permanent and irreversible' and 'permanently delete'",
-                release_confirm_found and perm_delete_found and irreversible_found,
-                f"releaseConfirm found: {release_confirm_found}, permanent delete: {perm_delete_found}, irreversible: {irreversible_found}",
-                "HIGH" if not (release_confirm_found and perm_delete_found and irreversible_found) else "INFO"
-            )
-            
-            # Test 5: Usage messages mention overage instead of rejected/blocked
-            overage_mentions = len(re.findall(r'overage', content, re.IGNORECASE))
-            rejected_mentions = len(re.findall(r'rejected|blocked', content, re.IGNORECASE))
-            
-            self.log_result(
-                "phone-config.js: usage messages mention overage billing instead of 'rejected' or 'blocked'",
-                overage_mentions > rejected_mentions,
-                f"Overage mentions: {overage_mentions}, Rejected/Blocked mentions: {rejected_mentions}",
-                "MEDIUM" if overage_mentions <= rejected_mentions else "INFO"
-            )
-            
-            # Test 6: No user-facing 'Telnyx' text
-            telnyx_matches = re.findall(r'[\'"`][^\'"`]*Telnyx[^\'"`]*[\'"`]', content)
-            user_facing_telnyx = [match for match in telnyx_matches if not any(internal in match.lower() for internal in ['api', 'service', 'provider', 'config'])]
-            
-            self.log_result(
-                "phone-config.js: No user-facing text contains 'Telnyx'",
-                len(user_facing_telnyx) == 0,
-                f"User-facing Telnyx references: {len(user_facing_telnyx)}" + (f" - {user_facing_telnyx[:3]}" if user_facing_telnyx else ""),
-                "MEDIUM" if user_facing_telnyx else "INFO"
+                "phone-config.js exports OVERAGE_RATE_SMS and OVERAGE_RATE_MIN",
+                bool(exports_match),
+                "Found both rates exported" if exports_match else "Overage rates not properly exported",
+                "HIGH" if not exports_match else "INFO"
             )
             
         except Exception as e:
             self.log_result(
                 "phone-config.js file analysis",
                 False,
-                f"Error reading file: {str(e)}",
+                f"Error reading phone-config.js: {str(e)}",
                 "HIGH"
             )
 
-    def test_phone_scheduler_features(self):
-        """Test phone-scheduler.js contains required changes"""
+    def test_select_plan_text_includes_overage_info(self):
+        """Test phone-config.js selectPlan text includes overage rate info and 'Service pauses if wallet balance is insufficient'"""
+        try:
+            with open('/app/js/phone-config.js', 'r') as f:
+                content = f.read()
+            
+            # Find selectPlan function/text
+            select_plan_match = re.search(r'selectPlan.*?=.*?`(.*?)`', content, re.DOTALL)
+            
+            if select_plan_match:
+                select_plan_text = select_plan_match.group(1)
+                
+                # Check for overage rate variables
+                has_overage_min = '${OVERAGE_RATE_MIN}' in select_plan_text
+                has_overage_sms = '${OVERAGE_RATE_SMS}' in select_plan_text
+                has_service_pauses = 'service pauses if wallet' in select_plan_text.lower() and 'insufficient' in select_plan_text.lower()
+                
+                self.log_result(
+                    "selectPlan text includes ${OVERAGE_RATE_MIN}/min and ${OVERAGE_RATE_SMS}/SMS",
+                    has_overage_min and has_overage_sms,
+                    f"OVERAGE_RATE_MIN: {has_overage_min}, OVERAGE_RATE_SMS: {has_overage_sms}",
+                    "HIGH" if not (has_overage_min and has_overage_sms) else "INFO"
+                )
+                
+                self.log_result(
+                    "selectPlan text mentions 'Service pauses if wallet balance is insufficient'",
+                    has_service_pauses,
+                    "Found service pauses message" if has_service_pauses else "Service pauses message not found",
+                    "HIGH" if not has_service_pauses else "INFO"
+                )
+                
+            else:
+                self.log_result(
+                    "selectPlan text analysis",
+                    False,
+                    "Could not find selectPlan text",
+                    "MEDIUM"
+                )
+                
+        except Exception as e:
+            self.log_result(
+                "selectPlan text analysis",
+                False,
+                f"Error analyzing selectPlan: {str(e)}",
+                "HIGH"
+            )
+
+    def test_order_summary_includes_overage_line(self):
+        """Test phone-config.js orderSummary includes overage line showing rates from wallet"""
+        try:
+            with open('/app/js/phone-config.js', 'r') as f:
+                content = f.read()
+            
+            # Find orderSummary function/text
+            order_summary_match = re.search(r'orderSummary.*?=.*?`(.*?)`', content, re.DOTALL)
+            
+            if order_summary_match:
+                order_summary_text = order_summary_match.group(1)
+                
+                # Check for overage line with rates and wallet mention
+                has_overage_min = '${OVERAGE_RATE_MIN}' in order_summary_text
+                has_overage_sms = '${OVERAGE_RATE_SMS}' in order_summary_text
+                has_wallet_mention = 'wallet' in order_summary_text.lower()
+                has_overage_label = 'overage' in order_summary_text.lower()
+                
+                self.log_result(
+                    "orderSummary includes overage line with ${OVERAGE_RATE_MIN}/min + ${OVERAGE_RATE_SMS}/SMS (from wallet)",
+                    has_overage_min and has_overage_sms and has_wallet_mention and has_overage_label,
+                    f"OVERAGE_RATE_MIN: {has_overage_min}, OVERAGE_RATE_SMS: {has_overage_sms}, wallet: {has_wallet_mention}, overage: {has_overage_label}",
+                    "HIGH" if not (has_overage_min and has_overage_sms and has_wallet_mention) else "INFO"
+                )
+                
+            else:
+                self.log_result(
+                    "orderSummary text analysis",
+                    False,
+                    "Could not find orderSummary text",
+                    "MEDIUM"
+                )
+                
+        except Exception as e:
+            self.log_result(
+                "orderSummary text analysis",
+                False,
+                f"Error analyzing orderSummary: {str(e)}",
+                "HIGH"
+            )
+
+    def test_hub_welcome_mentions_overage_rates(self):
+        """Test phone-config.js hubWelcome mentions overage rates and 'Service pauses if wallet is empty'"""
+        try:
+            with open('/app/js/phone-config.js', 'r') as f:
+                content = f.read()
+            
+            # Find hubWelcome text
+            hub_welcome_match = re.search(r'hubWelcome.*?:.*?`(.*?)`', content, re.DOTALL)
+            
+            if hub_welcome_match:
+                hub_welcome_text = hub_welcome_match.group(1)
+                
+                # Check for dynamic overage rates and service pauses message
+                has_overage_min = '${OVERAGE_RATE_MIN}' in hub_welcome_text
+                has_overage_sms = '${OVERAGE_RATE_SMS}' in hub_welcome_text
+                has_service_pauses = 'service pauses if wallet is empty' in hub_welcome_text.lower()
+                
+                self.log_result(
+                    "hubWelcome mentions overage rates ${OVERAGE_RATE_MIN}/min and ${OVERAGE_RATE_SMS}/SMS",
+                    has_overage_min and has_overage_sms,
+                    f"OVERAGE_RATE_MIN: {has_overage_min}, OVERAGE_RATE_SMS: {has_overage_sms}",
+                    "HIGH" if not (has_overage_min and has_overage_sms) else "INFO"
+                )
+                
+                self.log_result(
+                    "hubWelcome mentions 'Service pauses if wallet is empty'",
+                    has_service_pauses,
+                    "Found service pauses message" if has_service_pauses else "Service pauses message not found",
+                    "HIGH" if not has_service_pauses else "INFO"
+                )
+                
+            else:
+                self.log_result(
+                    "hubWelcome text analysis", 
+                    False,
+                    "Could not find hubWelcome text",
+                    "MEDIUM"
+                )
+                
+        except Exception as e:
+            self.log_result(
+                "hubWelcome text analysis",
+                False,
+                f"Error analyzing hubWelcome: {str(e)}",
+                "HIGH"
+            )
+
+    def test_manage_number_view_dynamic_rates(self):
+        """Test phone-config.js manageNumber view uses dynamic ${OVERAGE_RATE_MIN} and ${OVERAGE_RATE_SMS} in warnings"""
+        try:
+            with open('/app/js/phone-config.js', 'r') as f:
+                content = f.read()
+            
+            # Find manageNumber function
+            manage_number_match = re.search(r'manageNumber.*?:.*?{(.*?)}', content, re.DOTALL)
+            
+            if manage_number_match:
+                manage_number_text = manage_number_match.group(1)
+                
+                # Check for dynamic rate usage in warnings
+                has_dynamic_min = '${OVERAGE_RATE_MIN}' in manage_number_text
+                has_dynamic_sms = '${OVERAGE_RATE_SMS}' in manage_number_text
+                has_warning_context = 'warning' in manage_number_text.lower() or 'overage' in manage_number_text.lower()
+                
+                self.log_result(
+                    "manageNumber view uses dynamic ${OVERAGE_RATE_MIN} and ${OVERAGE_RATE_SMS} in warnings",
+                    has_dynamic_min and has_dynamic_sms and has_warning_context,
+                    f"Dynamic MIN: {has_dynamic_min}, Dynamic SMS: {has_dynamic_sms}, Warning context: {has_warning_context}",
+                    "HIGH" if not (has_dynamic_min and has_dynamic_sms) else "INFO"
+                )
+                
+            else:
+                self.log_result(
+                    "manageNumber function analysis",
+                    False,
+                    "Could not find manageNumber function",
+                    "MEDIUM"
+                )
+                
+        except Exception as e:
+            self.log_result(
+                "manageNumber function analysis",
+                False,
+                f"Error analyzing manageNumber: {str(e)}",
+                "HIGH"
+            )
+
+    def test_scheduler_usage_messages_dynamic_rates(self):
+        """Test phone-scheduler.js buildUsageAlertMsg and buildUsageLimitMsg use dynamic rates and mention service pauses"""
         try:
             with open('/app/js/phone-scheduler.js', 'r') as f:
                 content = f.read()
             
-            # Test 1: No 7-day suspension logic
-            seven_day_patterns = [
-                r'daysSuspended\s*>=\s*7',
-                r'7.*day.*suspend',
-                r'suspend.*7.*day'
-            ]
+            # Check buildUsageAlertMsg
+            alert_msg_match = re.search(r'buildUsageAlertMsg.*?{(.*?)}', content, re.DOTALL)
+            limit_msg_match = re.search(r'buildUsageLimitMsg.*?{(.*?)}', content, re.DOTALL)
             
-            seven_day_found = any(re.search(pattern, content, re.IGNORECASE) for pattern in seven_day_patterns)
+            alert_msg_ok = False
+            limit_msg_ok = False
+            service_pauses_found = False
+            
+            if alert_msg_match:
+                alert_text = alert_msg_match.group(1)
+                alert_msg_ok = 'OVERAGE_RATE_SMS' in alert_text or 'OVERAGE_RATE_MIN' in alert_text
+                service_pauses_found = service_pauses_found or ('service pauses if wallet is empty' in alert_text.lower())
+            
+            if limit_msg_match:
+                limit_text = limit_msg_match.group(1)
+                limit_msg_ok = 'OVERAGE_RATE_SMS' in limit_text or 'OVERAGE_RATE_MIN' in limit_text
+                service_pauses_found = service_pauses_found or ('service pauses if wallet' in limit_text.lower() and 'runs out' in limit_text.lower())
             
             self.log_result(
-                "phone-scheduler.js: no 7-day suspension logic (no 'daysSuspended >= 7' code)",
-                not seven_day_found,
-                "No 7-day suspension logic found" if not seven_day_found else "7-day suspension logic still present",
-                "HIGH" if seven_day_found else "INFO"
+                "phone-scheduler.js buildUsageAlertMsg uses dynamic rates from OVERAGE_RATE_SMS/MIN",
+                alert_msg_ok,
+                "Found dynamic rates in buildUsageAlertMsg" if alert_msg_ok else "Dynamic rates not found in buildUsageAlertMsg",
+                "HIGH" if not alert_msg_ok else "INFO"
             )
             
-            # Test 2: releaseFromProvider function exists
-            release_from_provider_found = 'releaseFromProvider' in content and 'function releaseFromProvider' in content or 'async function releaseFromProvider' in content
-            telnyx_release_calls = 'telnyxApi.releaseNumber' in content or 'telnyxApi.releaseByPhoneNumber' in content
-            
             self.log_result(
-                "phone-scheduler.js: releaseFromProvider function exists and calls telnyxApi.releaseNumber and telnyxApi.releaseByPhoneNumber",
-                release_from_provider_found and telnyx_release_calls,
-                f"Function exists: {release_from_provider_found}, Telnyx calls: {telnyx_release_calls}",
-                "HIGH" if not (release_from_provider_found and telnyx_release_calls) else "INFO"
-            )
-            
-            # Test 3: Messages mention 'permanently deleted' not 'SUSPENDED'
-            permanently_deleted_found = 'permanently deleted' in content.lower()
-            suspended_msgs = len(re.findall(r'SUSPENDED', content))
-            
-            self.log_result(
-                "phone-scheduler.js: buildAutoRenewFailedMsg mentions 'permanently deleted' not 'SUSPENDED'",
-                permanently_deleted_found,
-                f"'permanently deleted' found: {permanently_deleted_found}",
-                "MEDIUM" if not permanently_deleted_found else "INFO"
+                "phone-scheduler.js buildUsageLimitMsg uses dynamic rates and mentions 'Service pauses if wallet balance runs out'",
+                limit_msg_ok and service_pauses_found,
+                f"Dynamic rates: {limit_msg_ok}, Service pauses: {service_pauses_found}",
+                "HIGH" if not (limit_msg_ok and service_pauses_found) else "INFO"
             )
             
         except Exception as e:
             self.log_result(
-                "phone-scheduler.js file analysis",
+                "phone-scheduler.js analysis",
                 False,
-                f"Error reading file: {str(e)}",
+                f"Error analyzing scheduler: {str(e)}",
                 "HIGH"
             )
 
-    def test_telnyx_service_features(self):
-        """Test telnyx-service.js contains required changes"""
-        try:
-            with open('/app/js/telnyx-service.js', 'r') as f:
-                content = f.read()
-            
-            # Test: releaseByPhoneNumber function exists and is exported
-            release_by_phone_func = 'function releaseByPhoneNumber' in content or 'async function releaseByPhoneNumber' in content
-            release_by_phone_export = 'releaseByPhoneNumber' in content and 'module.exports' in content
-            
-            self.log_result(
-                "telnyx-service.js: releaseByPhoneNumber function exists and is exported",
-                release_by_phone_func and release_by_phone_export,
-                f"Function exists: {release_by_phone_func}, Exported: {release_by_phone_export}",
-                "HIGH" if not (release_by_phone_func and release_by_phone_export) else "INFO"
-            )
-            
-        except Exception as e:
-            self.log_result(
-                "telnyx-service.js file analysis",
-                False,
-                f"Error reading file: {str(e)}",
-                "HIGH"
-            )
-
-    def test_voice_service_features(self):
-        """Test voice-service.js contains required changes"""
+    def test_voice_service_wallet_notifications(self):
+        """Test voice-service.js wallet empty and mid-call notifications"""
         try:
             with open('/app/js/voice-service.js', 'r') as f:
                 content = f.read()
             
-            # Test 1: initVoiceService accepts required dependencies
-            init_voice_deps = ['walletOf', 'payments', 'nanoid']
-            init_voice_section = None
+            # Check for wallet empty notification with overage rate
+            wallet_empty_msg = False
+            mid_call_notification = False
+            mid_call_disconnect = False
             
-            if 'function initVoiceService' in content:
-                init_start = content.find('function initVoiceService')
-                init_end = content.find('}', init_start)
-                init_voice_section = content[init_start:init_end]
+            # Look for specific notification patterns
+            if 'wallet empty' in content.lower() and 'overage' in content.lower():
+                wallet_empty_msg = True
             
-            deps_found = []
-            if init_voice_section:
-                for dep in init_voice_deps:
-                    if dep in init_voice_section:
-                        deps_found.append(dep)
+            if 'call will disconnect if wallet runs out' in content.lower():
+                mid_call_notification = True
+                
+            if 'wallet empty' in content.lower() and 'disconnect' in content.lower():
+                mid_call_disconnect = True
             
             self.log_result(
-                "voice-service.js: initVoiceService accepts walletOf, payments, nanoid dependencies",
-                len(deps_found) == len(init_voice_deps),
-                f"Dependencies found: {deps_found}",
-                "HIGH" if len(deps_found) != len(init_voice_deps) else "INFO"
+                "voice-service.js: when minutes limit reached and wallet empty, sends notification with overage rate",
+                wallet_empty_msg,
+                "Found wallet empty notification with overage rate" if wallet_empty_msg else "Wallet empty notification with overage rate not found",
+                "HIGH" if not wallet_empty_msg else "INFO"
             )
             
-            # Test 2: Overage billing logic for minutes
-            overage_billing_patterns = [
-                'OVERAGE_RATE_MIN',
-                'overage.*minute',
-                'wallet.*charge.*min'
-            ]
-            
-            overage_logic_found = any(re.search(pattern, content, re.IGNORECASE) for pattern in overage_billing_patterns)
+            self.log_result(
+                "voice-service.js: mid-call overage notification includes 'Call will disconnect if wallet runs out'",
+                mid_call_notification,
+                "Found mid-call disconnect warning" if mid_call_notification else "Mid-call disconnect warning not found",
+                "HIGH" if not mid_call_notification else "INFO"
+            )
             
             self.log_result(
-                "voice-service.js: handleCallInitiated checks wallet balance when minutes limit reached (overage mode)",
-                overage_logic_found,
-                "Overage billing logic found" if overage_logic_found else "Overage billing logic not found",
-                "HIGH" if not overage_logic_found else "INFO"
+                "voice-service.js: mid-call wallet empty disconnect sends 'Wallet Empty' notification with rate",
+                mid_call_disconnect,
+                "Found wallet empty disconnect notification" if mid_call_disconnect else "Wallet empty disconnect notification not found",
+                "HIGH" if not mid_call_disconnect else "INFO"
             )
             
         except Exception as e:
             self.log_result(
-                "voice-service.js file analysis",
+                "voice-service.js analysis",
                 False,
-                f"Error reading file: {str(e)}",
+                f"Error analyzing voice service: {str(e)}",
                 "HIGH"
             )
 
-    def test_sms_service_features(self):
-        """Test sms-service.js contains required changes"""
+    def test_sms_service_wallet_notifications(self):
+        """Test sms-service.js wallet empty notifications"""
         try:
             with open('/app/js/sms-service.js', 'r') as f:
                 content = f.read()
             
-            # Test: initSmsLimits accepts required dependencies
-            init_sms_deps = ['walletOf', 'payments', 'nanoid', 'bot']
-            init_sms_section = None
+            # Check for SMS dropped notification with wallet empty and overage rate
+            sms_dropped_wallet_empty = False
+            overage_rate_mentioned = False
             
-            if 'function initSmsLimits' in content:
-                init_start = content.find('function initSmsLimits')
-                init_end = content.find('}', init_start)
-                init_sms_section = content[init_start:init_end]
+            if 'inbound sms dropped' in content.lower() and 'wallet empty' in content.lower():
+                sms_dropped_wallet_empty = True
             
-            deps_found = []
-            if init_sms_section:
-                for dep in init_sms_deps:
-                    if dep in init_sms_section:
-                        deps_found.append(dep)
+            if 'OVERAGE_RATE_SMS' in content:
+                overage_rate_mentioned = True
             
             self.log_result(
-                "sms-service.js: initSmsLimits accepts walletOf, payments, nanoid, bot dependencies",
-                len(deps_found) == len(init_sms_deps),
-                f"Dependencies found: {deps_found}",
-                "HIGH" if len(deps_found) != len(init_sms_deps) else "INFO"
-            )
-            
-            # Test: Overage billing for SMS
-            sms_overage_found = 'OVERAGE_RATE_SMS' in content and 'overage' in content.lower()
-            
-            self.log_result(
-                "sms-service.js: handleInboundSms checks wallet and charges OVERAGE_RATE_SMS when SMS limit reached",
-                sms_overage_found,
-                "SMS overage billing found" if sms_overage_found else "SMS overage billing not found",
-                "HIGH" if not sms_overage_found else "INFO"
+                "sms-service.js: when SMS limit reached and wallet empty, sends 'Inbound SMS Dropped — Wallet Empty' notification with overage rate",
+                sms_dropped_wallet_empty and overage_rate_mentioned,
+                f"SMS dropped notification: {sms_dropped_wallet_empty}, Overage rate: {overage_rate_mentioned}",
+                "HIGH" if not (sms_dropped_wallet_empty and overage_rate_mentioned) else "INFO"
             )
             
         except Exception as e:
             self.log_result(
-                "sms-service.js file analysis",
+                "sms-service.js analysis",
                 False,
-                f"Error reading file: {str(e)}",
+                f"Error analyzing SMS service: {str(e)}",
                 "HIGH"
             )
 
-    def test_index_features(self):
-        """Test _index.js contains required changes"""
+    def test_health_endpoint(self):
+        """Test backend health endpoint still returns ok"""
         try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Test 1: Services initialized with proper dependencies
-            init_voice_call = 'initVoiceService' in content
-            init_sms_call = 'initSmsLimits' in content
-            
-            self.log_result(
-                "_index.js: initVoiceService and initSmsLimits are called with walletOf, payments, nanoid",
-                init_voice_call and init_sms_call,
-                f"initVoiceService called: {init_voice_call}, initSmsLimits called: {init_sms_call}",
-                "HIGH" if not (init_voice_call and init_sms_call) else "INFO"
-            )
-            
-            # Test 2: releaseByPhoneNumber used as fallback
-            release_fallback = 'releaseByPhoneNumber' in content
-            
-            self.log_result(
-                "_index.js: release number flow uses releaseByPhoneNumber as fallback",
-                release_fallback,
-                "releaseByPhoneNumber fallback found" if release_fallback else "releaseByPhoneNumber fallback not found",
-                "MEDIUM" if not release_fallback else "INFO"
-            )
-            
-            # Test 3: No moreCountries button being pushed
-            more_countries_push = 'moreCountries' in content and 'push' in content
-            
-            self.log_result(
-                "_index.js: no 'moreCountries' button being pushed to keyboard rows",
-                not more_countries_push,
-                "No moreCountries button push found" if not more_countries_push else "moreCountries button push still present",
-                "MEDIUM" if more_countries_push else "INFO"
-            )
-            
-        except Exception as e:
-            self.log_result(
-                "_index.js file analysis",
-                False,
-                f"Error reading file: {str(e)}",
-                "HIGH"
-            )
-
-    def test_auto_promo_features(self):
-        """Test auto-promo.js contains required changes"""
-        try:
-            with open('/app/js/auto-promo.js', 'r') as f:
-                content = f.read()
-            
-            # Test 1: Static messages are shorter (250-325 chars each)
-            promo_messages_match = re.search(r'promoMessages\s*=\s*{(.*?)}', content, re.DOTALL)
-            if promo_messages_match:
-                messages_section = promo_messages_match.group(1)
-                # Find individual message strings in backticks or quotes
-                message_patterns = re.findall(r'[`\'"]([^`\'"]{100,})[`\'"]', messages_section)
-                
-                char_counts = [len(msg.strip()) for msg in message_patterns]
-                short_messages = [count for count in char_counts if 200 <= count <= 350]
-                avg_length = sum(char_counts) / len(char_counts) if char_counts else 0
+            response = requests.get(f"{self.base_url}/api/health", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                status_ok = data.get("status") in ["healthy", "ok"] or data.get("proxy") == "running"
                 
                 self.log_result(
-                    "auto-promo.js: static English messages are ~250-325 chars each (shorter than before)",
-                    len(short_messages) > len(char_counts) * 0.7,  # 70% should be in range
-                    f"Messages analyzed: {len(char_counts)}, Average length: {avg_length:.0f}, In range (200-350): {len(short_messages)}",
-                    "MEDIUM" if len(short_messages) <= len(char_counts) * 0.5 else "INFO"
+                    "Backend health endpoint still returns ok",
+                    status_ok,
+                    f"Status: {data.get('status', 'N/A')}, Proxy: {data.get('proxy', 'N/A')}, Node: {data.get('node', 'N/A')}",
+                    "CRITICAL" if not status_ok else "INFO"
                 )
+                
             else:
                 self.log_result(
-                    "auto-promo.js: message length analysis",
+                    "Backend health endpoint access",
                     False,
-                    "Could not find promoMessages structure",
-                    "MEDIUM"
+                    f"HTTP {response.status_code}",
+                    "CRITICAL"
                 )
-            
-            # Test 2: AI prompt max_tokens reduced to 250, char limit ~300
-            max_tokens_match = re.search(r'max_tokens:\s*(\d+)', content)
-            char_limit_match = re.search(r'under\s+(\d+)\s+characters', content, re.IGNORECASE)
-            
-            max_tokens_ok = max_tokens_match and int(max_tokens_match.group(1)) == 250
-            char_limit_ok = char_limit_match and int(char_limit_match.group(1)) == 300
-            
-            self.log_result(
-                "auto-promo.js: AI prompt max_tokens reduced to 250, char limit ~300",
-                max_tokens_ok and char_limit_ok,
-                f"max_tokens: {max_tokens_match.group(1) if max_tokens_match else 'not found'}, char limit: {char_limit_match.group(1) if char_limit_match else 'not found'}",
-                "MEDIUM" if not (max_tokens_ok and char_limit_ok) else "INFO"
-            )
-            
+                
         except Exception as e:
             self.log_result(
-                "auto-promo.js file analysis",
+                "Backend health endpoint access",
                 False,
-                f"Error reading file: {str(e)}",
-                "HIGH"
+                f"Connection error: {str(e)}",
+                "CRITICAL"
             )
 
     def run_all_tests(self):
-        """Run all tests and generate summary"""
-        print("🔍 Starting Nomadly Telegram Bot Testing - 6 Major Changes Verification\n")
+        """Run all overage rate tests"""
+        print("🔍 Testing Cloud Phone Overage Rates Implementation\n")
         
-        # Health and infrastructure tests
+        # Environment and configuration tests
+        self.test_backend_env_overage_rates()
+        self.test_phone_config_reads_env_vars()
+        
+        # UI text tests
+        self.test_select_plan_text_includes_overage_info()
+        self.test_order_summary_includes_overage_line()
+        self.test_hub_welcome_mentions_overage_rates()
+        self.test_manage_number_view_dynamic_rates()
+        
+        # Service behavior tests
+        self.test_scheduler_usage_messages_dynamic_rates()
+        self.test_voice_service_wallet_notifications()
+        self.test_sms_service_wallet_notifications()
+        
+        # Health test
         self.test_health_endpoint()
-        self.test_bot_logs_initialization()
-        
-        # Code analysis tests
-        self.test_phone_config_features()
-        self.test_phone_scheduler_features()
-        self.test_telnyx_service_features()
-        self.test_voice_service_features()
-        self.test_sms_service_features()
-        self.test_index_features()
-        self.test_auto_promo_features()
         
         # Generate summary
         print(f"\n📊 Test Summary:")
@@ -562,8 +499,8 @@ class NomadlyBotTester:
         }
 
 if __name__ == "__main__":
-    tester = NomadlyBotTester()
+    tester = OverageRatesTestier()
     results = tester.run_all_tests()
     
     # Exit with appropriate code
-    sys.exit(0 if results['success_rate'] > 85 else 1)
+    sys.exit(0 if results['success_rate'] > 90 else 1)
