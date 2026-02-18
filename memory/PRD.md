@@ -24,12 +24,14 @@ User requested setup and configuration of existing NomadlyBot codebase - a Teleg
 ## What's Been Implemented (Jan 2026)
 - [x] Node.js dependencies installed
 - [x] Root `.env` configured with all 90+ environment variables
-- [x] `SELF_URL` and `SELF_URL_PROD` pointed to pod URL
+- [x] `SELF_URL` and `SELF_URL_PROD` pointed to pod URL with /api prefix
 - [x] Backend `server.py` updated with dotenv loading
-- [x] Telegram webhook set and verified
+- [x] Telegram webhook set and verified (with /api prefix for K8s ingress)
 - [x] MongoDB connected
 - [x] All services running (FastAPI, Node.js, React)
 - [x] AutoPromo system initialized (12 scheduled jobs)
+- [x] **Target Leads feature** — 5 bank targets (JPMorgan C, BOA, Wfargo Bnk, Citi Bnk, U.S Bnk) with city→area code flow joining buy leads pipeline
+- [x] Multi-language support for Target Leads (EN, FR, HI, ZH)
 
 ## User Personas
 - **Bot Admin**: Manages bot settings, views analytics, broadcasts messages
