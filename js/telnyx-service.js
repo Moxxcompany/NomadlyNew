@@ -86,7 +86,10 @@ async function listNumbers() {
 async function createSIPConnection(name, webhookUrl) {
   try {
     const body = {
+      active: true,
       connection_name: name,
+      user_name: 'nomadly_sip_main',
+      password: 'NomadlySIP#2026!Secure',
       webhook_event_url: webhookUrl,
       webhook_api_version: '2',
     }
@@ -132,6 +135,7 @@ async function createMessagingProfile(name, webhookUrl) {
       name: name,
       webhook_url: webhookUrl,
       webhook_api_version: '2',
+      whitelisted_destinations: ['US', 'CA', 'GB', 'AU', 'DE', 'FR'],
     }
     const res = await axios.post(`${BASE}/messaging_profiles`, body, { headers: headers() })
     return res.data?.data || null
