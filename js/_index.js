@@ -5269,7 +5269,7 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpIvr)
       const ivrConf = num.features?.ivr || {}
       const btns = ivrConf.enabled
-        ? [[pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]]
+        ? [[pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]]
         : [[pc.enableIvr]]
       return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of(btns))
     }
@@ -5564,7 +5564,7 @@ bot?.on('message', async msg => {
       await saveInfo('cpActiveNumber', num)
       send(chatId, phoneConfig.txt.ivrEnabled(num.phoneNumber))
       return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
-        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
       ]))
     }
     if (message === pc.disableIvr) {
@@ -5615,7 +5615,7 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpIvr)
       const ivrConf = num.features?.ivr || {}
       return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
-        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
       ]))
     }
     const ivrConf = num.features?.ivr || { enabled: true, options: {} }
@@ -5626,7 +5626,7 @@ bot?.on('message', async msg => {
     send(chatId, phoneConfig.txt.ivrGreetingSet(message))
     set(state, chatId, 'action', a.cpIvr)
     return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
-      [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
+      [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
     ]))
   }
 
@@ -5639,7 +5639,7 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpIvr)
       const ivrConf = num.features?.ivr || {}
       return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
-        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
       ]))
     }
     // Parse: KEY ACTION DESTINATION
@@ -5669,7 +5669,7 @@ bot?.on('message', async msg => {
     send(chatId, phoneConfig.txt.ivrOptionAdded(key, action2, destination))
     set(state, chatId, 'action', a.cpIvr)
     return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
-      [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
+      [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
     ]))
   }
 
@@ -5682,7 +5682,7 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpIvr)
       const ivrConf = num.features?.ivr || {}
       return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
-        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
       ]))
     }
     const keyMatch = message.match(/Key\s*(\S+)/)
@@ -5699,7 +5699,7 @@ bot?.on('message', async msg => {
     }
     set(state, chatId, 'action', a.cpIvr)
     return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
-      [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
+      [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
     ]))
   }
 
