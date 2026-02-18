@@ -707,6 +707,44 @@ bot?.on('message', async msg => {
   if (isGroupChat) {
     return
   }
+
+  // ── Handle voice/audio messages for voicemail custom greeting ──
+  if ((msg?.voice || msg?.audio) && chatId) {
+    const userInfo = await get(state, chatId)
+    if (userInfo?.action === 'cpVmAudioUpload') {
+      try {
+        const fileId = msg.voice?.file_id || msg.audio?.file_id
+        const fileLink = await bot.getFileLink(fileId)
+        const infoData = await get(state, chatId + '_info')
+        const num = infoData?.cpActiveNumber
+        if (num) {
+          const vm = num.features?.voicemail || {}
+          vm.greetingType = 'custom'
+          vm.customAudioGreetingUrl = fileLink
+          vm.customGreetingText = null
+          await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'voicemail', vm)
+          num.features.voicemail = vm
+          await set(state, chatId + '_info', { ...infoData, cpActiveNumber: num })
+          const pc = phoneConfig.btn
+          send(chatId, phoneConfig.txt.vmAudioSaved)
+          await set(state, chatId, { ...userInfo, action: 'cpVoicemail' })
+          const btns = vm.enabled
+            ? [['🔊 Greeting'],
+               ['📲 VM to Telegram ' + (vm.forwardToTelegram !== false ? '✅ ON' : '❌ OFF')],
+               ['📧 VM to Email ' + (vm.forwardToEmail ? '✅ ' + vm.forwardToEmail : '❌ OFF')],
+               [`⏰ Ring Time: ${vm.ringTimeout || 25}s`],
+               [pc.disableVoicemail]]
+            : [[pc.enableVoicemail]]
+          return send(chatId, phoneConfig.txt.voicemailMenu(num.phoneNumber, vm), { reply_markup: { keyboard: btns }, parse_mode: 'HTML' })
+        }
+      } catch (e) {
+        log(`[Voice] Audio greeting upload error: ${e.message}`)
+        return send(chatId, '❌ Failed to process audio. Please try again.')
+      }
+    }
+    // If not in audio upload state, ignore voice/audio messages
+    return
+  }
   
   log('message: ' + message + '\tfrom: ' + chatId + ' ' + msg?.from?.username)
 
