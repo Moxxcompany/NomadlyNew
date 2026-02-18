@@ -2,8 +2,9 @@
 // Voice Service — Call Handling with IVR, Recording, Limits & Feature-Gating
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const { log } = require('console')
-const { get, set } = require('./db.js')
-const { formatPhone, formatDuration, canAccessFeature, plans } = require('./phone-config.js')
+const { get, set, atomicIncrement } = require('./db.js')
+const { formatPhone, formatDuration, canAccessFeature, plans, OVERAGE_RATE_MIN, OVERAGE_RATE_SMS } = require('./phone-config.js')
+const { getBalance } = require('./utils.js')
 
 let _bot = null
 let _phoneNumbersOf = null
@@ -12,6 +13,9 @@ let _telnyxApi = null
 let _telnyxResources = null
 let _translation = null
 let _ivrAnalytics = null
+let _walletOf = null
+let _payments = null
+let _nanoid = null
 
 // In-memory store for active call sessions (callControlId → session data)
 const activeCalls = {}
@@ -24,7 +28,10 @@ function initVoiceService(deps) {
   _telnyxResources = deps.telnyxResources
   _translation = deps.translation
   _ivrAnalytics = deps.ivrAnalytics
-  log('[VoiceService] Initialized with IVR + Recording + Analytics + Limits enforcement')
+  _walletOf = deps.walletOf
+  _payments = deps.payments
+  _nanoid = deps.nanoid
+  log('[VoiceService] Initialized with IVR + Recording + Analytics + Limits + Overage billing')
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
