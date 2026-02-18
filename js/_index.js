@@ -1038,6 +1038,23 @@ bot?.on('message', async msg => {
       send(chatId, t.showWallet(usdBal, ngnBal))
       send(chatId, vp.askPaymentMethod, info.vpsDetails?.billingCycle === 'Hourly' && !lowBalance ? k.of([payIn.wallet]) : k.pay)
     },
+    // ━━━ Cloud Phone goto functions ━━━
+    submenu5: () => {
+      set(state, chatId, 'action', a.submenu5)
+      const pc = phoneConfig.btn
+      send(chatId, phoneConfig.txt.hubWelcome, k.of([
+        [pc.buyPhoneNumber],
+        [pc.myNumbers],
+        [pc.sipSettings],
+        [pc.usageBilling],
+      ]))
+    },
+    'phone-pay': async () => {
+      set(state, chatId, 'action', 'phone-pay')
+      const { usdBal, ngnBal } = await getBalance(walletOf, chatId)
+      send(chatId, t.showWallet(usdBal, ngnBal))
+      send(chatId, phoneConfig.txt.paymentPrompt(info.cpPrice), k.pay)
+    },
     'choose-domain-to-buy': async () => {
       let text = ``
       if (await isSubscribed(chatId)) {
