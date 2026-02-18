@@ -268,6 +268,22 @@ bot?.on('my_chat_member', async update => {
 })
 
 const send = (chatId, message, options) => {
+
+// Unified coupon validator — checks static codes + daily auto-generated codes
+async function resolveCoupon(code, chatId) {
+  // 1. Check static coupons first
+  const staticDiscount = discountOn[code]
+  if (!isNaN(staticDiscount)) return { discount: staticDiscount, type: 'static' }
+
+  // 2. Check daily auto-generated coupons
+  if (dailyCouponSystem) {
+    const result = await dailyCouponSystem.validateDailyCoupon(code, chatId)
+    if (result?.error === 'already_used') return { error: 'already_used' }
+    if (result?.discount) return { discount: result.discount, type: 'daily', code }
+  }
+
+  return null
+}
   log('reply: ' + message + ' ' + (options?.reply_markup?.keyboard?.map(i => i) || '') + '\tto: ' + chatId + '\n')
   bot?.sendMessage(chatId, message, options)?.catch(e => log(e.message + ': ' + chatId))
 }
