@@ -1,10 +1,45 @@
-// function get(table, key) {
-//   return table[key];
-// }
-// function set(table, key, value) {
-//   table[key] = value;
-// }
-// del should be some mark X instead of del
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// MongoDB Data Access Layer with Retry Logic
+// Handles transient connection drops from Railway proxy
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const MAX_RETRIES = 2
+const RETRY_DELAY_MS = 800
+
+// Retryable MongoDB error codes and names
+const isRetryable = (error) => {
+  if (!error) return false
+  const msg = error.message || ''
+  const name = error.name || ''
+  return (
+    name === 'MongoServerSelectionError' ||
+    name === 'MongoNetworkError' ||
+    name === 'MongoNetworkTimeoutError' ||
+    msg.includes('timed out') ||
+    msg.includes('connection') && msg.includes('closed') ||
+    msg.includes('pool was cleared') ||
+    msg.includes('topology was destroyed') ||
+    error.code === 11600 || // interrupted
+    error.code === 11602 // interrupted due to repl state change
+  )
+}
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
+const withRetry = async (fn, label) => {
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      return await fn()
+    } catch (error) {
+      if (attempt < MAX_RETRIES && isRetryable(error)) {
+        await sleep(RETRY_DELAY_MS * (attempt + 1))
+        continue
+      }
+      // Final attempt or non-retryable — let caller handle
+      throw error
+    }
+  }
+}
 
 const increment = async (c, key, val = 1, valueInside) => {
   try {
@@ -25,12 +60,14 @@ const increment = async (c, key, val = 1, valueInside) => {
 // Atomic increment using MongoDB $inc — safe for concurrent wallet operations
 const atomicIncrement = async (c, key, field, amount) => {
   try {
-    await c.updateOne(
-      { _id: key },
-      { $inc: { [field]: amount } },
-      { upsert: true }
+    return await withRetry(() =>
+      c.updateOne(
+        { _id: key },
+        { $inc: { [field]: amount } },
+        { upsert: true }
+      ).then(() => true),
+      `atomicIncrement(${c.collectionName}, ${key}, ${field})`
     )
-    return true
   } catch (error) {
     console.error(`Error atomicIncrement: ${key}.${field} by ${amount} in ${c.collectionName}:`, error)
     return false
@@ -49,8 +86,10 @@ const decrement = async (c, key) => {
 
 async function get(c, key) {
   try {
-    const result = await c.findOne({ _id: key })
-    // console.log({ findIn: c.collectionName, key, result });
+    const result = await withRetry(() =>
+      c.findOne({ _id: key }),
+      `get(${c.collectionName}, ${key})`
+    )
     if (result?.val === 0) return 0
     if (result?.val === false) return false
     if (result?.val === null) return null
@@ -64,7 +103,10 @@ async function get(c, key) {
 
 async function getAll(c) {
   try {
-    const result = await c.find({}).toArray()
+    const result = await withRetry(() =>
+      c.find({}).toArray(),
+      `getAll(${c.collectionName})`
+    )
     return result
   } catch (error) {
     console.error(`Error getAll: ${c}:`, error)
@@ -73,8 +115,6 @@ async function getAll(c) {
 }
 
 async function set(c, key, value, valueInside) {
-  // Note: This function uses upsert which could have race conditions in high-concurrency scenarios.
-  // For critical operations requiring atomicity, consider using MongoDB transactions.
   try {
     if (!c || !c.updateOne) {
       throw new Error('Invalid collection object provided')
@@ -86,14 +126,20 @@ async function set(c, key, value, valueInside) {
 
     let result
     if (valueInside === undefined) {
-      result = await c.updateOne({ _id: key }, { $set: { val: value } }, { upsert: true })
+      result = await withRetry(() =>
+        c.updateOne({ _id: key }, { $set: { val: value } }, { upsert: true }),
+        `set(${c.collectionName}, ${key})`
+      )
     } else {
       // Track lastUpdated timestamp for action changes (enables stale state cleanup)
       const updateFields = { [value]: valueInside }
       if (value === 'action') {
         updateFields.lastUpdated = new Date()
       }
-      result = await c.updateOne({ _id: key }, { $set: updateFields }, { upsert: true })
+      result = await withRetry(() =>
+        c.updateOne({ _id: key }, { $set: updateFields }, { upsert: true }),
+        `set(${c.collectionName}, ${key}, ${value})`
+      )
     }
 
     // Verify the operation succeeded
@@ -101,14 +147,10 @@ async function set(c, key, value, valueInside) {
       console.warn(`Set operation not acknowledged for key: ${key} in ${c.collectionName}`)
     }
 
-    // let a = JSON.stringify(valueInside);
-    // a = a === undefined ? '' : ` ${a}`;
-    // console.log(`${key}: ${JSON.stringify(value)}${a} set in ${c.collectionName}`);
     return true
   } catch (error) {
     console.error(`Error set: ${key} -> ${JSON.stringify(value)} in ${c.collectionName}:`, error?.message || error)
     
-    // Log additional context for debugging
     if (error.code) {
       console.error(`MongoDB error code: ${error.code}`)
     }
@@ -119,11 +161,14 @@ async function set(c, key, value, valueInside) {
 
 async function insert(collection, chatId, key, value) {
   try {
-    await collection.insertOne({
-      chatId: chatId,
-      [key]: value,
-      timestamp: new Date()
-    });
+    await withRetry(() =>
+      collection.insertOne({
+        chatId: chatId,
+        [key]: value,
+        timestamp: new Date()
+      }),
+      `insert(${collection.collectionName}, ${chatId})`
+    )
   } catch (error) {
     console.error(`Error setting: ${key} -> ${JSON.stringify(value)} in ${collection.collectionName}:`, error);
   }
@@ -131,10 +176,13 @@ async function insert(collection, chatId, key, value) {
 
 async function getLatestTransactionByChatId(collection, chatId) {
   try {
-    const result = await collection.find({ chatId: chatId })
-      .sort({ timestamp: -1 })
-      .limit(1)
-      .toArray();
+    const result = await withRetry(() =>
+      collection.find({ chatId: chatId })
+        .sort({ timestamp: -1 })
+        .limit(1)
+        .toArray(),
+      `getLatestTransactionByChatId(${collection.collectionName}, ${chatId})`
+    )
     return result.length > 0 ? result[0] : null;
   } catch (error) {
     console.error(`Error getting transaction for chatId ${chatId} from ${collection.collectionName}:`, error);
@@ -144,16 +192,17 @@ async function getLatestTransactionByChatId(collection, chatId) {
 
 async function removeKeyFromDocumentById(collection, chatId, key) {
   try {
-    const query = { _id: chatId }; // Query to find the document by _id field
-    const update = { $unset: { [key]: "" } }; // Unset the specific key
+    const query = { _id: chatId };
+    const update = { $unset: { [key]: "" } };
 
-    const result = await collection.updateOne(query, update);
+    const result = await withRetry(() =>
+      collection.updateOne(query, update),
+      `removeKeyFromDocumentById(${collection.collectionName}, ${chatId}, ${key})`
+    )
 
     if (result.matchedCount === 0) {
       console.log(`No document found with chatId: ${chatId}`);
-    } else if (result.modifiedCount === 0) {
-      // console.log(`Key: ${key} was not found in document with chatId: ${chatId}`);
-    } else {
+    } else if (result.modifiedCount > 0) {
       console.log(`Successfully removed key: ${key} from document with chatId: ${chatId}`);
     }
   } catch (error) {
@@ -189,7 +238,10 @@ async function assignPackageToUser(c, chatId, packageName) {
   }
 
   try {
-    const user = await c.findOne({ _id: chatId })
+    const user = await withRetry(() =>
+      c.findOne({ _id: chatId }),
+      `assignPackageToUser.find(${chatId})`
+    )
 
     if (user && user.currentPackage) {
       const updatedPreviousPackages = user.previousPackages || []
@@ -200,28 +252,34 @@ async function assignPackageToUser(c, chatId, packageName) {
         status: 'expired',
       })
 
-      await c.updateOne(
-        { _id: chatId },
-        {
-          $set: {
-            currentPackage: newPackage,
-            reminders: newReminders,
-            previousPackages: updatedPreviousPackages,
+      await withRetry(() =>
+        c.updateOne(
+          { _id: chatId },
+          {
+            $set: {
+              currentPackage: newPackage,
+              reminders: newReminders,
+              previousPackages: updatedPreviousPackages,
+            },
           },
-        },
-        { upsert: true },
+          { upsert: true },
+        ),
+        `assignPackageToUser.update(${chatId})`
       )
     } else {
-      await c.updateOne(
-        { _id: chatId },
-        {
-          $set: {
-            currentPackage: newPackage,
-            reminders: newReminders,
-            previousPackages: user?.previousPackages || [],
+      await withRetry(() =>
+        c.updateOne(
+          { _id: chatId },
+          {
+            $set: {
+              currentPackage: newPackage,
+              reminders: newReminders,
+              previousPackages: user?.previousPackages || [],
+            },
           },
-        },
-        { upsert: true },
+          { upsert: true },
+        ),
+        `assignPackageToUser.upsert(${chatId})`
       )
     }
 
@@ -233,8 +291,10 @@ async function assignPackageToUser(c, chatId, packageName) {
 
 async function del(c, _id) {
   try {
-    const result = await c.deleteOne({ _id })
-    // console.log(`Deleted ${result.deletedCount >= 1 ? 'True' : 'False'} in ${c.collectionName}`);
+    const result = await withRetry(() =>
+      c.deleteOne({ _id }),
+      `del(${c.collectionName}, ${_id})`
+    )
     return result.deletedCount === 1
   } catch (error) {
     console.error('Error del:', error)
