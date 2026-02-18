@@ -216,30 +216,47 @@ async function handleCallInitiated(payload) {
     recordingEnabled: num.features?.recording === true && canAccessFeature(num.plan, 'callRecording'),
   }
 
-  // ── MID-CALL LIMIT MONITOR (non-Business plans only) ──
+  // ── MID-CALL LIMIT MONITOR (with overage billing) ──
   const minuteLimit = getMinuteLimit(num.plan)
   if (minuteLimit !== Infinity) {
     const session = activeCalls[callControlId]
     session._limitTimer = setInterval(async () => {
       const sess = activeCalls[callControlId]
       if (!sess) { clearInterval(session._limitTimer); return }
-      // Calculate projected total = already used + this call's elapsed minutes so far
       const elapsedSec = Math.floor((Date.now() - sess.startedAt.getTime()) / 1000)
       const elapsedMin = Math.ceil(elapsedSec / 60)
       const projectedTotal = (num.minutesUsed || 0) + elapsedMin
       if (projectedTotal >= minuteLimit) {
-        log(`[Voice] Mid-call limit reached for ${to}: projected ${projectedTotal}/${minuteLimit} min. Disconnecting.`)
-        clearInterval(session._limitTimer)
-        sess._limitDisconnect = true
-        try {
-          await _telnyxApi.speakOnCall(callControlId, 'Your call limit has been reached. This call will now end. Please upgrade your plan for more minutes.')
-          setTimeout(() => _telnyxApi.hangupCall(callControlId), 6000)
-        } catch (e) {
-          await _telnyxApi.hangupCall(callControlId).catch(() => {})
+        // Check wallet for overage
+        let canContinue = false
+        if (_walletOf) {
+          try {
+            const { usdBal } = await getBalance(_walletOf, chatId)
+            if (usdBal >= OVERAGE_RATE_MIN) {
+              canContinue = true
+              // Charge 1 minute of overage
+              await atomicIncrement(_walletOf, chatId, 'usdOut', OVERAGE_RATE_MIN)
+              if (!sess._overageNotified) {
+                sess._overageNotified = true
+                _bot?.sendMessage(chatId, `💰 <b>Overage Billing Active</b>\n\n📞 ${formatPhone(to)}\nYour plan minutes are exhausted. Charging $${OVERAGE_RATE_MIN}/min from wallet.\nWallet: $${(usdBal - OVERAGE_RATE_MIN).toFixed(2)}`, { parse_mode: 'HTML' }).catch(() => {})
+              }
+            }
+          } catch (e) { log(`[Voice] Mid-call overage error: ${e.message}`) }
         }
-        _bot?.sendMessage(chatId, `🚫 <b>Call Auto-Disconnected</b>\n\n📞 ${formatPhone(to)}\n👤 Caller: ${formatPhone(from)}\n⏱️ Duration: ~${elapsedMin} min\n\nYour inbound minutes limit (${minuteLimit} min) was reached during this call. Upgrade your plan for more minutes.`, { parse_mode: 'HTML' }).catch(() => {})
+        if (!canContinue) {
+          log(`[Voice] Mid-call limit reached for ${to}: projected ${projectedTotal}/${minuteLimit} min, no wallet balance. Disconnecting.`)
+          clearInterval(session._limitTimer)
+          sess._limitDisconnect = true
+          try {
+            await _telnyxApi.speakOnCall(callControlId, 'Your call limit and wallet balance have been exhausted. This call will now end.')
+            setTimeout(() => _telnyxApi.hangupCall(callControlId), 5000)
+          } catch (e) {
+            await _telnyxApi.hangupCall(callControlId).catch(() => {})
+          }
+          _bot?.sendMessage(chatId, `🚫 <b>Call Disconnected — Limit + Wallet Exhausted</b>\n\n📞 ${formatPhone(to)}\n👤 Caller: ${formatPhone(from)}\n⏱️ ~${elapsedMin} min\n\nPlan minutes (${minuteLimit}) and wallet balance exhausted. Top up your wallet or upgrade your plan.`, { parse_mode: 'HTML' }).catch(() => {})
+        }
       }
-    }, 60000) // Check every 60 seconds
+    }, 60000)
   }
 
   // Answer the call
