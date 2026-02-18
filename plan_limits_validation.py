@@ -20,14 +20,14 @@ class PlanLimitsValidator:
             tests_passed = 0
             tests_total = 6
             
-            # Extract plans object
-            plans_match = re.search(r'const plans = {([^}]+)};', content, re.MULTILINE | re.DOTALL)
+            # Extract plans object - handle multi-line structure
+            plans_match = re.search(r'const plans = \{(.*?)\}', content, re.MULTILINE | re.DOTALL)
             if not plans_match:
                 print("   ❌ Plans configuration not found")
                 self.tests_run += 1
                 return False, {}
             
-            plans_text = plans_match.group(1)
+            plans_text = plans_match.group(0)
             
             # 1. Check Starter plan: 100 minutes, 50 SMS
             if 'minutes: 100' in plans_text and 'sms: 50' in plans_text:
