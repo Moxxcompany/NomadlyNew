@@ -1181,11 +1181,12 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
    * Send a promo to a single user (with banner image)
    * @param {string|null} dynamicMessage - AI-generated message, or null to use static
    */
-  async function sendPromoToUser(chatId, theme, variationIndex, lang, dynamicMessage) {
+  async function sendPromoToUser(chatId, theme, variationIndex, lang, dynamicMessage, couponLine) {
     try {
       if (await isOptedOut(chatId)) return { success: true, skipped: true }
 
-      const caption = dynamicMessage || (promoMessages[lang]?.[theme] || promoMessages.en[theme])[variationIndex % 5]
+      let caption = dynamicMessage || (promoMessages[lang]?.[theme] || promoMessages.en[theme])[variationIndex % 5]
+      if (couponLine) caption += '\n\n' + couponLine
       const bannerUrl = PROMO_BANNERS[theme]
 
       const trySend = async (useHtml) => {
