@@ -2588,8 +2588,14 @@ bot?.on('message', async msg => {
     return goto.selectPlan(a.starterPlan)
   }
 
-  if (message === user.contactSupport) {
-    send(chatId, t.support)
+  if (message === user.contactSupport || message === user.getSupport) {
+    await set(supportSessions, chatId, Date.now())
+    await saveInfo('action', a.supportChat)
+    send(chatId, `💬 <b>Live Support</b>\n\nYou're now connected with support. Type your message below and we'll respond as soon as possible.\n\nSend /done when you're finished.`, { parse_mode: 'HTML', reply_markup: { keyboard: [['/done']], resize_keyboard: true } })
+    // Notify admin — private message only, not to groups
+    const name = await get(nameOf, chatId)
+    send(TELEGRAM_ADMIN_CHAT_ID, `🔔 <b>Support session opened</b>\nUser: <b>${name || 'unknown'}</b> (${chatId})\n@${msg?.from?.username || 'no_username'}\n\nReply with: /reply ${chatId} <i>your message</i>\nClose with: /close ${chatId}`, { parse_mode: 'HTML' })
+    log(`[Support] Session opened for ${chatId} ${name}`)
     return
   }
 
