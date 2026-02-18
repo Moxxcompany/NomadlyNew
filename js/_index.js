@@ -2104,7 +2104,10 @@ bot?.on('message', async msg => {
       let area = ['USA', 'Canada'].includes(info?.country) ? info?.area : 'Area Codes'
       let areaCodes
 
-      if (['Australia'].includes(info?.country)) {
+      if (info?.targetAreaCodes) {
+        // Target Leads flow — area codes already resolved
+        areaCodes = info?.areaCode === 'Mixed Area Codes' ? info.targetAreaCodes : [info?.areaCode]
+      } else if (['Australia'].includes(info?.country)) {
         areaCodes = ['4']
       } else {
         areaCodes =
