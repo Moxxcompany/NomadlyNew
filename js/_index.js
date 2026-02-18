@@ -4701,6 +4701,12 @@ bot?.on('message', async msg => {
     }
     return goto.submenu3()
   }
+  if (message === user.cloudPhone || message === phoneConfig.btn.cloudPhone) {
+    if (process.env.PHONE_SERVICE_ON !== 'true') {
+      return send(chatId, `📞 Cloud Phone is coming soon! Contact ${process.env.SUPPORT_USERNAME || '@support'} for updates.`, trans('o'))
+    }
+    return goto.submenu5()
+  }
   if (action === a.phoneNumberLeads) {
     const phoneNumberLeads = trans('phoneNumberLeads')
     if (phoneNumberLeads[1] === message) return goto.validatorSelectCountry()
