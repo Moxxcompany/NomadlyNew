@@ -779,6 +779,12 @@ bot?.on('message', async msg => {
     targetSelectCity: 'targetSelectCity',
     targetSelectAreaCode: 'targetSelectAreaCode',
     targetLeadsConfirm: 'targetLeadsConfirm',
+    // Custom lead request
+    customLeadRequestName: 'customLeadRequestName',
+    customLeadRequestCity: 'customLeadRequestCity',
+    customLeadRequestDetails: 'customLeadRequestDetails',
+    // Support chat
+    supportChat: 'supportChat',
     //validatePhoneNumbers
     validatorSelectCountry: 'validatorSelectCountry',
     validatorPhoneNumber: 'validatorPhoneNumber',
