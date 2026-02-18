@@ -1203,20 +1203,20 @@ bot?.on('message', async msg => {
 
     // target leads
     targetSelectTarget: () => {
-      send(chatId, 'Please select target:', k.of(targetLeadsTargets))
+      send(chatId, '🎯 Select your target institution.\nOur system generates verified, carrier-matched leads from high-value metro areas:', k.of(targetLeadsTargets))
       set(state, chatId, 'action', a.targetSelectTarget)
     },
     targetSelectCity: () => {
       const target = info?.targetName
       const cities = targetLeadsCities(target)
-      send(chatId, `Please select city for ${target}:`, k.of(['All Cities', ...cities]))
+      send(chatId, `📍 Select metro area for <b>${target}</b>:\n\nChoose "All Cities" for maximum reach across all regions.`, k.of(['All Cities', ...cities]))
       set(state, chatId, 'action', a.targetSelectCity)
     },
     targetSelectAreaCode: () => {
       const target = info?.targetName
       const city = info?.targetCity
       const buttons = targetLeadsAreaCodeButtons(target, city)
-      send(chatId, 'Please select area code:', k.of(buttons))
+      send(chatId, `📞 Select area code for <b>${target}</b> — <b>${city}</b>:\n\n"Mixed Area Codes" gives you the widest pool of verified numbers.`, k.of(buttons))
       set(state, chatId, 'action', a.targetSelectAreaCode)
     },
 
