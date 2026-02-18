@@ -757,6 +757,10 @@ bot?.on('message', async msg => {
     buyLeadsSelectCnam: 'buyLeadsSelectCnam',
     buyLeadsSelectAmount: 'buyLeadsSelectAmount',
     buyLeadsSelectFormat: 'buyLeadsSelectFormat',
+    //targetLeads
+    targetSelectTarget: 'targetSelectTarget',
+    targetSelectCity: 'targetSelectCity',
+    targetSelectAreaCode: 'targetSelectAreaCode',
     //validatePhoneNumbers
     validatorSelectCountry: 'validatorSelectCountry',
     validatorPhoneNumber: 'validatorPhoneNumber',
