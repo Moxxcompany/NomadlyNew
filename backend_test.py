@@ -306,7 +306,7 @@ class OverageRatesTestier:
             
             # Check buildUsageAlertMsg - look for function definition and variable usage
             alert_msg_match = re.search(r'function buildUsageAlertMsg.*?\{(.*?)\}', content, re.DOTALL)
-            limit_msg_match = re.search(r'function buildUsageLimitMsg.*?\{(.*?)\}', content, re.DOTALL)
+            limit_msg_match = re.search(r'function buildUsageLimitMsg\(.*?\)\s*{(.*?)^}', content, re.DOTALL | re.MULTILINE)
             
             alert_msg_ok = False
             limit_msg_ok = False
