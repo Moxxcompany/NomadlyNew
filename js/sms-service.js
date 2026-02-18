@@ -6,7 +6,9 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const axios = require('axios')
 const { log } = require('console')
-const { formatPhone, plans } = require('./phone-config')
+const { formatPhone, plans, OVERAGE_RATE_SMS } = require('./phone-config')
+const { atomicIncrement } = require('./db.js')
+const { getBalance } = require('./utils.js')
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY
 const MAIL_SENDER = process.env.MAIL_SENDER || 'sms@nomadly.com'
@@ -14,11 +16,19 @@ const MAIL_SENDER = process.env.MAIL_SENDER || 'sms@nomadly.com'
 // These will be set by the main app via initSmsLimits
 let _incrementSmsUsed = null
 let _isSmsLimitReached = null
+let _walletOf = null
+let _payments = null
+let _nanoid = null
+let _bot = null
 
 function initSmsLimits(deps) {
   _incrementSmsUsed = deps.incrementSmsUsed
   _isSmsLimitReached = deps.isSmsLimitReached
-  log('[SmsService] Initialized with real-time limit enforcement')
+  _walletOf = deps.walletOf
+  _payments = deps.payments
+  _nanoid = deps.nanoid
+  _bot = deps.bot
+  log('[SmsService] Initialized with real-time limit enforcement + overage billing')
 }
 
 // ── Forward SMS to Telegram chat ──
