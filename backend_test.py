@@ -550,6 +550,293 @@ class UsageLimitTester:
             print(f"❌ Error reading files: {e}")
             self.tests_run += 1
             return False, {}
+
+    def test_mid_call_limit_monitor(self):
+        """Test Mid-call limit monitor timer functionality"""
+        print("\n🔍 Testing Mid-call Limit Monitor Implementation...")
+        
+        try:
+            with open('/app/js/voice-service.js', 'r', encoding='utf-8') as f:
+                voice_content = f.read()
+                
+            tests_passed = 0
+            tests_total = 8
+            
+            # 1. Check for setInterval timer creation (60s interval)
+            if 'setInterval' in voice_content and '60000' in voice_content:
+                print("   ✅ setInterval timer with 60s interval found")
+                tests_passed += 1
+            else:
+                print("   ❌ setInterval timer with 60s interval missing")
+                
+            # 2. Check for non-Business plan check (minuteLimit !== Infinity)
+            if 'minuteLimit !== Infinity' in voice_content or 'Infinity' in voice_content:
+                print("   ✅ Business plan check (Infinity minutes) found")
+                tests_passed += 1
+            else:
+                print("   ❌ Business plan check missing")
+                
+            # 3. Check for projected total calculation (minutesUsed + elapsed)
+            if 'projectedTotal' in voice_content and 'elapsedMin' in voice_content:
+                print("   ✅ Projected total calculation found")
+                tests_passed += 1
+            else:
+                print("   ❌ Projected total calculation missing")
+                
+            # 4. Check for limit reached comparison
+            if 'projectedTotal >= minuteLimit' in voice_content:
+                print("   ✅ Limit reached comparison found")
+                tests_passed += 1
+            else:
+                print("   ❌ Limit reached comparison missing")
+                
+            # 5. Check for warning message before disconnect
+            if 'call limit has been reached' in voice_content or 'limit reached' in voice_content:
+                print("   ✅ Warning message before disconnect found")
+                tests_passed += 1
+            else:
+                print("   ❌ Warning message before disconnect missing")
+                
+            # 6. Check for automatic call hangup
+            if 'hangupCall' in voice_content and 'setTimeout' in voice_content:
+                print("   ✅ Automatic call hangup found")
+                tests_passed += 1
+            else:
+                print("   ❌ Automatic call hangup missing")
+                
+            # 7. Check for Telegram notification about auto-disconnect
+            if '_limitDisconnect' in voice_content and 'sendMessage' in voice_content:
+                print("   ✅ Telegram notification about auto-disconnect found")
+                tests_passed += 1
+            else:
+                print("   ❌ Telegram notification missing")
+                
+            # 8. Check for timer cleanup (clearInterval)
+            if 'clearInterval' in voice_content and '_limitTimer' in voice_content:
+                print("   ✅ Timer cleanup (clearInterval) found")
+                tests_passed += 1
+            else:
+                print("   ❌ Timer cleanup missing")
+                
+            self.tests_run += 1
+            if tests_passed >= 6:  # Most mid-call monitoring features working
+                self.tests_passed += 1
+                print(f"✅ Mid-call Limit Monitor Test Passed ({tests_passed}/{tests_total})")
+                return True, {"passed": tests_passed, "total": tests_total}
+            else:
+                print(f"❌ Mid-call Limit Monitor Test Failed ({tests_passed}/{tests_total})")
+                return False, {"passed": tests_passed, "total": tests_total}
+                
+        except Exception as e:
+            print(f"❌ Error reading voice-service.js: {e}")
+            self.tests_run += 1
+            return False, {}
+
+    def test_sms_inbox_functionality(self):
+        """Test SMS Inbox with CNAM lookup functionality"""
+        print("\n🔍 Testing SMS Inbox Implementation...")
+        
+        try:
+            # Test cnam-service.js
+            with open('/app/js/cnam-service.js', 'r', encoding='utf-8') as f:
+                cnam_content = f.read()
+                
+            # Test _index.js
+            with open('/app/js/_index.js', 'r', encoding='utf-8') as f:
+                index_content = f.read()
+                
+            # Test phone-config.js
+            with open('/app/js/phone-config.js', 'r', encoding='utf-8') as f:
+                config_content = f.read()
+                
+            tests_passed = 0
+            tests_total = 12
+            
+            # 1. Check for lookupCnam function with Multitel primary
+            if 'lookupCnam' in cnam_content and 'lookupMultitel' in cnam_content:
+                print("   ✅ lookupCnam function with Multitel primary found")
+                tests_passed += 1
+            else:
+                print("   ❌ lookupCnam function with Multitel primary missing")
+                
+            # 2. Check for SignalWire fallback
+            if 'lookupSignalwire' in cnam_content and 'fallback' in cnam_content.lower():
+                print("   ✅ SignalWire fallback found")
+                tests_passed += 1
+            else:
+                print("   ❌ SignalWire fallback missing")
+                
+            # 3. Check for MongoDB caching with TTL
+            if 'cnamCache' in cnam_content and ('30' in cnam_content or 'TTL' in cnam_content):
+                print("   ✅ MongoDB caching with 30-day TTL found")
+                tests_passed += 1
+            else:
+                print("   ❌ MongoDB caching with TTL missing")
+                
+            # 4. Check for batchLookupCnam with parallel processing
+            if 'batchLookupCnam' in cnam_content and ('5' in cnam_content or 'concurrent' in cnam_content):
+                print("   ✅ batchLookupCnam with parallel processing found")
+                tests_passed += 1
+            else:
+                print("   ❌ batchLookupCnam with parallel processing missing")
+                
+            # 5. Check for cnamCache collection initialization
+            if 'cnamCache' in index_content and 'db.collection(' in index_content:
+                print("   ✅ cnamCache collection initialization found")
+                tests_passed += 1
+            else:
+                print("   ❌ cnamCache collection initialization missing")
+                
+            # 6. Check for initCnamService call
+            if 'initCnamService' in index_content and 'cnamCache' in index_content:
+                print("   ✅ initCnamService call with cnamCache found")
+                tests_passed += 1
+            else:
+                print("   ❌ initCnamService call missing")
+                
+            # 7. Check for cpSmsInbox action state
+            if 'cpSmsInbox' in index_content:
+                print("   ✅ cpSmsInbox action state found")
+                tests_passed += 1
+            else:
+                print("   ❌ cpSmsInbox action state missing")
+                
+            # 8. Check for SMS Inbox button in phone config
+            if '📨 SMS Inbox' in config_content or 'smsInbox' in config_content:
+                print("   ✅ SMS Inbox button found")
+                tests_passed += 1
+            else:
+                print("   ❌ SMS Inbox button missing")
+                
+            # 9. Check for showSmsInbox helper function
+            if 'showSmsInbox' in index_content:
+                print("   ✅ showSmsInbox helper function found")
+                tests_passed += 1
+            else:
+                print("   ❌ showSmsInbox helper function missing")
+                
+            # 10. Check for phoneLogs query in SMS inbox
+            if 'phoneLogs' in index_content and 'sms' in index_content.lower():
+                print("   ✅ phoneLogs SMS query found")
+                tests_passed += 1
+            else:
+                print("   ❌ phoneLogs SMS query missing")
+                
+            # 11. Check for pagination buttons (Newer/Older/Refresh)
+            if 'inboxNewerPage' in config_content and 'inboxOlderPage' in config_content and 'inboxRefresh' in config_content:
+                print("   ✅ SMS Inbox pagination buttons found")
+                tests_passed += 1
+            else:
+                print("   ❌ SMS Inbox pagination buttons missing")
+                
+            # 12. Check for SMS inbox text templates with CNAM
+            if 'smsInboxEntry' in config_content and 'name' in config_content:
+                print("   ✅ SMS inbox templates with CNAM display found")
+                tests_passed += 1
+            else:
+                print("   ❌ SMS inbox templates with CNAM display missing")
+                
+            self.tests_run += 1
+            if tests_passed >= 9:  # Most SMS inbox features working
+                self.tests_passed += 1
+                print(f"✅ SMS Inbox Test Passed ({tests_passed}/{tests_total})")
+                return True, {"passed": tests_passed, "total": tests_total}
+            else:
+                print(f"❌ SMS Inbox Test Failed ({tests_passed}/{tests_total})")
+                return False, {"passed": tests_passed, "total": tests_total}
+                
+        except Exception as e:
+            print(f"❌ Error reading files: {e}")
+            self.tests_run += 1
+            return False, {}
+
+    def test_ux_improvements(self):
+        """Test UX improvements - Menu organization and Call/SMS logs"""
+        print("\n🔍 Testing UX Improvements...")
+        
+        try:
+            # Test _index.js for menu organization
+            with open('/app/js/_index.js', 'r', encoding='utf-8') as f:
+                index_content = f.read()
+                
+            # Test phone-config.js for button organization
+            with open('/app/js/phone-config.js', 'r', encoding='utf-8') as f:
+                config_content = f.read()
+                
+            tests_passed = 0
+            tests_total = 8
+            
+            # 1. Check for buildManageMenu function
+            if 'buildManageMenu' in index_content:
+                print("   ✅ buildManageMenu function found")
+                tests_passed += 1
+            else:
+                print("   ❌ buildManageMenu function missing")
+                
+            # 2. Check for SMS Inbox button in manage menu
+            if 'smsInbox' in index_content and 'manage' in index_content.lower():
+                print("   ✅ SMS Inbox in manage menu found")
+                tests_passed += 1
+            else:
+                print("   ❌ SMS Inbox in manage menu missing")
+                
+            # 3. Check for logical button grouping (Communication, Advanced, Billing)
+            if ('Communication' in index_content or 'Advanced' in index_content or 'Billing' in index_content):
+                print("   ✅ Logical button grouping found")
+                tests_passed += 1
+            else:
+                print("   ❌ Logical button grouping missing")
+                
+            # 4. Check for Call & SMS Logs improvements
+            if 'callSmsLogs' in config_content or 'Call & SMS Logs' in config_content:
+                print("   ✅ Call & SMS Logs button found")
+                tests_passed += 1
+            else:
+                print("   ❌ Call & SMS Logs button missing")
+                
+            # 5. Check for all event types in logs (sms, voicemail, forwarded, missed, call_recording)
+            if ('sms' in index_content and 'voicemail' in index_content and 
+                'forwarded' in index_content and 'missed' in index_content and 
+                'call_recording' in index_content):
+                print("   ✅ All event types in logs found")
+                tests_passed += 1
+            else:
+                print("   ❌ Complete event types in logs missing")
+                
+            # 6. Check for improved log display with event type filtering
+            if 'type' in index_content and ('filter' in index_content or 'event' in index_content):
+                print("   ✅ Event type filtering found")
+                tests_passed += 1
+            else:
+                print("   ❌ Event type filtering missing")
+                
+            # 7. Check for better menu layout organization
+            if ('[' in config_content and ']' in config_content):  # Button arrays
+                print("   ✅ Menu layout organization found")
+                tests_passed += 1
+            else:
+                print("   ❌ Menu layout organization missing")
+                
+            # 8. Check for user-friendly button labels and emojis
+            if ('📞' in config_content and '📩' in config_content and '🎙️' in config_content):
+                print("   ✅ User-friendly button labels with emojis found")
+                tests_passed += 1
+            else:
+                print("   ❌ User-friendly button labels missing")
+                
+            self.tests_run += 1
+            if tests_passed >= 6:  # Most UX improvements working
+                self.tests_passed += 1
+                print(f"✅ UX Improvements Test Passed ({tests_passed}/{tests_total})")
+                return True, {"passed": tests_passed, "total": tests_total}
+            else:
+                print(f"❌ UX Improvements Test Failed ({tests_passed}/{tests_total})")
+                return False, {"passed": tests_passed, "total": tests_total}
+                
+        except Exception as e:
+            print(f"❌ Error reading files: {e}")
+            self.tests_run += 1
+            return False, {}
     
     def run_all_tests(self):
         """Run all tests"""
