@@ -92,6 +92,11 @@ const btn = {
   enableRecording: '✅ Enable Recording',
   disableRecording: '🚫 Disable Recording',
 
+  // SMS Inbox
+  inboxNewerPage: '◀️ Newer',
+  inboxOlderPage: '▶️ Older',
+  inboxRefresh: '🔄 Refresh',
+
   back: 'Back',
   cancel: 'Cancel',
 }
