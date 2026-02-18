@@ -19,15 +19,19 @@ Nomadly Telegram Bot — URL shortener, domain registration, phone leads, crypto
 ### Session 3: Overage Rates from .env + Wallet-Empty Notifications
 - OVERAGE_RATE_SMS/MIN driven from .env, plan text shows overage rates, calls/SMS stop with notification when wallet empty
 
-### Session 4: Toll-Free Setup + Username Sync (2026-02-18)
-- **Toll-free +1 (855) 682-0054** bought on Telnyx, configured with SIP connection + messaging profile, assigned to @Hostbay_support (chat_id: 5168006768) as Starter plan ($5/mo, auto-renew ON, expires 2026-03-20)
-- **Old toll-free +18777000068 released** from Telnyx to stop billing
-- **Username updated** in DB: nameOf → Hostbay_support, chatIdOf → Hostbay_support, stale onarrival2 mapping removed
-- **Username change detection** implemented: on every message, bot compares msg.from.username with stored nameOf value. If changed: updates nameOf, creates new chatIdOf mapping, deletes stale old mapping. Logs `[UsernameSync]` for auditing.
+### Session 4: Toll-Free Setup + Username Sync
+- Toll-free +1 (855) 682-0054 for @Hostbay_support, old toll-free released
+- Username change detection on every message
 
-### Testing: 100% pass (11/11 iteration 24)
+### Session 5: Domain Shortener + SMS UX + Activate Later (2026-02-18)
+1. **Domain shortener question improved** — Now clearly explains: Yes = DNS auto-configured for URL shortener (yourdomain.com/abc), No = register only, can activate later from Manage Domains
+2. **Activate for URL Shortener (later)** — New button in DNS Management (choose-dns-action). Runs same linking process as answering "Yes" during purchase: links to Railway/Render, adds DNS record, monitors propagation, notifies user when ready
+3. **SMS Settings locked features visible** — Starter plan users now see 🔒 SMS to Email (Pro+) and 🔒 Webhook URL (Pro+) buttons instead of nothing. Tapping them shows upgrade message explaining which plan is required. Email forwarding (Brevo) and webhook forwarding are functional for Pro+ plans.
+
+### Testing: 100% pass (13/13 iteration 25)
 
 ## Prioritized Backlog
 - P0: None
 - P1: Monitor overage billing in production
 - P2: Per-user overage spending cap
+- P2: Add "Activate Shortener" confirmation dialog before processing
