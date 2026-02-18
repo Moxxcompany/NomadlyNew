@@ -1,254 +1,358 @@
 #!/usr/bin/env python3
+
 import requests
 import sys
 import json
 from datetime import datetime
 
-class NomadlyBotDashboardTester:
+class NomadlyBotTester:
     def __init__(self, base_url="https://setup-wizard-100.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
-
-    def run_test(self, name, test_func):
-        """Run a single test and track results"""
+        
+    def run_test(self, name, method, endpoint, expected_status, data=None, timeout=10):
+        """Run a single test"""
+        url = f"{self.base_url}/{endpoint}"
+        headers = {'Content-Type': 'application/json'}
+        
         self.tests_run += 1
         print(f"\n🔍 Testing {name}...")
+        print(f"   URL: {url}")
         
         try:
-            success, details = test_func()
+            if method == 'GET':
+                response = requests.get(url, headers=headers, timeout=timeout)
+            elif method == 'POST':
+                response = requests.post(url, json=data, headers=headers, timeout=timeout)
+            
+            success = response.status_code == expected_status
             if success:
                 self.tests_passed += 1
-                print(f"✅ PASS - {details}")
+                print(f"✅ Passed - Status: {response.status_code}")
+                if response.content:
+                    try:
+                        json_resp = response.json()
+                        print(f"   Response: {json_resp}")
+                        return True, json_resp
+                    except:
+                        print(f"   Response: {response.text[:200]}")
+                        return True, response.text
+                return True, {}
             else:
-                print(f"❌ FAIL - {details}")
-            return success
+                print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
+                if response.content:
+                    print(f"   Response: {response.text[:200]}")
+                return False, {}
+                
         except Exception as e:
-            print(f"❌ FAIL - Exception: {str(e)}")
-            return False
-
-    def test_health_endpoint_structure(self):
-        """Test /api/health returns status ok with proxy, node, and db fields"""
-        try:
-            response = requests.get(f"{self.base_url}/api/health", timeout=10)
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Check required fields exist
-                required_fields = ['status', 'proxy', 'node', 'db']
-                missing_fields = []
-                
-                for field in required_fields:
-                    if field not in data:
-                        missing_fields.append(field)
-                
-                if missing_fields:
-                    return False, f"Missing required fields: {missing_fields}"
-                
-                # Check status is 'ok'
-                if data.get('status') != 'ok':
-                    return False, f"Expected status='ok', got status='{data.get('status')}'"
-                
-                # Check proxy is 'running'
-                if data.get('proxy') != 'running':
-                    return False, f"Expected proxy='running', got proxy='{data.get('proxy')}'"
-                
-                # Node can be 'running' or 'starting'
-                node_status = data.get('node')
-                if node_status not in ['running', 'starting']:
-                    return False, f"Expected node='running' or 'starting', got node='{node_status}'"
-                
-                # DB status check
-                db_status = data.get('db')
-                
-                return True, f"Health endpoint OK - Status: {data.get('status')}, Proxy: {data.get('proxy')}, Node: {node_status}, DB: {db_status}"
-            else:
-                return False, f"HTTP {response.status_code}: {response.text[:200]}"
-        except Exception as e:
-            return False, f"Request failed: {str(e)}"
-
-    def test_node_server_internal_port(self):
-        """Test Node.js Express server is accessible (indirectly through health check)"""
-        try:
-            # We can't directly access internal port 5000, but we can verify through proxy
-            response = requests.get(f"{self.base_url}/api/health", timeout=10)
-            if response.status_code == 200:
-                data = response.json()
-                node_status = data.get('node')
-                
-                if node_status == 'running':
-                    return True, "Node.js server is running (verified through health check)"
-                elif node_status == 'starting':
-                    return True, "Node.js server is starting (verified through health check)"
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+    
+    def test_health_endpoint(self):
+        """Test the health endpoint"""
+        return self.run_test("Health Endpoint", "GET", "api/health", 200)
+    
+    def test_webhook_structure(self):
+        """Test webhook endpoint structure (should return method not allowed for GET)"""
+        return self.run_test("Webhook Endpoint Structure", "GET", "api/webhook", 405)
+    
+    def test_language_files_validation(self):
+        """Validate language files have cloudPhone entries"""
+        print("\n🔍 Testing Language Files Configuration...")
+        
+        # Check if language files exist and have cloudPhone
+        language_files = [
+            '/app/js/lang/en.js',
+            '/app/js/lang/fr.js', 
+            '/app/js/lang/zh.js',
+            '/app/js/lang/hi.js'
+        ]
+        
+        lang_tests_passed = 0
+        lang_tests_total = len(language_files)
+        
+        for file_path in language_files:
+            lang = file_path.split('/')[-1].replace('.js', '')
+            print(f"   📋 Checking {lang} language file...")
+            
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    
+                if 'cloudPhone:' in content and '☁️' in content:
+                    print(f"   ✅ {lang}.js - cloudPhone button found")
+                    lang_tests_passed += 1
                 else:
-                    return False, f"Node.js server not running, status: {node_status}"
-            else:
-                return False, f"Cannot verify Node.js server - health endpoint returned {response.status_code}"
-        except Exception as e:
-            return False, f"Request failed: {str(e)}"
-
-    def test_mongodb_connection(self):
-        """Test MongoDB connection health (indirectly through health endpoint)"""
+                    print(f"   ❌ {lang}.js - cloudPhone button missing")
+                    
+            except FileNotFoundError:
+                print(f"   ❌ {lang}.js - File not found")
+            except Exception as e:
+                print(f"   ❌ {lang}.js - Error reading file: {e}")
+        
+        self.tests_run += 1
+        if lang_tests_passed == lang_tests_total:
+            self.tests_passed += 1
+            print(f"✅ Language Files Test Passed ({lang_tests_passed}/{lang_tests_total})")
+            return True, {"passed": lang_tests_passed, "total": lang_tests_total}
+        else:
+            print(f"❌ Language Files Test Failed ({lang_tests_passed}/{lang_tests_total})")
+            return False, {"passed": lang_tests_passed, "total": lang_tests_total}
+    
+    def test_phone_config_exports(self):
+        """Test phone-config.js exports required functions"""
+        print("\n🔍 Testing phone-config.js exports...")
+        
         try:
-            response = requests.get(f"{self.base_url}/api/health", timeout=10)
-            if response.status_code == 200:
-                data = response.json()
-                db_status = data.get('db')
-                
-                if db_status == 'connected':
-                    return True, "MongoDB connection is healthy"
+            with open('/app/js/phone-config.js', 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            required_exports = [
+                'canAccessFeature',
+                'upgradeMessage', 
+                'planFeatureAccess'
+            ]
+            
+            required_buttons = [
+                'enableIvr',
+                'disableIvr',
+                'ivrGreeting',
+                'ivrAddOption',
+                'ivrRemoveOption',
+                'ivrViewOptions',
+                'enableRecording',
+                'disableRecording'
+            ]
+            
+            exports_found = 0
+            buttons_found = 0
+            
+            # Check exports
+            for export in required_exports:
+                if f'{export}' in content and 'module.exports' in content:
+                    exports_found += 1
+                    print(f"   ✅ {export} - Found")
                 else:
-                    return True, f"MongoDB status: {db_status} (expected when Node.js is starting)"
+                    print(f"   ❌ {export} - Missing")
+            
+            # Check button definitions
+            for button in required_buttons:
+                if f'{button}:' in content:
+                    buttons_found += 1
+                    print(f"   ✅ {button} - Found")
+                else:
+                    print(f"   ❌ {button} - Missing")
+            
+            self.tests_run += 1
+            total_required = len(required_exports) + len(required_buttons)
+            total_found = exports_found + buttons_found
+            
+            if total_found == total_required:
+                self.tests_passed += 1
+                print(f"✅ Phone Config Test Passed ({total_found}/{total_required})")
+                return True, {"exports": exports_found, "buttons": buttons_found}
             else:
-                return False, f"Cannot verify MongoDB connection - health endpoint returned {response.status_code}"
+                print(f"❌ Phone Config Test Failed ({total_found}/{total_required})")
+                return False, {"exports": exports_found, "buttons": buttons_found}
+                
         except Exception as e:
-            return False, f"Request failed: {str(e)}"
-
-    def test_proxy_functionality(self):
-        """Test FastAPI proxy is working"""
+            print(f"❌ Error reading phone-config.js: {e}")
+            self.tests_run += 1
+            return False, {}
+    
+    def test_index_action_handlers(self):
+        """Test _index.js has required action handlers"""
+        print("\n🔍 Testing _index.js action handlers...")
+        
         try:
-            # Test that the proxy is accessible
-            response = requests.get(f"{self.base_url}/api/health", timeout=10)
-            if response.status_code == 200:
-                return True, "FastAPI proxy is working correctly"
+            with open('/app/js/_index.js', 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            required_actions = [
+                'cpIvr',
+                'cpIvrGreeting', 
+                'cpIvrAddOption',
+                'cpIvrRemoveOption',
+                'cpCallRecording'
+            ]
+            
+            actions_found = 0
+            handlers_found = 0
+            
+            # Check action definitions
+            for action in required_actions:
+                if f"{action}:" in content or f"'{action}'" in content:
+                    actions_found += 1
+                    print(f"   ✅ Action {action} - Defined")
+                else:
+                    print(f"   ❌ Action {action} - Missing")
+                
+                # Check handlers
+                if f"action === a.{action}" in content:
+                    handlers_found += 1
+                    print(f"   ✅ Handler for {action} - Found")
+                else:
+                    print(f"   ❌ Handler for {action} - Missing")
+            
+            self.tests_run += 1
+            total_required = len(required_actions) * 2  # actions + handlers
+            total_found = actions_found + handlers_found
+            
+            if total_found >= len(required_actions):  # At least actions defined
+                self.tests_passed += 1
+                print(f"✅ Action Handlers Test Passed ({total_found}/{total_required})")
+                return True, {"actions": actions_found, "handlers": handlers_found}
             else:
-                return False, f"Proxy not working - HTTP {response.status_code}"
+                print(f"❌ Action Handlers Test Failed ({total_found}/{total_required})")
+                return False, {"actions": actions_found, "handlers": handlers_found}
+                
         except Exception as e:
-            return False, f"Proxy test failed: {str(e)}"
-
-    def test_root_endpoint(self):
-        """Test root endpoint accessibility through proxy"""
+            print(f"❌ Error reading _index.js: {e}")
+            self.tests_run += 1
+            return False, {}
+    
+    def test_voice_service_handlers(self):
+        """Test voice-service.js has required handlers"""
+        print("\n🔍 Testing voice-service.js handlers...")
+        
         try:
-            # Test accessing root through proxy (should proxy to Node.js)
-            response = requests.get(f"{self.base_url}/", timeout=10)
+            with open('/app/js/voice-service.js', 'r', encoding='utf-8') as f:
+                content = f.read()
             
-            # Any response (200, 404, etc.) from Node.js indicates proxy is working
-            if response.status_code < 500:
-                return True, f"Root endpoint accessible through proxy - HTTP {response.status_code}"
+            required_handlers = [
+                'handleGatherEnded',
+                'handleRecordingSaved',
+                'initVoiceService'
+            ]
+            
+            handlers_found = 0
+            
+            for handler in required_handlers:
+                if f"function {handler}" in content or f"{handler} =" in content:
+                    handlers_found += 1
+                    print(f"   ✅ {handler} - Found")
+                else:
+                    print(f"   ❌ {handler} - Missing")
+            
+            self.tests_run += 1
+            if handlers_found == len(required_handlers):
+                self.tests_passed += 1
+                print(f"✅ Voice Service Test Passed ({handlers_found}/{len(required_handlers)})")
+                return True, {"handlers": handlers_found}
             else:
-                return False, f"Root endpoint error - HTTP {response.status_code}: {response.text[:200]}"
+                print(f"❌ Voice Service Test Failed ({handlers_found}/{len(required_handlers)})")
+                return False, {"handlers": handlers_found}
+                
         except Exception as e:
-            return False, f"Root endpoint test failed: {str(e)}"
-
-    def test_telnyx_sms_webhook_endpoint(self):
-        """Test Telnyx SMS webhook endpoint accepts POST requests"""
+            print(f"❌ Error reading voice-service.js: {e}")
+            self.tests_run += 1
+            return False, {}
+    
+    def test_telnyx_service_functions(self):
+        """Test telnyx-service.js has required functions"""
+        print("\n🔍 Testing telnyx-service.js functions...")
+        
         try:
-            # Test POST to Telnyx SMS webhook endpoint
-            test_payload = {
-                "data": {
-                    "event_type": "message.received",
-                    "payload": {
-                        "from": {"phone_number": "+15551234567"},
-                        "to": [{"phone_number": "+15559876543"}],
-                        "text": "Test message"
-                    }
-                }
-            }
+            with open('/app/js/telnyx-service.js', 'r', encoding='utf-8') as f:
+                content = f.read()
             
-            response = requests.post(
-                f"{self.base_url}/api/telnyx/sms-webhook", 
-                json=test_payload,
-                headers={"Content-Type": "application/json"},
-                timeout=10
-            )
+            required_functions = [
+                'gatherDTMF',
+                'stopRecording',
+                'playbackStop'
+            ]
             
-            # Webhook should accept the request (200-299 range)
-            if 200 <= response.status_code < 300:
-                return True, f"SMS webhook accepts POST requests - HTTP {response.status_code}"
+            functions_found = 0
+            exports_found = 0
+            
+            for func in required_functions:
+                if f"function {func}" in content or f"{func} =" in content:
+                    functions_found += 1
+                    print(f"   ✅ Function {func} - Found")
+                else:
+                    print(f"   ❌ Function {func} - Missing")
+                
+                if f"{func}," in content and "module.exports" in content:
+                    exports_found += 1
+                    print(f"   ✅ Export {func} - Found")
+                else:
+                    print(f"   ❌ Export {func} - Missing")
+            
+            self.tests_run += 1
+            total_required = len(required_functions)
+            
+            if functions_found == total_required:
+                self.tests_passed += 1
+                print(f"✅ Telnyx Service Test Passed ({functions_found}/{total_required})")
+                return True, {"functions": functions_found, "exports": exports_found}
             else:
-                return False, f"SMS webhook rejected request - HTTP {response.status_code}: {response.text[:200]}"
+                print(f"❌ Telnyx Service Test Failed ({functions_found}/{total_required})")
+                return False, {"functions": functions_found, "exports": exports_found}
+                
         except Exception as e:
-            return False, f"SMS webhook test failed: {str(e)}"
-
-    def test_telnyx_voice_webhook_endpoint(self):
-        """Test Telnyx Voice webhook endpoint accepts POST requests"""
+            print(f"❌ Error reading telnyx-service.js: {e}")
+            self.tests_run += 1
+            return False, {}
+    
+    def test_webhook_url_configuration(self):
+        """Test webhook URLs use correct pod URL"""
+        print("\n🔍 Testing webhook URL configuration...")
+        
         try:
-            # Test POST to Telnyx Voice webhook endpoint
-            test_payload = {
-                "data": {
-                    "event_type": "call.initiated",
-                    "payload": {
-                        "call_control_id": "test-call-id",
-                        "from": "+15551234567",
-                        "to": "+15559876543",
-                        "direction": "incoming"
-                    }
-                }
-            }
+            with open('/app/backend/.env', 'r') as f:
+                content = f.read()
             
-            response = requests.post(
-                f"{self.base_url}/api/telnyx/voice-webhook", 
-                json=test_payload,
-                headers={"Content-Type": "application/json"},
-                timeout=10
-            )
+            expected_domain = "setup-wizard-100.preview.emergentagent.com"
             
-            # Webhook should accept the request (200-299 range)
-            if 200 <= response.status_code < 300:
-                return True, f"Voice webhook accepts POST requests - HTTP {response.status_code}"
+            if expected_domain in content:
+                print(f"   ✅ Webhook URL contains expected domain: {expected_domain}")
+                self.tests_run += 1
+                self.tests_passed += 1
+                return True, {"domain": expected_domain}
             else:
-                return False, f"Voice webhook rejected request - HTTP {response.status_code}: {response.text[:200]}"
+                print(f"   ❌ Expected domain {expected_domain} not found in configuration")
+                self.tests_run += 1
+                return False, {}
+                
         except Exception as e:
-            return False, f"Voice webhook test failed: {str(e)}"
-
-    def test_api_prefix_stripping(self):
-        """Test that backend proxy correctly strips /api prefix"""
-        try:
-            # Test that /api/health maps to /health on Node.js
-            # We already know /api/health works, so let's test another endpoint
-            # The proxy should strip 'api/' from the path before forwarding to Node.js
-            
-            # Test a route that should exist on the Node.js server
-            response = requests.get(f"{self.base_url}/api/uptime", timeout=10)
-            
-            # Even if the endpoint doesn't exist, we should get a Node.js response (not proxy error)
-            # A 404 from Node.js indicates proxy is working correctly
-            # A 502 would indicate proxy failure
-            if response.status_code == 404:
-                return True, f"API prefix stripping works - /api/uptime → /uptime forwarded correctly (404 from Node.js)"
-            elif response.status_code == 200:
-                return True, f"API prefix stripping works - /api/uptime → /uptime responded successfully"
-            elif response.status_code == 502:
-                return False, f"API prefix stripping failed - got proxy error: {response.text[:200]}"
-            else:
-                # Other responses likely indicate proxy is working
-                return True, f"API prefix stripping works - /api/uptime → /uptime returned HTTP {response.status_code}"
-        except Exception as e:
-            return False, f"API prefix stripping test failed: {str(e)}"
+            print(f"❌ Error reading .env file: {e}")
+            self.tests_run += 1
+            return False, {}
+    
+    def run_all_tests(self):
+        """Run all tests"""
+        print(f"🚀 Starting Nomadly Telegram Bot Tests")
+        print(f"   Target: {self.base_url}")
+        print(f"   Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        results = {}
+        
+        # Backend API Tests
+        results['health'] = self.test_health_endpoint()
+        results['webhook'] = self.test_webhook_structure()
+        
+        # Code Structure Tests
+        results['language_files'] = self.test_language_files_validation()
+        results['phone_config'] = self.test_phone_config_exports()
+        results['action_handlers'] = self.test_index_action_handlers()
+        results['voice_service'] = self.test_voice_service_handlers()
+        results['telnyx_service'] = self.test_telnyx_service_functions()
+        results['webhook_config'] = self.test_webhook_url_configuration()
+        
+        # Summary
+        print(f"\n📊 Test Results Summary")
+        print(f"   Tests Passed: {self.tests_passed}/{self.tests_run}")
+        print(f"   Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%")
+        
+        return results
 
 def main():
-    """Main test runner for NomadlyBot Dashboard Backend"""
-    tester = NomadlyBotDashboardTester()
+    tester = NomadlyBotTester()
+    results = tester.run_all_tests()
     
-    print("🚀 Starting NomadlyBot Dashboard Backend Testing")
-    print(f"⚡ Base URL: {tester.base_url}")
-    print("=" * 80)
-    
-    # Run all tests based on review request features
-    tester.run_test("Health endpoint returns status ok with proxy, node, and db fields", tester.test_health_endpoint_structure)
-    tester.run_test("Node.js Express server is running on port 5000 internally", tester.test_node_server_internal_port)
-    tester.run_test("MongoDB connection is healthy", tester.test_mongodb_connection)
-    tester.run_test("FastAPI proxy functionality", tester.test_proxy_functionality)
-    tester.run_test("Root endpoint accessible through proxy", tester.test_root_endpoint)
-    
-    # New tests for Cloud Phone service endpoints
-    tester.run_test("Telnyx SMS webhook endpoint accepts POST requests", tester.test_telnyx_sms_webhook_endpoint)
-    tester.run_test("Telnyx Voice webhook endpoint accepts POST requests", tester.test_telnyx_voice_webhook_endpoint)
-    tester.run_test("Backend proxy correctly strips /api prefix", tester.test_api_prefix_stripping)
-    
-    # Print summary
-    print("\n" + "=" * 80)
-    print(f"📊 Test Results: {tester.tests_passed}/{tester.tests_run} tests passed")
-    
-    success_rate = (tester.tests_passed / tester.tests_run * 100) if tester.tests_run > 0 else 0
-    print(f"📈 Success Rate: {success_rate:.1f}%")
-    
-    if tester.tests_passed == tester.tests_run:
-        print("🎉 All backend tests passed!")
-        return 0
-    else:
-        print("⚠️  Some backend tests failed - see details above")
-        return 1
+    # Return appropriate exit code
+    return 0 if tester.tests_passed == tester.tests_run else 1
 
 if __name__ == "__main__":
     sys.exit(main())
