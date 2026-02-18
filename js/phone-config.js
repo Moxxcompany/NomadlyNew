@@ -311,6 +311,7 @@ Plan: ${n.plan.charAt(0).toUpperCase() + n.plan.slice(1)} ($${n.planPrice}/mo)
     if (config?.enabled) {
       text += `\nMode: ${config.mode}\nForward to: ${formatPhone(config.forwardTo)}`
     }
+    text += '\n\n<i>Note: Forwarded calls count toward your inbound minutes.</i>'
     return text
   },
   enterForwardNumber: 'Enter the phone number to forward calls to.\nInclude country code (e.g. +14155551234):',
