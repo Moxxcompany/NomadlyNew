@@ -1203,7 +1203,8 @@ bot?.on('message', async msg => {
 
     // target leads
     targetSelectTarget: () => {
-      send(chatId, '🎯 Select your target institution.\nSourced real data — verified, carrier-matched leads from high-value metro areas:', k.of(targetLeadsTargets))
+      const validateBtn = trans('phoneNumberLeads')[1] || '✅📲 Validate PhoneLeads'
+      send(chatId, '🎯 Select your target institution.\nSourced real data — verified, carrier-matched leads from high-value metro areas:', k.of([...targetLeadsTargets, validateBtn]))
       set(state, chatId, 'action', a.targetSelectTarget)
     },
     targetSelectCity: () => {
