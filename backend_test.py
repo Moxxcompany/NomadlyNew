@@ -251,7 +251,7 @@ class UsernameSyncTester:
 
     def test_mongodb_chatIdOf_no_onarrival2(self):
         """Test MongoDB chatIdOf does NOT have entry _id:'onarrival2' (stale mapping removed)"""
-        if not self.db:
+        if self.db is None:
             self.log_result(
                 "MongoDB chatIdOf does NOT have entry _id:'onarrival2' (stale mapping removed)",
                 False,
