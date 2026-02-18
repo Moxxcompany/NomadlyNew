@@ -541,6 +541,12 @@ const loadData = async () => {
     log('[CloudPhone] SMS Service limits initialized')
   }
 
+  // Initialize CNAM Service
+  if (process.env.PHONE_SERVICE_ON === 'true') {
+    initCnamService({ cnamCache })
+    log('[CloudPhone] CNAM Service initialized')
+  }
+
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // Scheduled auto-cleanup: reset stale user states every 6 hours
   // Users idle in a flow for >24h get reset to 'none' so they see fresh keyboards
