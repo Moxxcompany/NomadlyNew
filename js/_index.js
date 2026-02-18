@@ -2129,7 +2129,10 @@ bot?.on('message', async msg => {
       const l = format === buyLeadsSelectFormat[0]
 
       // buy leads
-      send(chatId, t.validatorBulkNumbersStart, trans('o'))
+      const _startMsg = info?.targetName
+        ? '🎯 Sourcing real data in progress. Please wait...'
+        : t.validatorBulkNumbersStart
+      send(chatId, _startMsg, trans('o'))
       const leadsAmount = info?.amount
       const lang = info?.userLanguage ?? 'en'
       const res = await validateBulkNumbers(info?.carrier, info?.amount, cc, areaCodes, cnam, bot, chatId, lang)
