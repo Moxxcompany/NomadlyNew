@@ -497,6 +497,23 @@ const loadData = async () => {
     log('[CloudPhone] Skipped — TELNYX_API_KEY or PHONE_SERVICE_ON not set')
   }
 
+  // Initialize Cloud Phone scheduler (expiry, usage tracking, monthly reset)
+  if (process.env.PHONE_SERVICE_ON === 'true') {
+    initPhoneScheduler({
+      bot,
+      phoneNumbersOf,
+      phoneTransactions,
+      phoneLogs,
+      walletOf,
+      payments,
+      nameOf,
+      notifyGroup,
+      maskName,
+      nanoid,
+    })
+    log('[CloudPhone] Scheduler initialized')
+  }
+
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // Scheduled auto-cleanup: reset stale user states every 6 hours
   // Users idle in a flow for >24h get reset to 'none' so they see fresh keyboards
