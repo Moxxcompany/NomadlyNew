@@ -1306,7 +1306,7 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
 
       const batchPromises = batch.map(async (chatId, index) => {
         await sleep(index * DELAY_BETWEEN_MESSAGES)
-        return sendPromoToUser(chatId, theme, variationIndex, lang, dynamicMessage)
+        return sendPromoToUser(chatId, theme, variationIndex, lang, dynamicMessage, couponLine)
       })
 
       const results = await Promise.allSettled(batchPromises)
