@@ -512,11 +512,29 @@ async function handleCallHangup(payload) {
   const { chatId, num, from, to } = session
   const time = new Date().toLocaleString()
 
-  // ── REAL-TIME MINUTE TRACKING ──
-  // Round up to nearest minute (even 1 second = 1 minute billed)
+  // ── REAL-TIME MINUTE TRACKING + OVERAGE BILLING ──
   const minutesBilled = duration > 0 ? Math.ceil(duration / 60) : 0
   if (minutesBilled > 0) {
     await incrementMinutesUsed(chatId, num.phoneNumber, minutesBilled)
+
+    // Calculate overage minutes and charge wallet
+    const plan = plans[num.plan]
+    const minuteLimit = plan ? (plan.minutes === 'Unlimited' ? Infinity : plan.minutes) : 0
+    if (minuteLimit !== Infinity && _walletOf) {
+      const totalUsed = (num.minutesUsed || 0) + minutesBilled
+      const overageMinutes = Math.max(0, totalUsed - minuteLimit)
+      if (overageMinutes > 0) {
+        const overageCharge = overageMinutes * OVERAGE_RATE_MIN
+        try {
+          await atomicIncrement(_walletOf, chatId, 'usdOut', overageCharge)
+          const ref = _nanoid?.() || `ov_${Date.now()}`
+          if (_payments) set(_payments, ref, `Overage,CloudPhoneMin,$${overageCharge.toFixed(2)},${chatId},${num.phoneNumber},${new Date()}`)
+          log(`[Voice] Overage charged: $${overageCharge.toFixed(2)} for ${overageMinutes} min on ${num.phoneNumber}`)
+          _bot?.sendMessage(chatId, `💰 <b>Overage Charge</b>\n\n📞 ${formatPhone(to)}\n⏱️ ${overageMinutes} overage min × $${OVERAGE_RATE_MIN} = <b>$${overageCharge.toFixed(2)}</b> charged from wallet.`, { parse_mode: 'HTML' }).catch(() => {})
+        } catch (e) { log(`[Voice] Overage charge error: ${e.message}`) }
+      }
+    }
+
     log(`[Voice] Billed ${minutesBilled} min for ${to} (${duration}s call, ${session.phase})`)
   }
 
