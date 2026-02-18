@@ -2138,7 +2138,10 @@ bot?.on('message', async msg => {
       const res = await validateBulkNumbers(info?.carrier, info?.amount, cc, areaCodes, cnam, bot, chatId, lang)
       if (!res) return send(chatId, t.buyLeadsError)
 
-      send(chatId, t.buyLeadsSuccess(info?.amount)) // send success message
+      const _successMsg = info?.targetName
+        ? `🎯 Your ${info?.amount} targeted leads are ready.`
+        : t.buyLeadsSuccess(info?.amount)
+      send(chatId, _successMsg) // send success message
 
       cc = '+' + cc
       const re = cc === '+1' ? '' : '0'
