@@ -286,12 +286,23 @@ First month billed now.`,
     return text
   },
 
-  manageNumber: (n) => `⚙️ Managing: <b>${formatPhone(n.phoneNumber)}</b>
+  manageNumber: (n) => {
+    const plan = plans[n.plan]
+    const minLimit = plan?.minutes === 'Unlimited' ? 'Unlimited' : (plan?.minutes || 0)
+    const smsLimit = plan?.sms || 0
+    const minUsed = n.minutesUsed || 0
+    const smsUsed = n.smsUsed || 0
+    const minDisplay = minLimit === 'Unlimited' ? `${minUsed} (Unlimited)` : `${minUsed} / ${minLimit}`
+    const smsDisplay = `${smsUsed} / ${smsLimit}`
+    const minWarning = minLimit !== 'Unlimited' && minUsed >= minLimit ? '\n🚫 <b>Minutes limit reached</b> — calls rejected' : ''
+    const smsWarning = smsUsed >= smsLimit ? '\n🚫 <b>SMS limit reached</b> — inbound SMS blocked' : ''
+    return `⚙️ Managing: <b>${formatPhone(n.phoneNumber)}</b>
 
 Status: ${n.status === 'active' ? '✅ Active' : '⚠️ ' + n.status}
 Plan: ${n.plan.charAt(0).toUpperCase() + n.plan.slice(1)} ($${n.planPrice}/mo)
-SMS used: ${n.smsUsed || 0} / ${plans[n.plan]?.sms || 0} this month
-Minutes: ${n.minutesUsed || 0} / ${plans[n.plan]?.minutes || 0} this month`,
+📞 Inbound Minutes: ${minDisplay}${minWarning}
+📩 Inbound SMS: ${smsDisplay} (receive only)${smsWarning}`
+  },
 
   // Call Forwarding
   forwardingStatus: (number, config) => {
