@@ -6,7 +6,7 @@ import json
 import re
 from datetime import datetime
 
-class UsageLimitTester:
+class NomadlyBotTester:
     def __init__(self, base_url="https://onboarding-setup-1.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
