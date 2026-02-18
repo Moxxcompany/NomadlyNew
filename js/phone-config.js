@@ -331,7 +331,10 @@ All incoming calls will now be forwarded.`,
     }
     const tg = config.forwardToTelegram ? '✅ ON' : '❌ OFF'
     const em = config.forwardToEmail ? '✅ ' + config.forwardToEmail : '❌ OFF'
-    return `🎙️ Voicemail for <b>${formatPhone(number)}</b>\n\nStatus: ✅ Enabled\n\n📲 Send to Telegram: ${tg}\n📧 Send to Email: ${em}\n⏰ Ring Time: ${config.ringTimeout || 25}s`
+    const greetType = config.greetingType === 'custom'
+      ? (config.customAudioGreetingUrl ? '🎤 Custom Audio' : config.customGreetingText ? '📝 Custom Text' : '🔊 Default')
+      : '🔊 Default (TTS)'
+    return `🎙️ Voicemail for <b>${formatPhone(number)}</b>\n\nStatus: ✅ Enabled\n🎤 Greeting: ${greetType}\n\n📲 Send to Telegram: ${tg}\n📧 Send to Email: ${em}\n⏰ Ring Time: ${config.ringTimeout || 25}s`
   },
   voicemailEnabled: (number) => `✅ Voicemail enabled for ${formatPhone(number)}!\nRecordings will be sent to this Telegram chat.`,
   voicemailDisabled: (number) => `✅ Voicemail disabled for ${formatPhone(number)}.`,
