@@ -67,7 +67,27 @@ User requested: "setup" - analyze code, set up the existing codebase, configure 
 - P1: Test end-to-end bot flow via Telegram
 - P2: Enhanced admin dashboard with real-time analytics
 
-### Plan Anomaly Fix (Feb 2026)
+### Live Support Chat & Custom Lead Requests (Feb 2026)
+
+**Feature 1: In-Bot Live Support Chat**
+- User taps "Get Support" or "Contact Support" → enters support mode, shown `/done` button
+- Every message user sends is forwarded to admin (chatId 5590563715) as private DM with user name, chatId, and reply instructions
+- Admin replies with `/reply <chatId> <message>` — bot delivers "Support: <message>" to user
+- Admin closes with `/close <chatId>` — resets user state, notifies both sides
+- User exits with `/done` or `/start` — auto-exits support mode
+- Edge cases: multiple simultaneous users (admin sees chatId in every message), menu button auto-exit, group isolation (uses `send()` not `notifyGroup()`)
+
+**Feature 2: Custom Targeted Leads Request**
+- New "📝 Request Custom Target" button in target institution selection menu
+- 3-step flow: Institution name → City/Area → Additional details (optional)
+- Saves request to `leadRequests` MongoDB collection with nanoid, status, timestamp
+- Forwards formatted request to admin as private DM with all details
+- User gets confirmation with summary, returns to main menu
+- Back button navigation at every step
+
+**Implementation files**: `_index.js` (action states, handlers, goto definitions, admin commands)
+**New MongoDB collections**: `supportSessions`, `leadRequests`
+**Group isolation**: All support/lead messages use `send(TELEGRAM_ADMIN_CHAT_ID, ...)` — direct private message, never `notifyGroup()`
 **Issue**: User 1124678303 (kingzwirefunds) showed a Daily plan valid until May 10, 2027 (~446 days out). 3 other users also had impossible expiry dates (total 4 affected).
 
 **Root cause**: Data corruption from Railway migration. The code had ZERO validation — any corrupted value persisted forever with no cap or sanity check.
