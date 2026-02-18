@@ -1,18 +1,30 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // SMS Service — Handle inbound SMS, forward to Telegram/Email
+// Enforces per-number SMS limits with real-time tracking
 // Uses Brevo (Sendinblue) for email forwarding
+// NOTE: SMS is INBOUND only — users receive SMS, they cannot send.
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const axios = require('axios')
 const { log } = require('console')
-const { formatPhone } = require('./phone-config')
+const { formatPhone, plans } = require('./phone-config')
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY
 const MAIL_SENDER = process.env.MAIL_SENDER || 'sms@nomadly.com'
 
+// These will be set by the main app via initSmsLimits
+let _incrementSmsUsed = null
+let _isSmsLimitReached = null
+
+function initSmsLimits(deps) {
+  _incrementSmsUsed = deps.incrementSmsUsed
+  _isSmsLimitReached = deps.isSmsLimitReached
+  log('[SmsService] Initialized with real-time limit enforcement')
+}
+
 // ── Forward SMS to Telegram chat ──
 async function forwardSmsToTelegram(bot, chatId, from, to, body) {
   const time = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
-  const msg = `📩 <b>SMS Received</b>
+  const msg = `📩 <b>Inbound SMS Received</b>
 
 📞 To: ${formatPhone(to)}
 👤 From: ${formatPhone(from)}
@@ -32,11 +44,11 @@ async function forwardSmsToTelegram(bot, chatId, from, to, body) {
 async function forwardSmsToEmail(toEmail, from, to, body) {
   if (!BREVO_API_KEY || !toEmail) return
 
-  const subject = `SMS from ${formatPhone(from)} to ${formatPhone(to)}`
+  const subject = `Inbound SMS from ${formatPhone(from)} to ${formatPhone(to)}`
   const htmlContent = `
     <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: #1a1a2e; color: #e5e5e5; padding: 24px; border-radius: 12px;">
-        <h2 style="color: #10b981; margin: 0 0 16px 0;">📩 SMS Received</h2>
+        <h2 style="color: #10b981; margin: 0 0 16px 0;">📩 Inbound SMS Received</h2>
         <table style="width: 100%; border-collapse: collapse;">
           <tr><td style="color: #9ca3af; padding: 4px 0;">To:</td><td style="color: #e5e5e5; padding: 4px 0;">${formatPhone(to)}</td></tr>
           <tr><td style="color: #9ca3af; padding: 4px 0;">From:</td><td style="color: #e5e5e5; padding: 4px 0;">${formatPhone(from)}</td></tr>
@@ -76,6 +88,7 @@ async function forwardSmsToWebhook(webhookUrl, from, to, body) {
       from: from,
       to: to,
       body: body,
+      direction: 'inbound',
       timestamp: new Date().toISOString(),
     }, { timeout: 5000 })
     log(`SMS forwarded to webhook=${webhookUrl} from=${from}`)
@@ -121,6 +134,18 @@ async function handleInboundSms(webhookData, bot, phoneNumbersOf, phoneLogs) {
       return log(`handleInboundSms: no owner found for ${cleanTo}`)
     }
 
+    // ── CHECK: Number suspended? Skip forwarding ──
+    if (numberConfig.status !== 'active') {
+      return log(`handleInboundSms: number ${cleanTo} is ${numberConfig.status}, skipping`)
+    }
+
+    // ── CHECK: Inbound SMS limit reached? Skip forwarding + notify ──
+    if (_isSmsLimitReached && _isSmsLimitReached(numberConfig)) {
+      log(`handleInboundSms: SMS limit reached for ${cleanTo} (${numberConfig.smsUsed || 0}/${plans[numberConfig.plan]?.sms || 0}), dropping`)
+      // Don't forward, don't count — silently drop
+      return
+    }
+
     const smsConfig = numberConfig.features?.smsForwarding || {}
 
     // Forward to Telegram
@@ -136,6 +161,11 @@ async function handleInboundSms(webhookData, bot, phoneNumbersOf, phoneLogs) {
     // Forward to Webhook
     if (smsConfig.webhookUrl) {
       await forwardSmsToWebhook(smsConfig.webhookUrl, from, to, body)
+    }
+
+    // ── REAL-TIME SMS USAGE TRACKING ──
+    if (_incrementSmsUsed) {
+      await _incrementSmsUsed(ownerChatId, cleanTo)
     }
 
     // Log in DB
@@ -161,4 +191,5 @@ module.exports = {
   forwardSmsToEmail,
   forwardSmsToWebhook,
   handleInboundSms,
+  initSmsLimits,
 }
