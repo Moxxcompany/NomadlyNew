@@ -5843,11 +5843,7 @@ bot?.on('message', async msg => {
     if (!num) return goto.submenu5()
     if (message === pc.noKeep || message === t.back) {
       set(state, chatId, 'action', a.cpManageNumber)
-      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
-        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
-        [pc.sipCredentials], [pc.callSmsLogs],
-        [pc.renewChangePlan], [pc.releaseNumber],
-      ]))
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
     if (message === pc.yesRelease) {
       const last4 = num.phoneNumber.replace(/\D/g, '').slice(-4)
