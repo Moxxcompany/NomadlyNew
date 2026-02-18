@@ -74,7 +74,7 @@ const user = {
   cPanelWebHostingPlans: "Plans d'hébergement cPanel en Russie 🔒",
   pleskWebHostingPlans: "Plans d'hébergement Plesk en Russie 🔒",
   joinChannel: '📢 Rejoindre le canal',
-  phoneNumberLeads: '📲 Leads & Validation',
+  phoneNumberLeads: '🎯 Leads Ciblés & Validation',
   hostingDomainsRedirect: '🌐 Hébergement Offshore',
   wallet: '👛 Mon portefeuille',
   urlShortenerMain: `🔗✂️ Raccourcisseur d'URL - ${FREE_LINKS} Essais`,
@@ -452,7 +452,7 @@ ${CHAT_BOT_NAME}`,
   buyLeadsError: `Malheureusement, le code régional sélectionné est indisponible et votre portefeuille n'a pas été facturé`,
   buyLeadsProgress: (i, total) => `${((i * 100) / total).toFixed()}% de leads téléchargés. Veuillez patienter.`,
 
-  phoneNumberLeads: `Achetez des leads téléphoniques vérifiés ou validez vos propres numéros :`,
+  phoneNumberLeads: `Obtenez des leads premium vérifiés par cible ou validez vos propres numéros :`,
 
   buyLeadsSelectCountry: `Veuillez sélectionner un pays`,
   buyLeadsSelectSmsVoice: `Veuillez sélectionner SMS / Voix`,
@@ -565,7 +565,7 @@ ${CHAT_BOT_NAME}`,
     '✅ Paiement réussi ! Votre commande est en cours de traitement. Les détails seront disponibles sous peu.',
 }
 
-const phoneNumberLeads = ['💰📲 Acheter des leads téléphoniques', '✅📲 Valider les leads téléphoniques', '🏦📲 Leads Ciblés']
+const phoneNumberLeads = ['🎯 Leads Premium Ciblés', '✅📲 Valider les leads téléphoniques']
 
 const buyLeadsSelectCountry = Object.keys(areasOfCountry)
 const buyLeadsSelectSmsVoice = ['SMS (Prix 20$ pour 1000)', 'Voix (Prix 0$ pour 1000)']
