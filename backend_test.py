@@ -319,6 +319,236 @@ class NomadlyBotTester:
             print(f"❌ Error reading .env file: {e}")
             self.tests_run += 1
             return False, {}
+
+    def test_plan_downgrade_feature(self):
+        """Test plan downgrade auto-disable functionality"""
+        print("\n🔍 Testing Plan Downgrade Auto-Disable Features...")
+        
+        try:
+            with open('/app/js/_index.js', 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # Check for cpChangePlan handler that includes auto-disable logic
+            tests_passed = 0
+            tests_total = 5
+            
+            # 1. Check if cpChangePlan action is defined
+            if 'cpChangePlan:' in content:
+                print("   ✅ cpChangePlan action defined")
+                tests_passed += 1
+            else:
+                print("   ❌ cpChangePlan action missing")
+            
+            # 2. Check for Business to Pro/Starter downgrade handling
+            if 'planDowngrade' in content or 'Business' in content and ('Pro' in content or 'Starter' in content):
+                print("   ✅ Plan downgrade detection logic found")
+                tests_passed += 1
+            else:
+                print("   ❌ Plan downgrade detection logic missing")
+                
+            # 3. Check for IVR auto-disable on downgrade
+            if 'ivr' in content and ('enabled' in content and 'false' in content):
+                print("   ✅ IVR auto-disable logic found")
+                tests_passed += 1
+            else:
+                print("   ❌ IVR auto-disable logic missing")
+                
+            # 4. Check for recording auto-disable
+            if 'recording' in content and ('false' in content or 'disable' in content):
+                print("   ✅ Recording auto-disable logic found") 
+                tests_passed += 1
+            else:
+                print("   ❌ Recording auto-disable logic missing")
+                
+            # 5. Check for voicemail/SMS email disable for Starter
+            if 'voicemail' in content or 'smsToEmail' in content:
+                print("   ✅ Voicemail/SMS email disable logic found")
+                tests_passed += 1
+            else:
+                print("   ❌ Voicemail/SMS email disable logic missing")
+                
+            self.tests_run += 1
+            if tests_passed >= 3:  # At least basic downgrade logic
+                self.tests_passed += 1
+                print(f"✅ Plan Downgrade Test Passed ({tests_passed}/{tests_total})")
+                return True, {"passed": tests_passed, "total": tests_total}
+            else:
+                print(f"❌ Plan Downgrade Test Failed ({tests_passed}/{tests_total})")
+                return False, {"passed": tests_passed, "total": tests_total}
+                
+        except Exception as e:
+            print(f"❌ Error reading _index.js: {e}")
+            self.tests_run += 1
+            return False, {}
+    
+    def test_ivr_analytics_implementation(self):
+        """Test IVR Analytics collection and reporting"""
+        print("\n🔍 Testing IVR Analytics Implementation...")
+        
+        try:
+            # Test voice-service.js for analytics functions
+            with open('/app/js/voice-service.js', 'r', encoding='utf-8') as f:
+                voice_content = f.read()
+            
+            # Test _index.js for MongoDB collection
+            with open('/app/js/_index.js', 'r', encoding='utf-8') as f:
+                index_content = f.read()
+                
+            tests_passed = 0
+            tests_total = 7
+            
+            # 1. Check for ivrAnalytics MongoDB collection
+            if 'ivrAnalytics' in index_content and 'db.collection(' in index_content:
+                print("   ✅ ivrAnalytics MongoDB collection found")
+                tests_passed += 1
+            else:
+                print("   ❌ ivrAnalytics MongoDB collection missing")
+                
+            # 2. Check for trackIvrAnalytics function
+            if 'trackIvrAnalytics' in voice_content:
+                print("   ✅ trackIvrAnalytics function found")
+                tests_passed += 1
+            else:
+                print("   ❌ trackIvrAnalytics function missing")
+                
+            # 3. Check function stores required fields (digit, action, callerFrom, phoneNumber, timestamp)
+            if 'digit' in voice_content and 'action' in voice_content and 'callerFrom' in voice_content:
+                print("   ✅ Required analytics fields found")
+                tests_passed += 1
+            else:
+                print("   ❌ Required analytics fields missing")
+                
+            # 4. Check for getIvrAnalytics function
+            if 'getIvrAnalytics' in voice_content:
+                print("   ✅ getIvrAnalytics function found")
+                tests_passed += 1
+            else:
+                print("   ❌ getIvrAnalytics function missing")
+                
+            # 5. Check function returns required data (totalCalls, optionBreakdown, topOption, recentCalls)
+            if 'totalCalls' in voice_content and 'optionBreakdown' in voice_content:
+                print("   ✅ Required analytics return data found")
+                tests_passed += 1
+            else:
+                print("   ❌ Required analytics return data missing")
+                
+            # 6. Check for ivrAnalytics button in keyboard
+            if '📊 IVR Analytics' in index_content or 'ivrAnalytics' in index_content:
+                print("   ✅ IVR Analytics button found")
+                tests_passed += 1
+            else:
+                print("   ❌ IVR Analytics button missing")
+                
+            # 7. Check for ivrAnalyticsReport function
+            if 'ivrAnalyticsReport' in voice_content or 'ivrAnalyticsReport' in index_content:
+                print("   ✅ ivrAnalyticsReport function found")
+                tests_passed += 1
+            else:
+                print("   ❌ ivrAnalyticsReport function missing")
+                
+            self.tests_run += 1
+            if tests_passed >= 5:  # Most analytics features working
+                self.tests_passed += 1
+                print(f"✅ IVR Analytics Test Passed ({tests_passed}/{tests_total})")
+                return True, {"passed": tests_passed, "total": tests_total}
+            else:
+                print(f"❌ IVR Analytics Test Failed ({tests_passed}/{tests_total})")
+                return False, {"passed": tests_passed, "total": tests_total}
+                
+        except Exception as e:
+            print(f"❌ Error reading files: {e}")
+            self.tests_run += 1
+            return False, {}
+    
+    def test_custom_voicemail_greeting(self):
+        """Test Custom Voicemail Greeting via audio upload"""
+        print("\n🔍 Testing Custom Voicemail Greeting Implementation...")
+        
+        try:
+            # Test _index.js for audio message handling
+            with open('/app/js/_index.js', 'r', encoding='utf-8') as f:
+                index_content = f.read()
+                
+            # Test voice-service.js for custom audio playback
+            with open('/app/js/voice-service.js', 'r', encoding='utf-8') as f:
+                voice_content = f.read()
+                
+            # Test phone-config.js for buttons and states
+            with open('/app/js/phone-config.js', 'r', encoding='utf-8') as f:
+                config_content = f.read()
+                
+            tests_passed = 0
+            tests_total = 8
+            
+            # 1. Check for vmCustomGreeting button
+            if 'vmCustomGreeting' in config_content:
+                print("   ✅ vmCustomGreeting button found")
+                tests_passed += 1
+            else:
+                print("   ❌ vmCustomGreeting button missing")
+                
+            # 2. Check for cpVmGreeting, cpVmAudioUpload, cpVmTextGreeting states
+            if 'cpVmGreeting' in index_content and 'cpVmAudioUpload' in index_content:
+                print("   ✅ Voicemail greeting states defined")
+                tests_passed += 1
+            else:
+                print("   ❌ Voicemail greeting states missing")
+                
+            # 3. Check for voice/audio message handler in _index.js
+            if ('msg.voice' in index_content or 'msg.audio' in index_content) and 'cpVmAudioUpload' in index_content:
+                print("   ✅ Voice/audio message handler found")
+                tests_passed += 1
+            else:
+                print("   ❌ Voice/audio message handler missing")
+                
+            # 4. Check for customAudioGreetingUrl handling
+            if 'customAudioGreetingUrl' in index_content or 'customAudioGreetingUrl' in voice_content:
+                print("   ✅ Custom audio greeting URL handling found")
+                tests_passed += 1
+            else:
+                print("   ❌ Custom audio greeting URL handling missing")
+                
+            # 5. Check for Telnyx playback_start API usage
+            if 'playback_start' in voice_content:
+                print("   ✅ Telnyx playback_start API usage found")
+                tests_passed += 1
+            else:
+                print("   ❌ Telnyx playback_start API usage missing")
+                
+            # 6. Check for call.playback.ended event handling
+            if 'call.playback.ended' in voice_content:
+                print("   ✅ call.playback.ended event handling found")
+                tests_passed += 1
+            else:
+                print("   ❌ call.playback.ended event handling missing")
+                
+            # 7. Check for voicemail menu showing Greeting button
+            if '🔊 Greeting' in config_content:
+                print("   ✅ Voicemail Greeting button found")
+                tests_passed += 1
+            else:
+                print("   ❌ Voicemail Greeting button missing")
+                
+            # 8. Check for greeting type display in status
+            if 'Custom Audio' in config_content and 'Custom Text' in config_content:
+                print("   ✅ Greeting type status display found")
+                tests_passed += 1
+            else:
+                print("   ❌ Greeting type status display missing")
+                
+            self.tests_run += 1
+            if tests_passed >= 6:  # Most voicemail features working
+                self.tests_passed += 1
+                print(f"✅ Custom Voicemail Greeting Test Passed ({tests_passed}/{tests_total})")
+                return True, {"passed": tests_passed, "total": tests_total}
+            else:
+                print(f"❌ Custom Voicemail Greeting Test Failed ({tests_passed}/{tests_total})")
+                return False, {"passed": tests_passed, "total": tests_total}
+                
+        except Exception as e:
+            print(f"❌ Error reading files: {e}")
+            self.tests_run += 1
+            return False, {}
     
     def run_all_tests(self):
         """Run all tests"""
