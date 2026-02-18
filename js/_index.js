@@ -4618,10 +4618,15 @@ bot?.on('message', async msg => {
     return goto.askCoupon(a.buyLeadsSelectFormat)
   }
   if (action === a.askCoupon + a.buyLeadsSelectFormat) {
-    if (message === t.back) return goto.buyLeadsSelectFormat()
+    if (message === t.back) {
+      if (info?.targetName) return goto.targetLeadsConfirm()
+      return goto.buyLeadsSelectFormat()
+    }
     if (message === t.skip) {
       saveInfo('lastStep', a.buyLeadsSelectFormat)
-      return (await saveInfo('couponApplied', false)) || goto.walletSelectCurrency()
+      await saveInfo('couponApplied', false)
+      if (info?.targetName) return goto.targetLeadsConfirm()
+      return goto.walletSelectCurrency()
     }
 
     const { price } = info
@@ -4637,6 +4642,7 @@ bot?.on('message', async msg => {
 
     await saveInfo('lastStep', a.buyLeadsSelectFormat)
 
+    if (info?.targetName) return goto.targetLeadsConfirm()
     return goto.walletSelectCurrency()
   }
 
