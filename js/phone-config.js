@@ -246,8 +246,8 @@ ${plans.business.features.join(' · ')}`,
 📞 Number: ${formatPhone(number)}
 📍 Location: ${country}
 📦 Plan: ${plan.name} — $${price}/mo
-📩 SMS: ${plan.sms}/mo included
-📞 Minutes: ${plan.minutes} inbound/mo
+📩 Inbound SMS: ${plan.sms}/mo (receive only, no outbound)
+📞 Inbound Minutes: ${plan.minutes}/mo (includes forwarded calls)
 ⚡ Features: ${plan.features.join(', ')}
 
 💰 Total: <b>$${price}/mo</b>
