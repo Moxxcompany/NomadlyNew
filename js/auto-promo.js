@@ -1092,6 +1092,10 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
   const promoOptOut = db.collection('promoOptOut')
   const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID
 
+  // Daily coupon system ref — injected after init
+  let dailyCouponSystem = null
+  function setDailyCouponSystem(sys) { dailyCouponSystem = sys }
+
   function alertAdmin(msg) {
     if (adminChatId) {
       bot.sendMessage(adminChatId, `[AutoPromo Alert] ${msg}`).catch(() => {})
