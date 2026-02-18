@@ -63,6 +63,10 @@ async function handleVoiceWebhook(req, res) {
         // Speak finished — used for IVR greeting flow
         await handleSpeakEnded(payload)
         break
+      case 'call.playback.ended':
+        // Audio playback finished — used for custom voicemail greeting
+        await handleSpeakEnded(payload)
+        break
       default:
         log(`[Voice] Unhandled event: ${eventType}`)
     }
