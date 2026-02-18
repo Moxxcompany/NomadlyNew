@@ -7,6 +7,7 @@ const { log } = require('console')
 const { get, set, atomicIncrement } = require('./db.js')
 const { getBalance } = require('./utils.js')
 const { formatPhone, shortDate, plans } = require('./phone-config.js')
+const telnyxApi = require('./telnyx-service.js')
 
 const TELNYX_API_KEY = process.env.TELNYX_API_KEY
 const TELNYX_BASE = 'https://api.telnyx.com/v2'
@@ -108,7 +109,7 @@ async function runExpiryCheck() {
           log(`[PhoneScheduler] 1-day warning sent: ${chatId} ${num.phoneNumber}`)
         }
 
-        // ── Expired — attempt auto-renew or suspend ──
+        // ── Expired — attempt auto-renew or release immediately ──
         if (msUntilExpiry <= 0 && num.status === 'active') {
           if (num.autoRenew) {
             const renewed = await attemptAutoRenew(chatId, num, i, numbers)
@@ -116,47 +117,32 @@ async function runExpiryCheck() {
               autoRenewed++
               modified = true
             } else {
-              // Auto-renew failed — suspend
-              numbers[i].status = 'suspended'
+              // Auto-renew failed — release from provider immediately to stop billing
+              numbers[i].status = 'released'
               numbers[i]._reminder3Sent = false
               numbers[i]._reminder1Sent = false
+              numbers[i]._released = true
               modified = true
               suspended++
+              await releaseFromProvider(num.phoneNumber, num.telnyxOrderId)
               sendToUser(chatId, buildAutoRenewFailedMsg(num))
-              log(`[PhoneScheduler] Auto-renew failed, suspended: ${chatId} ${num.phoneNumber}`)
+              const name = await get(_nameOf, chatId)
+              _notifyGroup?.(`❌ <b>Auto-Renew Failed + Released:</b> ${_maskName?.(name)} lost ${formatPhone(num.phoneNumber)} (insufficient balance)`)
+              log(`[PhoneScheduler] Auto-renew failed, released from provider: ${chatId} ${num.phoneNumber}`)
             }
           } else {
-            // No auto-renew — suspend
-            numbers[i].status = 'suspended'
+            // No auto-renew — release from provider immediately
+            numbers[i].status = 'released'
             numbers[i]._reminder3Sent = false
             numbers[i]._reminder1Sent = false
-            modified = true
-            suspended++
-            sendToUser(chatId, buildSuspendedMsg(num))
-            log(`[PhoneScheduler] Expired & suspended (no auto-renew): ${chatId} ${num.phoneNumber}`)
-          }
-        }
-
-        // ── Suspended for 7+ days — release ──
-        if (num.status === 'suspended') {
-          const daysSuspended = (now.getTime() - expiresAt.getTime()) / (1000 * 60 * 60 * 24)
-          if (daysSuspended >= 7 && !num._released) {
-            numbers[i].status = 'released'
             numbers[i]._released = true
             modified = true
-            sendToUser(chatId, `📤 Your number ${formatPhone(num.phoneNumber)} has been permanently released after 7 days of suspension.`)
+            suspended++
+            await releaseFromProvider(num.phoneNumber, num.telnyxOrderId)
+            sendToUser(chatId, buildSuspendedMsg(num))
             const name = await get(_nameOf, chatId)
-            _notifyGroup?.(`📤 <b>Auto-Released:</b> ${_maskName?.(name)} lost ${formatPhone(num.phoneNumber)} (expired + 7 days)`)
-            log(`[PhoneScheduler] Auto-released: ${chatId} ${num.phoneNumber}`)
-
-            // Release on Telnyx
-            if (num.telnyxOrderId) {
-              try {
-                await axios.delete(`${TELNYX_BASE}/phone_numbers/${num.telnyxOrderId}`, { headers: telnyxHeaders() })
-              } catch (e) {
-                log(`[PhoneScheduler] Telnyx release error: ${e.message}`)
-              }
-            }
+            _notifyGroup?.(`📤 <b>Expired + Released:</b> ${_maskName?.(name)} lost ${formatPhone(num.phoneNumber)} (no auto-renew)`)
+            log(`[PhoneScheduler] Expired, released from provider (no auto-renew): ${chatId} ${num.phoneNumber}`)
           }
         }
       }
@@ -166,9 +152,26 @@ async function runExpiryCheck() {
       }
     }
 
-    log(`[PhoneScheduler] Expiry check complete: ${remindersSent} reminders, ${autoRenewed} auto-renewed, ${suspended} suspended`)
+    log(`[PhoneScheduler] Expiry check complete: ${remindersSent} reminders, ${autoRenewed} auto-renewed, ${suspended} released`)
   } catch (e) {
     log(`[PhoneScheduler] Expiry check error: ${e.message}`)
+  }
+}
+
+// Release number from Telnyx to stop billing
+async function releaseFromProvider(phoneNumber, telnyxOrderId) {
+  try {
+    // Try by order ID first
+    if (telnyxOrderId) {
+      const ok = await telnyxApi.releaseNumber(telnyxOrderId)
+      if (ok) return log(`[PhoneScheduler] Released from provider by orderId: ${telnyxOrderId}`)
+    }
+    // Fallback: release by phone number string
+    const ok2 = await telnyxApi.releaseByPhoneNumber(phoneNumber)
+    if (ok2) return log(`[PhoneScheduler] Released from provider by number: ${phoneNumber}`)
+    log(`[PhoneScheduler] Could not release ${phoneNumber} from provider`)
+  } catch (e) {
+    log(`[PhoneScheduler] Provider release error for ${phoneNumber}: ${e.message}`)
   }
 }
 
