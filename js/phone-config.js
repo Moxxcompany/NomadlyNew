@@ -7,9 +7,13 @@ const PHONE_PRO_PRICE = parseFloat(process.env.PHONE_PRO_PRICE || '15')
 const PHONE_BUSINESS_PRICE = parseFloat(process.env.PHONE_BUSINESS_PRICE || '30')
 const SIP_DOMAIN = process.env.SIP_DOMAIN || 'sip.nomadly.com'
 
+// ── Overage rates (pay-per-use above plan limits) ──
+const OVERAGE_RATE_SMS = 0.02   // $0.02 per inbound SMS over limit
+const OVERAGE_RATE_MIN = 0.03   // $0.03 per inbound minute over limit
+
 // ── Button labels ──
 const btn = {
-  cloudPhone: '📞☁️ Cloud Phone',
+  cloudPhone: '📞☁️ Cloud Phone — Speechcue',
   buyPhoneNumber: '🛒 Buy Phone Number',
   myNumbers: '📱 My Numbers',
   sipSettings: '⚙️ SIP Settings',
@@ -101,28 +105,14 @@ const btn = {
   cancel: 'Cancel',
 }
 
-// ── Countries with flag ──
+// ── Countries with flag (compliance-free only — no additional registration needed) ──
 const countries = [
   { code: 'US', name: '🇺🇸 United States' },
-  { code: 'GB', name: '🇬🇧 United Kingdom' },
   { code: 'CA', name: '🇨🇦 Canada' },
-  { code: 'AU', name: '🇦🇺 Australia' },
-  { code: 'DE', name: '🇩🇪 Germany' },
-  { code: 'FR', name: '🇫🇷 France' },
+  { code: 'GB', name: '🇬🇧 United Kingdom' },
 ]
 
-const moreCountries = [
-  { code: 'NL', name: '🇳🇱 Netherlands' },
-  { code: 'SE', name: '🇸🇪 Sweden' },
-  { code: 'ES', name: '🇪🇸 Spain' },
-  { code: 'IT', name: '🇮🇹 Italy' },
-  { code: 'BR', name: '🇧🇷 Brazil' },
-  { code: 'MX', name: '🇲🇽 Mexico' },
-  { code: 'IL', name: '🇮🇱 Israel' },
-  { code: 'PL', name: '🇵🇱 Poland' },
-  { code: 'CZ', name: '🇨🇿 Czech Republic' },
-  { code: 'AT', name: '🇦🇹 Austria' },
-]
+const moreCountries = []
 
 // US popular area codes
 const usAreaCodes = [
@@ -415,11 +405,11 @@ Auto-Renew: ${autoRenewOn ? '✅ ON' : '❌ OFF'}`,
   // Release
   releaseConfirm: (number) => `⚠️ Release <b>${formatPhone(number)}</b>?
 
-This action is <b>permanent</b>. It will:
+This action is <b>permanent and irreversible</b>. It will:
 • Cancel your monthly plan immediately
-• Remove all forwarding & voicemail settings
-• Delete SIP credentials
-• Release the number (cannot be recovered)
+• Permanently delete the number from our system
+• Remove all forwarding, voicemail & SIP settings
+• The number cannot be recovered after release
 • No refund for remaining days`,
   releaseConfirmDigits: (digits) => `Are you absolutely sure?\nType the last 4 digits of the number to confirm: <b>${digits}</b>`,
   released: (number) => `✅ Number ${formatPhone(number)} has been released.\n\nYour plan has been cancelled and all settings removed.`,
@@ -608,4 +598,6 @@ module.exports = {
   PHONE_PRO_PRICE,
   PHONE_BUSINESS_PRICE,
   SIP_DOMAIN,
+  OVERAGE_RATE_SMS,
+  OVERAGE_RATE_MIN,
 }
