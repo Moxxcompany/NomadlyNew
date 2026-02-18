@@ -429,8 +429,7 @@ Domaines ignorant le DMCA — aucun retrait.
 Appuyez sur <b>Enregistrer des noms de domaine</b> !
 
 -----
-RDP, VPS ou hebergement cPanel ?
-Visitez @hostbay_bot`,
+Raccourcissez vos liens — appuyez sur <b>Raccourcisseur d'URL</b> pour 5 liens gratuits`,
 
       `<b>OFFRE FLASH DOMAINES</b>
 
@@ -444,8 +443,7 @@ Pourquoi risquer la suppression de votre site ?
 Tapez <b>/start</b> puis <b>Enregistrer des noms de domaine</b>
 
 -----
-RDP, VPS ou hebergement cPanel ?
-@hostbay_bot`,
+Leads telephone cibles — appuyez sur <b>Pistes SMS HQ</b>`,
 
       `<b>POSSEDEZ VOTRE IDENTITE NUMERIQUE</b>
 
@@ -459,8 +457,7 @@ Toute marque serieuse a besoin d'un domaine :
 Appuyez sur <b>Enregistrer des noms de domaine</b> !
 
 -----
-RDP, VPS ou hebergement cPanel ?
-Direction @hostbay_bot`,
+5 liens gratuits avec Shortit — appuyez sur <b>Raccourcisseur d'URL</b>`,
 
       `<b>ARRETEZ DE VOUS INQUIETER DES SUPPRESSIONS</b>
 
@@ -474,8 +471,7 @@ Vos concurrents utilisent deja des domaines DMCA-ignores.
 <b>Enregistrer des noms de domaine</b> — commencez !
 
 -----
-RDP, VPS ou hebergement ?
-Visitez @hostbay_bot`,
+Leads telephone par zone — appuyez sur <b>Pistes SMS HQ</b>`,
 
       `<b>LA CONFIANCE DE MILLIERS D'UTILISATEURS</b>
 
@@ -490,8 +486,7 @@ Pourquoi choisir l'offshore ?
 Appuyez sur <b>Enregistrer des noms de domaine</b>
 
 -----
-RDP, VPS ou hebergement cPanel ?
-@hostbay_bot`,
+Leads telephone cibles — appuyez sur <b>Pistes SMS HQ</b>`,
     ],
 
     shortener: [
@@ -507,8 +502,7 @@ Commencez avec <b>5 liens gratuits</b> — aucun paiement requis !
 Appuyez sur <b>Raccourcisseur d'URL</b> !
 
 -----
-RDP, VPS ou hebergement cPanel ?
-Visitez @hostbay_bot`,
+Raccourcissez vos liens — appuyez sur <b>Raccourcisseur d'URL</b> pour 5 liens gratuits`,
 
       `<b>5 LIENS COURTS GRATUITS — SANS ENGAGEMENT</b>
 
@@ -521,8 +515,7 @@ Chaque nouvel utilisateur recoit 5 liens Shortit gratuits.
 Appuyez sur <b>Raccourcisseur d'URL</b> !
 
 -----
-RDP, VPS ou hebergement ?
-@hostbay_bot`,
+Domaines DMCA-ignores — appuyez sur <b>Enregistrer des noms de domaine</b>`,
 
       `<b>VOTRE MARQUE MERITE DE MEILLEURS LIENS</b>
 
@@ -535,7 +528,7 @@ RDP, VPS ou hebergement ?
 <b>Raccourcisseur d'URL</b> — essayez Shortit gratuitement !
 
 -----
-Besoin d'hebergement ? @hostbay_bot`,
+Domaines offshore — appuyez sur <b>Enregistrer des noms de domaine</b>`,
 
       `<b>RACCOURCISSEMENT DE LIENS PUISSANT</b>
 
@@ -548,8 +541,7 @@ Commencez GRATUITEMENT avec 5 liens Shortit !
 Tapez <b>/start</b> puis <b>Raccourcisseur d'URL</b>
 
 -----
-RDP, VPS ou hebergement cPanel ?
-@hostbay_bot`,
+Leads telephone cibles — appuyez sur <b>Pistes SMS HQ</b>`,
 
       `<b>LIENS PERSONNALISES = 34% DE CLICS EN PLUS</b>
 
@@ -562,8 +554,7 @@ Commencez avec 5 liens d'essai GRATUITS !
 Appuyez sur <b>Raccourcisseur d'URL</b>
 
 -----
-RDP, VPS ou hebergement ?
-@hostbay_bot`,
+Domaines DMCA-ignores — appuyez sur <b>Enregistrer des noms de domaine</b>`,
     ],
 
     leads: [
@@ -580,8 +571,7 @@ Numeros existants ? Validez pour 15$/1000 !
 Appuyez sur <b>Pistes SMS HQ</b> !
 
 -----
-RDP, VPS ou hebergement cPanel ?
-Visitez @hostbay_bot`,
+Raccourcissez vos liens — appuyez sur <b>Raccourcisseur d'URL</b> pour 5 liens gratuits`,
 
       `<b>ARRETEZ DE GASPILLER SUR DE MAUVAIS LEADS</b>
 
@@ -594,8 +584,7 @@ Vos campagnes valent votre liste.
 Appuyez sur <b>Pistes SMS HQ</b> !
 
 -----
-RDP, VPS ou hebergement ?
-@hostbay_bot`,
+Domaines DMCA-ignores — appuyez sur <b>Enregistrer des noms de domaine</b>`,
 
       `<b>VALIDEZ AVANT D'ENVOYER</b>
 
@@ -608,7 +597,7 @@ SMS a des numeros morts ? Vous brulez du cash.
 <b>Pistes SMS HQ</b> puis <b>Valider les leads</b>
 
 -----
-Besoin d'hebergement ? @hostbay_bot`,
+Domaines offshore — appuyez sur <b>Enregistrer des noms de domaine</b>`,
 
       `<b>LEADS FRAIS = REVENUS FRAIS</b>
 
@@ -621,8 +610,7 @@ USA | UK | Canada | Australie & plus
 <b>Pistes SMS HQ</b> puis <b>Acheter des leads</b>
 
 -----
-RDP, VPS ou hebergement ?
-@hostbay_bot`,
+Domaines DMCA-ignores — appuyez sur <b>Enregistrer des noms de domaine</b>`,
 
       `<b>DEVELOPPEZ VOTRE MARKETING SMS</b>
 
@@ -636,8 +624,7 @@ Liste existante ? Validez-la chez nous !
 Appuyez sur <b>Pistes SMS HQ</b>
 
 -----
-Hebergement cPanel ou VPS ?
-@hostbay_bot`,
+Raccourcissez vos liens — appuyez sur <b>Raccourcisseur d'URL</b>`,
     ],
   },
 
@@ -655,8 +642,7 @@ Hebergement cPanel ou VPS ?
 点击 <b>注册域名</b> 立即注册!
 
 -----
-RDP VPS或cPanel主机?
-访问 @hostbay_bot`,
+需要电话线索? 点击 <b>HQ 短信线索</b>`,
 
       `<b>域名限时优惠</b>
 
@@ -670,8 +656,7 @@ RDP VPS或cPanel主机?
 输入 <b>/start</b> 然后点击 <b>注册域名</b>
 
 -----
-RDP VPS或cPanel主机?
-@hostbay_bot`,
+缩短链接 — 点击 <b>URL 缩短器</b> 免费5个链接`,
 
       `<b>拥有您的数字身份</b>
 
@@ -685,8 +670,7 @@ RDP VPS或cPanel主机?
 立即点击 <b>注册域名</b>!
 
 -----
-RDP VPS或cPanel主机?
-@hostbay_bot`,
+缩短链接 — 点击 <b>URL 缩短器</b> 免费5个链接`,
 
       `<b>不再担心内容被删除</b>
 
@@ -700,8 +684,7 @@ RDP VPS或cPanel主机?
 <b>注册域名</b> — 立即开始!
 
 -----
-RDP VPS或主机?
-访问 @hostbay_bot`,
+注册离岸域名 — 点击 <b>注册域名</b>`,
 
       `<b>数千用户的信赖之选</b>
 
@@ -716,8 +699,7 @@ RDP VPS或主机?
 点击 <b>注册域名</b>
 
 -----
-RDP VPS或cPanel主机?
-@hostbay_bot`,
+缩短链接 — 点击 <b>URL 缩短器</b> 免费5个链接`,
     ],
 
     shortener: [
@@ -733,8 +715,7 @@ RDP VPS或cPanel主机?
 点击 <b>URL 缩短器</b> 领取免费链接!
 
 -----
-RDP VPS或cPanel主机?
-访问 @hostbay_bot`,
+需要电话线索? 点击 <b>HQ 短信线索</b>`,
 
       `<b>5个免费短链接 — 无附加条件</b>
 
@@ -747,8 +728,7 @@ RDP VPS或cPanel主机?
 立即点击 <b>URL 缩短器</b>!
 
 -----
-RDP VPS或主机?
-@hostbay_bot`,
+缩短营销链接 — 点击 <b>URL 缩短器</b>`,
 
       `<b>您的品牌值得更好的链接</b>
 
@@ -761,7 +741,7 @@ RDP VPS或主机?
 <b>URL 缩短器</b> — 免费试用Shortit!
 
 -----
-需要主机? @hostbay_bot`,
+注册域名 — 点击 <b>注册域名</b>`,
 
       `<b>强大的链接缩短工具</b>
 
@@ -774,8 +754,7 @@ RDP VPS或主机?
 输入 <b>/start</b> 然后点击 <b>URL 缩短器</b>
 
 -----
-RDP VPS或cPanel主机?
-@hostbay_bot`,
+缩短链接 — 点击 <b>URL 缩短器</b> 免费5个链接`,
 
       `<b>聪明的营销人用聪明的链接</b>
 
@@ -789,8 +768,7 @@ RDP VPS或cPanel主机?
 点击 <b>URL 缩短器</b>
 
 -----
-RDP VPS或主机?
-@hostbay_bot`,
+缩短营销链接 — 点击 <b>URL 缩短器</b>`,
     ],
 
     leads: [
@@ -808,8 +786,7 @@ RDP VPS或主机?
 点击 <b>HQ 短信线索</b> 开始!
 
 -----
-RDP VPS或cPanel主机?
-@hostbay_bot`,
+缩短链接 — 点击 <b>URL 缩短器</b> 免费5个链接`,
 
       `<b>停止在劣质线索上浪费</b>
 
@@ -822,8 +799,7 @@ RDP VPS或cPanel主机?
 立即点击 <b>HQ 短信线索</b>!
 
 -----
-RDP VPS或主机?
-@hostbay_bot`,
+缩短营销链接 — 点击 <b>URL 缩短器</b>`,
 
       `<b>发送前先验证</b>
 
@@ -836,7 +812,7 @@ RDP VPS或主机?
 <b>HQ 短信线索</b> 然后 <b>验证电话线索</b>
 
 -----
-需要主机? @hostbay_bot`,
+注册域名 — 点击 <b>注册域名</b>`,
 
       `<b>新鲜线索 = 新鲜收入</b>
 
@@ -849,8 +825,7 @@ RDP VPS或主机?
 <b>HQ 短信线索</b> 然后 <b>购买电话线索</b>
 
 -----
-RDP VPS或cPanel主机?
-@hostbay_bot`,
+缩短链接 — 点击 <b>URL 缩短器</b> 免费5个链接`,
 
       `<b>扩大您的短信营销</b>
 
@@ -864,8 +839,7 @@ RDP VPS或cPanel主机?
 点击 <b>HQ 短信线索</b>
 
 -----
-cPanel主机或VPS?
-@hostbay_bot`,
+缩短营销链接 — 点击 <b>URL 缩短器</b>`,
     ],
   },
 
@@ -883,8 +857,7 @@ DMCA-अनदेखा डोमेन — कोई हटाव नहीं
 <b>डोमेन नाम पंजीकृत करें</b> दबाएं!
 
 -----
-RDP VPS या cPanel होस्टिंग?
-@hostbay_bot पर जाएं`,
+फोन लीड्स चाहिए? <b>HQ एसएमएस लीड</b> दबाएं`,
 
       `<b>डोमेन फ्लैश डील</b>
 
@@ -898,8 +871,7 @@ RDP VPS या cPanel होस्टिंग?
 <b>/start</b> टाइप करें फिर <b>डोमेन नाम पंजीकृत करें</b>
 
 -----
-RDP VPS या cPanel होस्टिंग?
-@hostbay_bot`,
+लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं 5 मुफ्त लिंक`,
 
       `<b>अपनी डिजिटल पहचान बनाएं</b>
 
@@ -913,8 +885,7 @@ RDP VPS या cPanel होस्टिंग?
 अभी <b>डोमेन नाम पंजीकृत करें</b> दबाएं!
 
 -----
-RDP VPS या cPanel होस्टिंग?
-@hostbay_bot`,
+लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं 5 मुफ्त लिंक`,
 
       `<b>हटाव की चिंता छोड़ें</b>
 
@@ -928,8 +899,7 @@ RDP VPS या cPanel होस्टिंग?
 <b>डोमेन नाम पंजीकृत करें</b> — अभी शुरू करें!
 
 -----
-RDP VPS या होस्टिंग?
-@hostbay_bot`,
+DMCA-अनदेखा डोमेन — <b>डोमेन नाम पंजीकृत करें</b> दबाएं`,
 
       `<b>हजारों की भरोसेमंद पसंद</b>
 
@@ -944,8 +914,7 @@ RDP VPS या होस्टिंग?
 <b>डोमेन नाम पंजीकृत करें</b> दबाएं
 
 -----
-RDP VPS या cPanel होस्टिंग?
-@hostbay_bot`,
+लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं 5 मुफ्त लिंक`,
     ],
 
     shortener: [
@@ -961,8 +930,7 @@ RDP VPS या cPanel होस्टिंग?
 <b>URL छोटा करें</b> दबाएं और मुफ्त लिंक पाएं!
 
 -----
-RDP VPS या cPanel होस्टिंग?
-@hostbay_bot`,
+लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं 5 मुफ्त लिंक`,
 
       `<b>5 मुफ्त शॉर्ट लिंक — कोई शर्त नहीं</b>
 
@@ -975,8 +943,7 @@ RDP VPS या cPanel होस्टिंग?
 अभी <b>URL छोटा करें</b> दबाएं!
 
 -----
-RDP VPS या होस्टिंग?
-@hostbay_bot`,
+DMCA-अनदेखा डोमेन — <b>डोमेन नाम पंजीकृत करें</b> दबाएं`,
 
       `<b>आपका ब्रांड बेहतर लिंक का हकदार है</b>
 
@@ -989,7 +956,7 @@ RDP VPS या होस्टिंग?
 <b>URL छोटा करें</b> — Shortit मुफ्त में आजमाएं!
 
 -----
-होस्टिंग? @hostbay_bot`,
+डोमेन रजिस्टर करें — <b>डोमेन नाम पंजीकृत करें</b> दबाएं`,
 
       `<b>शक्तिशाली लिंक शॉर्टनिंग</b>
 
@@ -1002,8 +969,7 @@ RDP VPS या होस्टिंग?
 <b>/start</b> टाइप करें फिर <b>URL छोटा करें</b>
 
 -----
-RDP VPS या cPanel होस्टिंग?
-@hostbay_bot`,
+लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं 5 मुफ्त लिंक`,
 
       `<b>स्मार्ट मार्केटर स्मार्ट लिंक इस्तेमाल करते हैं</b>
 
@@ -1017,8 +983,7 @@ RDP VPS या cPanel होस्टिंग?
 <b>URL छोटा करें</b> दबाएं
 
 -----
-RDP VPS या होस्टिंग?
-@hostbay_bot`,
+DMCA-अनदेखा डोमेन — <b>डोमेन नाम पंजीकृत करें</b> दबाएं`,
     ],
 
     leads: [
@@ -1036,8 +1001,7 @@ RDP VPS या होस्टिंग?
 <b>HQ एसएमएस लीड</b> दबाएं!
 
 -----
-RDP VPS या cPanel होस्टिंग?
-@hostbay_bot`,
+लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं 5 मुफ्त लिंक`,
 
       `<b>खराब लीड्स पर पैसा बर्बाद बंद करें</b>
 
@@ -1050,8 +1014,7 @@ RDP VPS या cPanel होस्टिंग?
 अभी <b>HQ एसएमएस लीड</b> दबाएं!
 
 -----
-RDP VPS या होस्टिंग?
-@hostbay_bot`,
+DMCA-अनदेखा डोमेन — <b>डोमेन नाम पंजीकृत करें</b> दबाएं`,
 
       `<b>भेजने से पहले वैलिडेट करें</b>
 
@@ -1064,7 +1027,7 @@ RDP VPS या होस्टिंग?
 <b>HQ एसएमएस लीड</b> फिर <b>फोन लीड्स सत्यापित करें</b>
 
 -----
-होस्टिंग? @hostbay_bot`,
+डोमेन रजिस्टर करें — <b>डोमेन नाम पंजीकृत करें</b> दबाएं`,
 
       `<b>ताज़ा लीड्स = ताज़ा रेवेन्यू</b>
 
@@ -1077,8 +1040,7 @@ USA | UK | कनाडा | ऑस्ट्रेलिया और अधि�
 <b>HQ एसएमएस लीड</b> फिर <b>फोन लीड्स खरीदें</b>
 
 -----
-RDP VPS या cPanel होस्टिंग?
-@hostbay_bot`,
+लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं 5 मुफ्त लिंक`,
 
       `<b>SMS मार्केटिंग बढ़ाएं</b>
 
@@ -1092,8 +1054,7 @@ RDP VPS या cPanel होस्टिंग?
 <b>HQ एसएमएस लीड</b> दबाएं
 
 -----
-cPanel होस्टिंग या VPS?
-@hostbay_bot`,
+लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं`,
     ],
   },
 }
