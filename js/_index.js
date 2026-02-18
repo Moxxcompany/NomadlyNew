@@ -6122,9 +6122,12 @@ bot?.on('message', async msg => {
     const last4 = num.phoneNumber.replace(/\D/g, '').slice(-4)
     if (message !== last4) return send(chatId, `Type the last 4 digits: ${last4}`)
 
-    // Release on Telnyx
+    // Release on provider
     if (num.telnyxOrderId) {
-      await telnyxApi.releaseNumber(num.telnyxOrderId)
+      const ok = await telnyxApi.releaseNumber(num.telnyxOrderId)
+      if (!ok) await telnyxApi.releaseByPhoneNumber(num.phoneNumber)
+    } else {
+      await telnyxApi.releaseByPhoneNumber(num.phoneNumber)
     }
 
     // Update DB
