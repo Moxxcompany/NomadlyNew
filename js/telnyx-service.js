@@ -88,8 +88,8 @@ async function createSIPConnection(name, webhookUrl) {
     const body = {
       active: true,
       connection_name: name,
-      user_name: 'nomadly_sip_main',
-      password: 'NomadlySIP#2026!Secure',
+      user_name: 'nomadlySipMain01',
+      password: 'NomadlySIP2026Secure',
       webhook_event_url: webhookUrl,
       webhook_api_version: '2',
     }
