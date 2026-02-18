@@ -18,6 +18,7 @@ async function searchNumbers(countryCode, numberType, areaCode, limit = 5) {
     'filter[country_code]': countryCode || 'US',
     'filter[phone_number_type]': numberType || 'local',
     'filter[limit]': limit,
+    'filter[best_effort]': true,
   }
   if (areaCode) params['filter[national_destination_code]'] = areaCode
   // Request both voice and sms capable numbers
