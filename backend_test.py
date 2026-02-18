@@ -219,7 +219,7 @@ class UsernameSyncTester:
 
     def test_mongodb_chatIdOf_hostbay_support(self):
         """Test MongoDB chatIdOf has entry _id:'Hostbay_support' val:5168006768"""
-        if not self.db:
+        if self.db is None:
             self.log_result(
                 "MongoDB chatIdOf has entry _id:'Hostbay_support' val:5168006768",
                 False,
