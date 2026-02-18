@@ -27,7 +27,10 @@ class NomadlyBotTester:
             elif method == 'POST':
                 response = requests.post(url, json=data, headers=headers, timeout=timeout)
             
-            success = response.status_code == expected_status
+            # Store status code for webhook testing
+            self.last_status_code = response.status_code
+            
+            success = response.status_code == expected_status if expected_status else response.status_code < 500
             if success:
                 self.tests_passed += 1
                 print(f"✅ Passed - Status: {response.status_code}")
@@ -41,7 +44,8 @@ class NomadlyBotTester:
                         return True, response.text
                 return True, {}
             else:
-                print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
+                expected_msg = f"Expected {expected_status}, got" if expected_status else "Got"
+                print(f"❌ Failed - {expected_msg} {response.status_code}")
                 if response.content:
                     print(f"   Response: {response.text[:200]}")
                 return False, {}
