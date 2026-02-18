@@ -671,6 +671,26 @@ bot?.on('message', async msg => {
     return
   }
 
+  // Admin: /requests — list pending lead requests
+  if (isAdmin(chatId) && message === '/requests') {
+    try {
+      const allRequests = await leadRequests.find({}).toArray()
+      const pending = allRequests.filter(r => r.val && r.val.status === 'pending')
+      if (pending.length === 0) {
+        return send(chatId, '📝 No pending lead requests.')
+      }
+      let msg = `📝 <b>Pending Lead Requests (${pending.length})</b>\n\n`
+      pending.slice(0, 20).forEach((r, i) => {
+        const v = r.val
+        msg += `${i + 1}. <b>${v.target}</b> — ${v.city}\n   From: ${v.username} (${v.chatId})\n   Details: ${v.details || 'none'}\n   Date: ${v.createdAt?.slice(0, 10) || 'unknown'}\n   ID: <code>${r._id}</code>\n\n`
+      })
+      if (pending.length > 20) msg += `... and ${pending.length - 20} more`
+      return send(chatId, msg, { parse_mode: 'HTML' })
+    } catch (err) {
+      return send(chatId, `Error fetching requests: ${err.message}`)
+    }
+  }
+
   // Throttle Connect Reseller IP check to once per hour instead of every message
   const now_cr = Date.now()
   if (NOT_TRY_CR === undefined && now_cr - last_cr_check_time > 3600000) {
