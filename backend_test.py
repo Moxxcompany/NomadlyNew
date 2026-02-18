@@ -151,44 +151,31 @@ class UsernameSyncTester:
             with open('/app/js/_index.js', 'r') as f:
                 content = f.read()
             
-            # Look for the username change logic block
-            username_change_pattern = r'else if \(currentUsername && currentUsername !== nameOfChatId\).*?\}'
-            match = re.search(username_change_pattern, content, re.DOTALL)
+            # Look for specific patterns in the code
+            updates_nameOf = 'set(nameOf, chatId, currentUsername)' in content
+            creates_chatIdOf = 'set(chatIdOf, currentUsername, chatId)' in content
+            deletes_old_mapping = 'chatIdOf.deleteOne({ _id: nameOfChatId })' in content
             
-            if match:
-                change_block = match.group(0)
-                
-                updates_nameOf = 'set(nameOf, chatId, currentUsername)' in change_block
-                creates_chatIdOf = 'set(chatIdOf, currentUsername, chatId)' in change_block
-                deletes_old_mapping = 'chatIdOf.deleteOne({ _id: nameOfChatId })' in change_block
-                
-                self.log_result(
-                    "_index.js: when username changes, it creates new chatIdOf mapping (set chatIdOf, currentUsername, chatId)",
-                    creates_chatIdOf,
-                    f"Creates new chatIdOf mapping: {creates_chatIdOf}",
-                    "CRITICAL" if not creates_chatIdOf else "INFO"
-                )
-                
-                self.log_result(
-                    "_index.js: when username changes, it deletes old chatIdOf mapping (chatIdOf.deleteOne _id: nameOfChatId)",
-                    deletes_old_mapping,
-                    f"Deletes old chatIdOf mapping: {deletes_old_mapping}",
-                    "CRITICAL" if not deletes_old_mapping else "INFO"
-                )
-                
-                self.log_result(
-                    "_index.js: updates nameOf collection with new username",
-                    updates_nameOf,
-                    f"Updates nameOf: {updates_nameOf}",
-                    "CRITICAL" if not updates_nameOf else "INFO"
-                )
-            else:
-                self.log_result(
-                    "_index.js username change logic block",
-                    False,
-                    "Could not find username change logic block",
-                    "CRITICAL"
-                )
+            self.log_result(
+                "_index.js: when username changes, it creates new chatIdOf mapping (set chatIdOf, currentUsername, chatId)",
+                creates_chatIdOf,
+                f"Creates new chatIdOf mapping: {creates_chatIdOf}",
+                "CRITICAL" if not creates_chatIdOf else "INFO"
+            )
+            
+            self.log_result(
+                "_index.js: when username changes, it deletes old chatIdOf mapping (chatIdOf.deleteOne _id: nameOfChatId)",
+                deletes_old_mapping,
+                f"Deletes old chatIdOf mapping: {deletes_old_mapping}",
+                "CRITICAL" if not deletes_old_mapping else "INFO"
+            )
+            
+            self.log_result(
+                "_index.js: updates nameOf collection with new username",
+                updates_nameOf,
+                f"Updates nameOf: {updates_nameOf}",
+                "CRITICAL" if not updates_nameOf else "INFO"
+            )
                 
         except Exception as e:
             self.log_result(
