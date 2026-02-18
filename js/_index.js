@@ -628,6 +628,43 @@ bot?.on('message', async msg => {
   
   log('message: ' + message + '\tfrom: ' + chatId + ' ' + msg?.from?.username)
 
+  // ═══════════════════════════════════════════════════
+  // Admin support commands — /reply <chatId> <message> and /close <chatId>
+  // Handled early so admin can reply from anywhere in the bot
+  // ═══════════════════════════════════════════════════
+  if (isAdmin(chatId) && message.startsWith('/reply ')) {
+    const parts = message.substring(7).split(' ')
+    const targetChatId = Number(parts[0])
+    const replyText = parts.slice(1).join(' ')
+    if (!targetChatId || !replyText) {
+      return send(chatId, '⚠️ Usage: /reply <chatId> <message>')
+    }
+    const targetName = await get(nameOf, targetChatId)
+    send(targetChatId, `💬 <b>Support:</b>\n${replyText}`, { parse_mode: 'HTML' })
+    send(chatId, `✅ Reply sent to ${targetName || targetChatId}`)
+    log(`[Support] Admin replied to ${targetChatId}: ${replyText}`)
+    return
+  }
+
+  if (isAdmin(chatId) && message.startsWith('/close ')) {
+    const targetChatId = Number(message.substring(7).trim())
+    if (!targetChatId) return send(chatId, '⚠️ Usage: /close <chatId>')
+    const session = await get(supportSessions, targetChatId)
+    if (session) {
+      await set(supportSessions, targetChatId, 0)
+      // Reset user action if they're still in support mode
+      const userInfo = await get(state, targetChatId)
+      if (userInfo?.action === 'supportChat') {
+        await set(state, targetChatId, 'action', 'none')
+      }
+    }
+    const targetName = await get(nameOf, targetChatId)
+    send(targetChatId, '✅ Support session closed. Use the menu below to continue.', translation('o', 'en'))
+    send(chatId, `✅ Closed support session for ${targetName || targetChatId}`)
+    log(`[Support] Admin closed session for ${targetChatId}`)
+    return
+  }
+
   // Throttle Connect Reseller IP check to once per hour instead of every message
   const now_cr = Date.now()
   if (NOT_TRY_CR === undefined && now_cr - last_cr_check_time > 3600000) {
