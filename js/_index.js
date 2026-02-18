@@ -4649,19 +4649,19 @@ bot?.on('message', async msg => {
   // Custom Lead Request Flow
   // ═══════════════════════════════════════════════════
   if (action === a.customLeadRequestName) {
-    if (message === (t.back || '⬅️ Back')) return goto.targetSelectTarget()
+    if (message === (t.backButton || '⬅️ Back')) return goto.targetSelectTarget()
     if (message.length < 2 || message.length > 100) return send(chatId, '⚠️ Please enter a valid institution name (2-100 characters).')
     await saveInfo('customLeadTarget', message)
     return goto.customLeadRequestCity()
   }
   if (action === a.customLeadRequestCity) {
-    if (message === (t.back || '⬅️ Back')) return goto.customLeadRequestName()
+    if (message === (t.backButton || '⬅️ Back')) return goto.customLeadRequestName()
     if (message.length < 2 || message.length > 100) return send(chatId, '⚠️ Please enter a valid city name.')
     await saveInfo('customLeadCity', message)
     return goto.customLeadRequestDetails()
   }
   if (action === a.customLeadRequestDetails) {
-    if (message === (t.back || '⬅️ Back')) return goto.customLeadRequestCity()
+    if (message === (t.backButton || '⬅️ Back')) return goto.customLeadRequestCity()
     const details = message === 'None' ? '' : message
     const target = info?.customLeadTarget
     const city = info?.customLeadCity
