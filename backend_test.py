@@ -264,16 +264,16 @@ class OverageRatesTestier:
             with open('/app/js/phone-config.js', 'r') as f:
                 content = f.read()
             
-            # Find manageNumber function
-            manage_number_match = re.search(r'manageNumber.*?:.*?\(.*?\)\s*=>\s*{(.*?)}', content, re.DOTALL)
+            # Find manageNumber function - look for the arrow function specifically
+            manage_number_match = re.search(r'manageNumber:\s*\(n\)\s*=>\s*{(.*?)},$', content, re.DOTALL | re.MULTILINE)
             
             if manage_number_match:
                 manage_number_text = manage_number_match.group(1)
                 
-                # Check for dynamic rate usage in warnings - look for ${OVERAGE_RATE_MIN} in template strings
+                # Check for dynamic rate usage - look for OVERAGE_RATE variables
                 has_dynamic_min = 'OVERAGE_RATE_MIN' in manage_number_text
                 has_dynamic_sms = 'OVERAGE_RATE_SMS' in manage_number_text  
-                has_warning_context = 'warning' in manage_number_text.lower() or 'overage' in manage_number_text.lower()
+                has_warning_context = 'overage active' in manage_number_text.lower()
                 
                 self.log_result(
                     "manageNumber view uses dynamic OVERAGE_RATE_MIN and OVERAGE_RATE_SMS in warnings",
