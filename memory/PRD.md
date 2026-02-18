@@ -11,7 +11,7 @@ User requested: "setup" - analyze code, set up the existing codebase, configure 
 - **Backend**: FastAPI (port 8001) - Acts as a reverse proxy, spawning a Node.js process and forwarding all requests
 - **Node.js Bot Engine**: Express server (port 5000) - Core Telegram bot with full business logic
 - **Database**: MongoDB (Railway-hosted) - Stores user state, wallets, domains, leads, payments, etc.
-- **Webhook**: Telegram webhook at `https://onboard-flow-58.preview.emergentagent.com/api/telegram/webhook`
+- **Webhook**: Telegram webhook at `https://onboarding-hub-25.preview.emergentagent.com/api/telegram/webhook`
 
 ## Tech Stack
 - React 18 + Tailwind CSS + Craco (frontend)
@@ -23,7 +23,7 @@ User requested: "setup" - analyze code, set up the existing codebase, configure 
 ## Key Environment Notes
 - Kubernetes ingress routes `/api/*` to backend (port 8001), all other routes to frontend (port 3000)
 - Express middleware strips `/api/` prefix for internal routing
-- `SELF_URL` must include `/api` suffix for proper webhook routing: `https://onboard-flow-58.preview.emergentagent.com/api`
+- `SELF_URL` must include `/api` suffix for proper webhook routing: `https://onboarding-hub-25.preview.emergentagent.com/api`
 - Node.js dependencies installed via `npm install` at `/app`
 
 ## What's Been Implemented
@@ -33,7 +33,7 @@ User requested: "setup" - analyze code, set up the existing codebase, configure 
 
 ### Env + Webhook Configuration (Jan 2026)
 - Updated root `.env` with full production credentials (90+ environment variables)
-- Set `SELF_URL` and `SELF_URL_PROD` to `https://onboard-flow-58.preview.emergentagent.com/api`
+- Set `SELF_URL` and `SELF_URL_PROD` to `https://onboarding-hub-25.preview.emergentagent.com/api`
 - Enabled Telegram bot (`TELEGRAM_BOT_ON=true`) with production bot token
 - Webhook verified by Telegram API: URL correct, pending_update_count: 0
 
@@ -59,7 +59,7 @@ User requested: "setup" - analyze code, set up the existing codebase, configure 
 - Database: CONNECTED
 - Telegram Bot: ENABLED (webhook active, verified)
 - Express REST API: ACTIVE
-- Webhook URL: `https://onboard-flow-58.preview.emergentagent.com/api/telegram/webhook`
+- Webhook URL: `https://onboarding-hub-25.preview.emergentagent.com/api/telegram/webhook`
 - Connect Reseller: ⚠️ IP needs whitelisting (104.198.214.223)
 
 ## Next Action Items
