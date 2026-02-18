@@ -1,56 +1,52 @@
 # NomadlyBot - PRD & Architecture Document
 
 ## Original Problem Statement
-User requested: "setup" - analyze code and set up the existing codebase.
+User requested: "setup" - analyze code, set up the existing codebase, configure environment variables and Telegram webhook.
 
 ## Application Overview
-**NomadlyBot** is a Telegram bot platform for URL shortening, domain registration, phone lead generation, crypto payments, and web hosting management. It includes:
+**NomadlyBot** is a Telegram bot platform for URL shortening, domain registration, phone lead generation, crypto payments, and web hosting management.
 
 ## Architecture
 - **Frontend**: React 18 dashboard (port 3000) - Admin panel showing bot status, DB connectivity, and feature overview
 - **Backend**: FastAPI (port 8001) - Acts as a reverse proxy, spawning a Node.js process and forwarding all requests
 - **Node.js Bot Engine**: Express server (port 5000) - Core Telegram bot with full business logic
 - **Database**: MongoDB (Railway-hosted) - Stores user state, wallets, domains, leads, payments, etc.
+- **Webhook**: Telegram webhook at `https://onboard-flow-58.preview.emergentagent.com/api/telegram/webhook`
 
 ## Tech Stack
 - React 18 + Tailwind CSS + Craco (frontend)
 - FastAPI + Python (backend proxy)
 - Node.js + Express + node-telegram-bot-api (bot engine)
 - MongoDB (database)
-- Various integrations: BlockBee (crypto), Fincra (bank payments), Connect Reseller (domains), Twilio, OpenAI
+- Various integrations: BlockBee (crypto), Fincra (bank payments), Connect Reseller (domains), Twilio, OpenAI, DynoPay
 
-## Core Features
-1. **URL Shortener** - Bit.ly and custom domain shortening with analytics
-2. **Domain Names** - Purchase, DNS management via Connect Reseller API
-3. **Phone Leads** - Targeted leads by area code, carrier filtering, CNAM lookup
-4. **Wallet System** - USD & NGN deposits via crypto (BlockBee) and bank (Fincra)
-5. **Web Hosting** - cPanel & Plesk plans with free trials
-6. **VPS Plans** - Virtual private servers on demand
-7. **Subscription Plans** - Daily/Weekly/Monthly with free domains and validations
+## Key Environment Notes
+- Kubernetes ingress routes `/api/*` to backend (port 8001), all other routes to frontend (port 3000)
+- Express middleware strips `/api/` prefix for internal routing
+- `SELF_URL` must include `/api` suffix for proper webhook routing: `https://onboard-flow-58.preview.emergentagent.com/api`
+- Node.js dependencies installed via `npm install` at `/app`
 
-## What's Been Implemented (Setup - Jan 2026)
+## What's Been Implemented
+### Setup Phase (Jan 2026)
 - Installed Node.js dependencies (`npm install`)
-- Created root `.env` with MONGO_URL, DB_NAME, and essential config
-- Set TELEGRAM_BOT_ON=false (no live bot token provided)
-- All services running: Frontend (3000), Backend/Proxy (8001), Node.js Express (5000)
-- Health check passing: Bot Running, DB Connected, REST APIs Active
-- Frontend dashboard loading correctly
+- Created root `.env` with MONGO_URL, DB_NAME, and basic config (TELEGRAM_BOT_ON=false initially)
+
+### Env + Webhook Configuration (Jan 2026)
+- Updated root `.env` with full production credentials (90+ environment variables)
+- Set `SELF_URL` and `SELF_URL_PROD` to `https://onboard-flow-58.preview.emergentagent.com/api`
+- Enabled Telegram bot (`TELEGRAM_BOT_ON=true`) with production bot token
+- Webhook verified by Telegram API: URL correct, pending_update_count: 0
 
 ## Current Status
 - All services: RUNNING
 - Database: CONNECTED
-- Telegram Bot: DISABLED (no real token)
+- Telegram Bot: ENABLED (webhook active, verified)
 - Express REST API: ACTIVE
+- Webhook URL: `https://onboard-flow-58.preview.emergentagent.com/api/telegram/webhook`
+- Connect Reseller: ⚠️ IP needs whitelisting (104.198.214.223)
 
 ## Next Action Items
-- P0: Provide real TELEGRAM_BOT_TOKEN to enable live bot functionality
-- P0: Add Connect Reseller API credentials for domain operations
-- P1: Configure BlockBee/DynoPay API keys for crypto payments
-- P1: Set up Fincra credentials for bank payments
-- P2: Configure email (SMTP) for sending hosting credentials
-- P2: Set real admin chat IDs (TELEGRAM_ADMIN_CHAT_ID, TELEGRAM_DEV_CHAT_ID)
-
-## Backlog
+- P0: Whitelist IP 104.198.214.223 in Connect Reseller API for domain operations
+- P1: Test end-to-end bot flow via Telegram
 - P2: Enhanced admin dashboard with real-time analytics
 - P3: Add user management UI to frontend
-- P3: Payment history and transaction logs in dashboard
