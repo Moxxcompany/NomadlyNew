@@ -5070,7 +5070,7 @@ bot?.on('message', async msg => {
     if (message === pc.showMore) {
       send(chatId, phoneConfig.txt.searching)
       const results = await telnyxApi.searchNumbers(info?.cpCountryCode || 'US', info?.cpNumberType || 'local', info?.cpAreaCode, 5)
-      if (!results.length) return send(chatId, phoneConfig.txt.noNumbers, k.of([[pc.back]]))
+      if (!results.length) return send(chatId, phoneConfig.txt.noSearchResults, k.of([[pc.back]]))
       await saveInfo('cpSearchResults', results)
       const location = info?.cpAreaName || info?.cpCountryName || ''
       const numBtns = results.map((_, i) => String(i + 1))
