@@ -29,6 +29,8 @@ const btn = {
   smsSettings: '📩 SMS Settings',
   voicemail: '🎙️ Voicemail',
   sipCredentials: '🔑 SIP Credentials',
+  callRecording: '🔴 Call Recording',
+  ivrAutoAttendant: '🤖 IVR / Auto-attendant',
   callSmsLogs: '📊 Call & SMS Logs',
   renewChangePlan: '🔄 Renew / Change Plan',
   releaseNumber: '❌ Release Number',
@@ -73,6 +75,18 @@ const btn = {
   yesRelease: 'Yes, Release Number',
   noKeep: 'No, Keep It',
   yesReset: 'Yes, Reset',
+
+  // IVR
+  enableIvr: '✅ Enable IVR',
+  disableIvr: '🚫 Disable IVR',
+  ivrGreeting: '🎤 Set Greeting',
+  ivrAddOption: '➕ Add Menu Option',
+  ivrRemoveOption: '➖ Remove Option',
+  ivrViewOptions: '📋 View Menu Options',
+
+  // Recording
+  enableRecording: '✅ Enable Recording',
+  disableRecording: '🚫 Disable Recording',
 
   back: 'Back',
   cancel: 'Cancel',
