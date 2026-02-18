@@ -297,14 +297,23 @@ class UsernameSyncTester:
             result = phoneNumbersOf_collection.find_one({'_id': 5168006768})
             
             if result and result.get('val'):
-                phone_entries = result['val']
+                phone_data = result['val']
+                print(f"DEBUG: Phone data structure: {phone_data}")
+                
+                # Check if it's nested under 'numbers' key
+                if 'numbers' in phone_data:
+                    phone_entries = phone_data['numbers']
+                else:
+                    phone_entries = phone_data
+                
                 target_phone = None
                 
                 # Find the specific phone number
-                for phone_number, phone_data in phone_entries.items():
-                    if phone_number == '+18556820054':
-                        target_phone = phone_data
-                        break
+                if isinstance(phone_entries, dict):
+                    for phone_number, phone_info in phone_entries.items():
+                        if phone_number == '+18556820054':
+                            target_phone = phone_info
+                            break
                 
                 if target_phone:
                     has_starter_plan = target_phone.get('plan') == 'starter'
@@ -317,10 +326,11 @@ class UsernameSyncTester:
                         "MEDIUM" if not (has_starter_plan and has_active_status) else "INFO"
                     )
                 else:
+                    available_numbers = list(phone_entries.keys()) if isinstance(phone_entries, dict) else []
                     self.log_result(
                         "MongoDB phoneNumbersOf for chatId 5168006768 has number +18556820054",
                         False,
-                        f"Phone number +18556820054 not found. Available numbers: {list(phone_entries.keys()) if phone_entries else 'None'}",
+                        f"Phone number +18556820054 not found. Available numbers: {available_numbers}",
                         "MEDIUM"
                     )
             else:
