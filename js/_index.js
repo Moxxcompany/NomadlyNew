@@ -1221,6 +1221,14 @@ bot?.on('message', async msg => {
       send(chatId, `📞 Select area code for <b>${target}</b> — <b>${city}</b>:\n\n"Mixed Area Codes" gives you the widest pool of verified numbers.`, k.of(buttons))
       set(state, chatId, 'action', a.targetSelectAreaCode)
     },
+    targetLeadsConfirm: async () => {
+      const { targetName, targetCity, carrier, cnam, amount, price, couponApplied, newPrice } = info || {}
+      const finalPrice = couponApplied ? newPrice : price
+      const { usdBal } = await getBalance(walletOf, chatId)
+      const summary = `📋 <b>Order Summary</b>\n\n🎯 Target: <b>${targetName}</b>\n📍 Area: <b>${targetCity}</b>\n📞 Carrier: <b>${carrier}</b>\n🔍 CNAM: <b>${cnam ? 'Yes' : 'No'}</b>\n📊 Leads: <b>${amount}</b>\n📄 Format: <b>International</b>${couponApplied ? `\n💰 Price: <s>$${price}</s> <b>$${view(finalPrice)}</b>` : `\n💰 Price: <b>$${finalPrice}</b>`}\n\n💳 Wallet: <b>$${view(usdBal)}</b>`
+      send(chatId, summary, k.of([`✅ Pay $${view(finalPrice)} USD`, '🎟️ Apply Coupon']))
+      set(state, chatId, 'action', a.targetLeadsConfirm)
+    },
 
     // validator
     validatorSelectCountry: () => {
