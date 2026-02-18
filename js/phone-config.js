@@ -7,9 +7,9 @@ const PHONE_PRO_PRICE = parseFloat(process.env.PHONE_PRO_PRICE || '15')
 const PHONE_BUSINESS_PRICE = parseFloat(process.env.PHONE_BUSINESS_PRICE || '30')
 const SIP_DOMAIN = process.env.SIP_DOMAIN || 'sip.nomadly.com'
 
-// ── Overage rates (pay-per-use above plan limits) ──
-const OVERAGE_RATE_SMS = 0.02   // $0.02 per inbound SMS over limit
-const OVERAGE_RATE_MIN = 0.03   // $0.03 per inbound minute over limit
+// ── Overage rates (pay-per-use above plan limits, from .env) ──
+const OVERAGE_RATE_SMS = parseFloat(process.env.OVERAGE_RATE_SMS || '0.02')
+const OVERAGE_RATE_MIN = parseFloat(process.env.OVERAGE_RATE_MIN || '0.03')
 
 // ── Button labels ──
 const btn = {
