@@ -514,6 +514,18 @@ const loadData = async () => {
     log('[CloudPhone] Scheduler initialized')
   }
 
+  // Initialize Voice Service (IVR, Recording, Call handling)
+  if (process.env.PHONE_SERVICE_ON === 'true') {
+    initVoiceService({
+      bot,
+      phoneNumbersOf,
+      phoneLogs,
+      telnyxApi,
+      telnyxResources,
+    })
+    log('[CloudPhone] Voice Service initialized with IVR + Recording')
+  }
+
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // Scheduled auto-cleanup: reset stale user states every 6 hours
   // Users idle in a flow for >24h get reset to 'none' so they see fresh keyboards
