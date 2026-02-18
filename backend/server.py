@@ -3,9 +3,12 @@ import subprocess
 import signal
 import httpx
 import asyncio
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import Response
 from contextlib import asynccontextmanager
+
+load_dotenv()
 
 NODE_PROCESS = None
 NODE_PORT = 5000
