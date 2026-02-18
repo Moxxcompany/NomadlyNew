@@ -5330,12 +5330,16 @@ bot?.on('message', async msg => {
       if (phoneConfig.canAccessFeature(num.plan, 'smsToEmail')) {
         const emLabel = `📧 SMS to Email ${smsConf.toEmail ? '✅ ' + smsConf.toEmail : '❌ OFF'}`
         smsBtns.push([emLabel])
+      } else {
+        smsBtns.push([`🔒 SMS to Email (Pro+)`])
       }
       if (phoneConfig.canAccessFeature(num.plan, 'smsWebhook')) {
         const whLabel = `🔗 Webhook URL ${smsConf.webhookUrl ? '✅ Set' : '❌ Not Set'}`
         smsBtns.push([whLabel])
+      } else {
+        smsBtns.push([`🔒 Webhook URL (Pro+)`])
       }
-      return send(chatId, phoneConfig.txt.smsSettingsMenu(num.phoneNumber, smsConf), k.of(smsBtns))
+      return send(chatId, phoneConfig.txt.smsSettingsMenu(num.phoneNumber, smsConf, num.plan), k.of(smsBtns))
     }
 
     // SMS Inbox
