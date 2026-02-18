@@ -11,6 +11,7 @@ let _phoneLogs = null
 let _telnyxApi = null
 let _telnyxResources = null
 let _translation = null
+let _ivrAnalytics = null
 
 // In-memory store for active call sessions (callControlId → session data)
 const activeCalls = {}
@@ -22,7 +23,8 @@ function initVoiceService(deps) {
   _telnyxApi = deps.telnyxApi
   _telnyxResources = deps.telnyxResources
   _translation = deps.translation
-  log('[VoiceService] Initialized with IVR + Recording support')
+  _ivrAnalytics = deps.ivrAnalytics
+  log('[VoiceService] Initialized with IVR + Recording + Analytics support')
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
