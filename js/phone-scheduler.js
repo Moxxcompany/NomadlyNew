@@ -482,16 +482,18 @@ function buildUsageAlertMsg(num, type, used, limit, percent) {
 
 📞 ${formatPhone(num.phoneNumber)}
 
-You've used <b>${used}/${limit}</b> inbound ${type} this month (${percent}%).${type === 'SMS' ? '\n📌 SMS is inbound only. Consider upgrading your plan for more inbound SMS.' : '\n📌 All incoming calls (including forwarded) count toward minutes. Consider upgrading for more.'}`
+You've used <b>${used}/${limit}</b> inbound ${type} this month (${percent}%).
+Once exhausted, overage billing kicks in at <b>$${type === 'SMS' ? '0.02/SMS' : '0.03/min'}</b> from your wallet.`
 }
 
 function buildUsageLimitMsg(num, type, used, limit) {
-  return `🚫 <b>Inbound ${type} Limit Reached</b>
+  return `💰 <b>Inbound ${type} — Overage Active</b>
 
 📞 ${formatPhone(num.phoneNumber)}
 
 You've used all <b>${limit}</b> inbound ${type} in your plan this month.
-${type === 'SMS' ? '📌 Incoming SMS will no longer be forwarded until your plan resets or you upgrade.\nReminder: SMS is inbound only.' : '📌 Incoming calls will be rejected (including forwarded calls) until your plan resets or you upgrade.'}`
+Overage billing is now active — <b>$${type === 'SMS' ? '0.02/SMS' : '0.03/min'}</b> charged from your wallet per use.
+Top up your wallet or upgrade your plan to avoid interruptions.`
 }
 
 function sendToUser(chatId, text) {
