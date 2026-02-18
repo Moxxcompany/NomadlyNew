@@ -482,15 +482,16 @@ const client = new MongoClient(process.env.MONGO_URL, {
     strict: true,
     deprecationErrors: true,
   },
-  maxPoolSize: 5,
-  minPoolSize: 1,
-  maxIdleTimeMS: 60000,
-  connectTimeoutMS: 10000,
-  socketTimeoutMS: 45000,
-  serverSelectionTimeoutMS: 10000,
-  heartbeatFrequencyMS: 30000,
+  maxPoolSize: 10,
+  minPoolSize: 2,
+  maxIdleTimeMS: 15000,
+  connectTimeoutMS: 20000,
+  socketTimeoutMS: 30000,
+  serverSelectionTimeoutMS: 20000,
+  heartbeatFrequencyMS: 10000,
   retryWrites: true,
   retryReads: true,
+  waitQueueTimeoutMS: 15000,
 })
 
 let isDbConnected = false
@@ -505,15 +506,24 @@ client.on('connectionPoolReady', () => {
   isDbConnected = true
 })
 
+let consecutiveHeartbeatFailures = 0
+
 client.on('serverHeartbeatFailed', (event) => {
-  log('❌ MongoDB heartbeat failed:', event.failure?.message || 'unknown error')
+  consecutiveHeartbeatFailures++
+  // Only log every 3rd failure to reduce noise — single blips recover silently
+  if (consecutiveHeartbeatFailures >= 3) {
+    log(`❌ MongoDB heartbeat failed (${consecutiveHeartbeatFailures}x):`, event.failure?.message || 'unknown error')
+  }
   isDbConnected = false
 })
 
 client.on('serverHeartbeatSucceeded', () => {
-  if (!isDbConnected) {
-    log('✅ MongoDB heartbeat restored')
+  if (!isDbConnected || consecutiveHeartbeatFailures > 0) {
+    if (consecutiveHeartbeatFailures >= 3) {
+      log(`✅ MongoDB heartbeat restored (was down for ${consecutiveHeartbeatFailures} beats)`)
+    }
     isDbConnected = true
+    consecutiveHeartbeatFailures = 0
   }
 })
 
