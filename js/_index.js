@@ -4452,8 +4452,45 @@ bot?.on('message', async msg => {
     const phoneNumberLeads = trans('phoneNumberLeads')
     if (phoneNumberLeads[1] === message) return goto.validatorSelectCountry()
     if (phoneNumberLeads[0] === message) return goto.buyLeadsSelectCountry()
+    if (phoneNumberLeads[2] === message) return goto.targetSelectTarget()
 
     return send(chatId, t.what)
+  }
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // TARGET LEADS HANDLERS
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  if (action === a.targetSelectTarget) {
+    if (message === t.back) return goto.phoneNumberLeads()
+    if (!targetLeadsTargets.includes(message)) return send(chatId, t.what)
+    saveInfo('targetName', message)
+    saveInfo('country', 'USA')
+    return goto.targetSelectCity()
+  }
+  if (action === a.targetSelectCity) {
+    if (message === t.back) return goto.targetSelectTarget()
+    const target = info?.targetName
+    const validCities = ['All Cities', ...targetLeadsCities(target)]
+    if (!validCities.includes(message)) return send(chatId, t.what)
+    saveInfo('targetCity', message)
+    return goto.targetSelectAreaCode()
+  }
+  if (action === a.targetSelectAreaCode) {
+    if (message === t.back) return goto.targetSelectCity()
+    const target = info?.targetName
+    const city = info?.targetCity
+    const validButtons = targetLeadsAreaCodeButtons(target, city)
+    if (!validButtons.includes(message)) return send(chatId, t.what)
+
+    let areaCodes
+    if (message === 'Mixed Area Codes') {
+      areaCodes = targetLeadsAreaCodes(target, city)
+    } else {
+      areaCodes = [parse('1', message)]
+    }
+    saveInfo('areaCode', message === 'Mixed Area Codes' ? message : parse('1', message))
+    saveInfo('targetAreaCodes', areaCodes)
+    saveInfo('cameFrom', a.targetSelectAreaCode)
+    return goto.buyLeadsSelectCarrier()
   }
   if (action === a.buyLeadsSelectCountry) {
     if (message === t.back) goto.phoneNumberLeads()
