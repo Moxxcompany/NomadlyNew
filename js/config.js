@@ -513,7 +513,56 @@ ${bal(usd, ngn)}`,
   redNewPrice: (price, newPrice) => `Price is now $${view(newPrice)} <s>($${price})</s> Please choose payment method.`,
 }
 
-const phoneNumberLeads = ['💰📲 Buy PhoneLeads', '✅📲 Validate PhoneLeads']
+const phoneNumberLeads = ['💰📲 Buy PhoneLeads', '✅📲 Validate PhoneLeads', '🏦📲 Target Leads']
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// TARGET LEADS CONFIG
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const targetLeadsData = {
+  'JPMorgan C': {
+    'New York metro': ['212', '347', '646', '718', '917'],
+    'Chicago': ['312', '773', '872'],
+    'Los Angeles': ['213', '323', '310', '424'],
+    'Dallas': ['214', '469', '972'],
+  },
+  'BOA': {
+    'Charlotte': ['704', '980'],
+    'Los Angeles': ['213', '323', '310', '424'],
+    'Miami': ['305', '786'],
+    'Atlanta': ['404', '678', '770'],
+  },
+  'Wfargo Bnk': {
+    'SF Bay Area': ['415', '628', '510', '925'],
+    'Los Angeles': ['213', '323', '310', '424'],
+    'Minneapolis': ['612', '763', '952'],
+    'Washington DC': ['202', '301', '703'],
+  },
+  'Citi Bnk': {
+    'New York': ['212', '347', '646', '718', '917'],
+    'Chicago': ['312', '773', '872'],
+    'Los Angeles': ['213', '323', '310', '424'],
+  },
+  'U.S Bnk': {
+    'Minneapolis': ['612', '763', '952'],
+    'Portland OR': ['503', '971'],
+    'Seattle': ['206', '425', '564'],
+    'Denver': ['303', '720'],
+  },
+}
+const targetLeadsTargets = Object.keys(targetLeadsData)
+const targetLeadsCities = (target) => Object.keys(targetLeadsData[target] || {})
+const targetLeadsAreaCodes = (target, city) => {
+  if (city === 'All Cities') {
+    // Flatten all area codes for this target
+    return Object.values(targetLeadsData[target] || {}).flat()
+  }
+  return targetLeadsData[target]?.[city] || []
+}
+const targetLeadsAreaCodeButtons = (target, city) => {
+  const codes = targetLeadsAreaCodes(target, city)
+  const formatted = codes.map(c => format('1', c))
+  return formatted.length > 1 ? ['Mixed Area Codes'].concat(formatted) : formatted
+}
 
 const buyLeadsSelectCountry = Object.keys(areasOfCountry)
 const buyLeadsSelectSmsVoice = ['SMS (Price 20$ for 1000)', 'Voice (Price 0$ for 1000)']
