@@ -4988,7 +4988,6 @@ bot?.on('message', async msg => {
       const countryBtns = phoneConfig.countries.map(c => c.name)
       const rows = []
       for (let i = 0; i < countryBtns.length; i += 2) rows.push(countryBtns.slice(i, i + 2))
-      rows.push([pc.moreCountries])
       return send(chatId, phoneConfig.txt.selectCountry, k.of(rows))
     }
     let numberType = null
@@ -5277,7 +5276,6 @@ bot?.on('message', async msg => {
       const countryBtns = phoneConfig.countries.map(c => c.name)
       const rows = []
       for (let i = 0; i < countryBtns.length; i += 2) rows.push(countryBtns.slice(i, i + 2))
-      rows.push([pc.moreCountries])
       return send(chatId, phoneConfig.txt.selectCountry, k.of(rows))
     }
     const idx = parseInt(message) - 1
