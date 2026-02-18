@@ -230,16 +230,18 @@ Select an option:`,
 📋 Choose your plan:
 
 <b>💡 Starter — $${PHONE_STARTER_PRICE}/mo</b>
-${plans.starter.minutes} inbound min · ${plans.starter.sms} SMS
+${plans.starter.minutes} inbound min · ${plans.starter.sms} inbound SMS
 ${plans.starter.features.join(' · ')}
 
 <b>⭐ Pro — $${PHONE_PRO_PRICE}/mo</b>
-${plans.pro.minutes} inbound min · ${plans.pro.sms} SMS
+${plans.pro.minutes} inbound min · ${plans.pro.sms} inbound SMS
 ${plans.pro.features.join(' · ')}
 
 <b>👑 Business — $${PHONE_BUSINESS_PRICE}/mo</b>
-${plans.business.minutes} inbound min · ${plans.business.sms} SMS
-${plans.business.features.join(' · ')}`,
+${plans.business.minutes} inbound min · ${plans.business.sms} inbound SMS
+${plans.business.features.join(' · ')}
+
+📌 <i>SMS is inbound only (receive, not send). All incoming calls including forwarded ones count toward inbound minutes.</i>`,
 
   orderSummary: (number, country, plan, price) => `📋 <b>Order Summary</b>
 
