@@ -444,6 +444,8 @@ const loadData = async () => {
   if (TELEGRAM_BOT_ON === 'true') {
     autoPromo = initAutoPromo(bot, db, nameOf, state)
     log('[AutoPromo] System loaded successfully')
+    dailyCouponSystem = initDailyCoupons(db, bot, nameOf, state)
+    log('[DailyCoupon] System loaded successfully')
   } else {
     log('[AutoPromo] Skipped — Telegram bot is disabled')
   }
