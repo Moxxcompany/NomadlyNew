@@ -34,79 +34,52 @@ const SERVICE_CONTEXT = {
     services: 'DMCA-ignored offshore domain registration',
     details: [
       '.sbs, .com, .net, .org and 400+ extensions',
-      'Country-level domains: .ng .za .ke .gh .cm .tz',
       'Offshore registration with total content privacy',
-      'Instant DNS setup and full management panel',
-      'Pay with BTC, ETH, USDT or bank transfer',
+      'Instant DNS setup, pay with crypto or bank',
       'Free .sbs/.xyz domains with subscription plans',
     ],
     cta: 'Register Domain Names',
-    crossPromo: 'Need targeted phone leads? Tap HQ SMS Lead to buy verified leads by area code',
+    crossPromo: 'Need phone leads? Tap HQ SMS Lead',
   },
   shortener: {
     services: 'Shortit — URL shortener with custom domain branding',
     details: [
-      'FREE trial: 5 short links for every new user — no payment needed',
-      'Custom branded short URLs with your own domain',
-      'Real-time click analytics and tracking',
-      'Bitly integration available for premium links',
-      'Random or custom back-half for links',
-      'Unlimited links with subscription plans (Daily/Weekly/Monthly)',
+      'FREE: 5 short links for every new user',
+      'Custom branded URLs with your own domain',
+      'Real-time click analytics',
+      'Unlimited links with subscription plans',
     ],
     cta: 'URL Shortener',
-    crossPromo: 'Register DMCA-ignored domains for your branded short links — tap Register Domain Names',
+    crossPromo: 'Register DMCA-ignored domains — tap Register Domain Names',
   },
   leads: {
     services: 'Phone number lead generation and validation',
     details: [
-      'Buy verified phone leads filtered by country, state, area code',
-      'SMS-ready and voice-ready leads',
-      'Filter by carrier (T-Mobile, AT&T, Verizon etc.)',
-      'Validate your own phone numbers (BYOL) for $15/1000',
-      'Buy leads starting from $20 per 1000',
-      'CNAM lookup available',
+      'Verified leads filtered by country, state, area code, carrier',
+      'Starting from $20/1000 leads, validate for $15/1000',
       'Bulk download with instant delivery',
-      'Request custom institution targets directly from the bot',
     ],
     cta: 'HQ SMS Lead',
-    crossPromo: 'Shorten your campaign links with Shortit — 5 free links, tap URL Shortener',
+    crossPromo: 'Shorten campaign links — tap URL Shortener',
   },
 }
 
 /**
  * Sanitize AI output for Telegram HTML
- * - Convert markdown bold/italic to HTML
- * - Strip unsupported HTML tags
- * - Fix unclosed <b>, <i>, <code> tags
  */
 function sanitizeForTelegram(text) {
   let s = text
-
-  // Convert markdown bold **text** or __text__ to <b>text</b>
   s = s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
   s = s.replace(/__(.+?)__/g, '<b>$1</b>')
-
-  // Convert markdown italic *text* or _text_ to <i>text</i> (single only, not inside words)
   s = s.replace(/(?<!\w)\*([^*\n]+?)\*(?!\w)/g, '<i>$1</i>')
   s = s.replace(/(?<!\w)_([^_\n]+?)_(?!\w)/g, '<i>$1</i>')
-
-  // Convert markdown code `text` to <code>text</code>
   s = s.replace(/`([^`\n]+?)`/g, '<code>$1</code>')
-
-  // Strip markdown headers (# ## ###)
   s = s.replace(/^#{1,3}\s+/gm, '')
-
-  // Strip any HTML tags Telegram doesn't support (keep b, i, u, s, code, pre, a)
   s = s.replace(/<(?!\/?(?:b|i|u|s|code|pre|a)\b)[^>]*>/gi, '')
-
-  // Fix unclosed tags — count opens vs closes for b, i, code
   for (const tag of ['b', 'i', 'code']) {
     const opens = (s.match(new RegExp(`<${tag}>`, 'gi')) || []).length
     const closes = (s.match(new RegExp(`</${tag}>`, 'gi')) || []).length
-    for (let i = 0; i < opens - closes; i++) {
-      s += `</${tag}>`
-    }
-    // Remove orphan closing tags (more closes than opens)
+    for (let i = 0; i < opens - closes; i++) s += `</${tag}>`
     if (closes > opens) {
       let excess = closes - opens
       s = s.replace(new RegExp(`</${tag}>`, 'gi'), (match) => {
@@ -115,12 +88,11 @@ function sanitizeForTelegram(text) {
       })
     }
   }
-
   return s.trim()
 }
 
 /**
- * Generate a dynamic promo message using OpenAI
+ * Generate a dynamic promo message using OpenAI (shorter ~300 chars)
  */
 async function generateDynamicPromo(theme, lang) {
   const ai = getOpenAI()
@@ -129,284 +101,203 @@ async function generateDynamicPromo(theme, lang) {
   const ctx = SERVICE_CONTEXT[theme]
   const langName = LANG_NAMES[lang] || 'English'
 
-  const prompt = `You are a friendly, persuasive Telegram bot copywriter. Write a short promotional message for a Telegram bot that offers ${ctx.services}.
+  const prompt = `You are a Telegram bot copywriter. Write a SHORT promo for ${ctx.services}.
 
-Key selling points:
+Key points:
 ${ctx.details.map(d => '- ' + d).join('\n')}
 
 Rules:
 - Write in ${langName}
-- Use ONLY Telegram HTML tags: <b>bold</b> and <code>code</code>. Do NOT use markdown syntax like **bold** or *italic* or \`code\`.
-- Start with a catchy <b>HEADLINE</b> in the message language
-- Be friendly, engaging, and create urgency without being spammy
-- Keep under 650 characters total (this will be a photo caption)
-- End with a call-to-action: tap <b>${ctx.cta}</b>
-- Add a separator line "-----" at the bottom
-- Below the separator, mention: ${ctx.crossPromo}
-- Each message should feel unique — vary the angle, hook, and structure
-- Do NOT use emoji characters
+- Use ONLY <b>bold</b> and <code>code</code> HTML tags
+- Start with a catchy <b>HEADLINE</b>
+- Keep under 300 characters total
+- End with: tap <b>${ctx.cta}</b>
+- Add "-----" then: ${ctx.crossPromo}
+- No emoji characters
 
-Return ONLY the message text, nothing else.`
+Return ONLY the message text.`
 
   try {
     const res = await ai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 500,
+      max_tokens: 250,
       temperature: 0.9,
     })
     let content = res.choices?.[0]?.message?.content?.trim()
-    if (!content || content.length < 50) return null
-
-    // Sanitize: fix markdown leaks, bad HTML, unclosed tags
+    if (!content || content.length < 30) return null
     content = sanitizeForTelegram(content)
-
     if (content.length <= 1024) return content
-
-    // If too long, truncate at last complete line under 1024
-    const truncated = content.substring(0, 1020)
+    const truncated = content.substring(0, 500)
     const lastNewline = truncated.lastIndexOf('\n')
-    return sanitizeForTelegram(lastNewline > 500 ? truncated.substring(0, lastNewline) : truncated)
+    return sanitizeForTelegram(lastNewline > 200 ? truncated.substring(0, lastNewline) : truncated)
   } catch (error) {
     log(`[AutoPromo] OpenAI error: ${error.message}`)
     return null
   }
 }
 
-// Timezone offsets per language (hours from UTC)
-// Used to send promos at "local" times for each user group
-const TIMEZONE_OFFSETS = {
-  en: 0,      // UTC (default)
-  fr: 1,      // WAT / CET (West Africa / France)
-  zh: 8,      // CST (China Standard Time)
-  hi: 5.5,    // IST (India Standard Time)
-}
-
-// Target local times for 2 daily promos
-const LOCAL_TIMES = [
-  { hour: 10, minute: 0 },  // Morning
-  { hour: 16, minute: 0 },  // Afternoon
-]
-
-// 3 themes rotate across 2 daily slots (cycle every 3 days)
+// Timezone offsets per language
+const TIMEZONE_OFFSETS = { en: 0, fr: 1, zh: 8, hi: 5.5 }
+const LOCAL_TIMES = [{ hour: 10, minute: 0 }, { hour: 16, minute: 0 }]
 const THEMES = ['domains', 'shortener', 'leads']
-
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-// ─── Promo Messages ──────────────────────────────────────────────
+// ─── Promo Messages (50% shorter) ──────────────────────────
 
 const promoMessages = {
   en: {
     domains: [
-      `<b>YOUR WEBSITE, YOUR RULES</b>
+      `<b>YOUR SITE, YOUR RULES</b>
 
-Register DMCA-ignored domains — no takedowns.
-
-- .sbs, .com, .net, .org & 400+ extensions
-- Country domains: .ng .za .ke .gh .cm .tz
-- Offshore registration — total privacy
-- Instant DNS setup + management panel
-
-Tap <b>Register Domain Names</b> to claim yours!
-
------
-Need phone leads? Tap <b>HQ SMS Lead</b> for verified leads by area code`,
-
-      `<b>DOMAIN FLASH DEAL</b>
-
-Why risk your site being taken down?
-
-+ DMCA-Ignored registration
-+ Full DNS control from day one
-+ Free .sbs/.xyz domains with plans
-+ Country TLDs: .ng .za .ke .gh .cm .tz
-
-Type <b>/start</b> then tap <b>Register Domain Names</b>
-
------
-Shorten your links with Shortit — 5 free trial links!
-Tap <b>URL Shortener</b>`,
-
-      `<b>OWN YOUR DIGITAL IDENTITY</b>
-
-Every serious brand needs a domain:
-
-- Offshore, privacy-first registration
-- .sbs .com .net .org and 400+ more
-- Country domains: .ng .za .ke .gh
-- Manage DNS directly from the bot
-
-Subscribe for free .sbs/.xyz domains!
-Tap <b>Register Domain Names</b> now!
-
------
-Buy targeted phone leads — tap <b>HQ SMS Lead</b>`,
-
-      `<b>STOP WORRYING ABOUT TAKEDOWNS</b>
-
-Your competitors use DMCA-ignored domains.
-
-- Content stays up — guaranteed
-- Crypto & bank payments accepted
-- All your domains in one place
-- Country TLDs available here too!
-
-<b>Register Domain Names</b> — start now!
-
------
-Shorten campaign links with <b>URL Shortener</b> — 5 free!`,
-
-      `<b>TRUSTED BY THOUSANDS</b>
-
-Why choose offshore domains?
-
-1. Zero DMCA takedowns
-2. Full privacy protection
-3. Fast DNS propagation
-4. Crypto payments for anonymity
-5. Country domains (.ng .za .ke .gh) included
+DMCA-ignored domains — no takedowns.
+.sbs .com .net .org & 400+ TLDs
+Offshore, private, instant DNS setup.
 
 Tap <b>Register Domain Names</b>
 
 -----
-Need verified phone leads? Tap <b>HQ SMS Lead</b>`,
+Need leads? Tap <b>HQ SMS Lead</b>`,
+
+      `<b>DOMAIN FLASH DEAL</b>
+
+Why risk your site being taken down?
+DMCA-ignored + full DNS control.
+Free .sbs/.xyz with plans. Crypto accepted.
+
+Tap <b>Register Domain Names</b>
+
+-----
+5 free short links — tap <b>URL Shortener</b>`,
+
+      `<b>OWN YOUR DIGITAL IDENTITY</b>
+
+Offshore, privacy-first domains.
+400+ extensions. Manage DNS from the bot.
+
+Tap <b>Register Domain Names</b>
+
+-----
+Buy targeted leads — tap <b>HQ SMS Lead</b>`,
+
+      `<b>STOP WORRYING ABOUT TAKEDOWNS</b>
+
+DMCA-ignored. Content stays up.
+Crypto & bank payments. All TLDs.
+
+<b>Register Domain Names</b> — start now!
+
+-----
+Shorten links — tap <b>URL Shortener</b>`,
+
+      `<b>TRUSTED BY THOUSANDS</b>
+
+Zero DMCA takedowns. Full privacy.
+Fast DNS. Crypto payments for anonymity.
+
+Tap <b>Register Domain Names</b>
+
+-----
+Verified phone leads — tap <b>HQ SMS Lead</b>`,
     ],
 
     shortener: [
       `<b>SHORTEN. BRAND. TRACK.</b>
 
-Start with <b>5 FREE trial links</b> — no payment needed!
+5 FREE trial links — no payment needed!
+Custom branded URLs + real-time analytics.
 
-- Custom branded URLs with YOUR domain
-- Real-time click analytics
-- Bit.ly integration available
-- Unlimited links with subscription
-
-Tap <b>URL Shortener</b> to claim your free links!
+Tap <b>URL Shortener</b>
 
 -----
-Register DMCA-ignored domains — tap <b>Register Domain Names</b>`,
+DMCA-ignored domains — tap <b>Register Domain Names</b>`,
 
-      `<b>5 FREE SHORT LINKS — NO STRINGS ATTACHED</b>
+      `<b>5 FREE SHORT LINKS</b>
 
-Every new user gets 5 free Shortit trial links.
+Brand links with YOUR domain.
+Track every click. Upgrade anytime.
 
-+ Brand links with YOUR domain
-+ Track every single click
-+ Upgrade for unlimited links anytime
-
-Tap <b>URL Shortener</b> now!
+Tap <b>URL Shortener</b>
 
 -----
-Need targeted leads? Tap <b>HQ SMS Lead</b> to buy verified phone leads`,
+Targeted leads — tap <b>HQ SMS Lead</b>`,
 
-      `<b>YOUR BRAND DESERVES BETTER LINKS</b>
+      `<b>BETTER LINKS = MORE CLICKS</b>
 
 <code>bit.ly/3xK9mQ2</code> vs <code>yourbrand.com/deals</code>
-
-- 5 free trial links to get started
-- Use your own domain for short links
-- See who clicks, when, and where
+5 free trial links to start.
 
 <b>URL Shortener</b> — try Shortit free!
 
 -----
 Register your brand domain — tap <b>Register Domain Names</b>`,
 
-      `<b>LINK SHORTENING MADE POWERFUL</b>
+      `<b>POWERFUL LINK SHORTENING</b>
 
-Start FREE with 5 trial Shortit links!
+FREE: 5 Shortit trial links!
+Custom domain shortener + analytics.
 
-- Redirect & shorten any URL
-- Custom domain shortener
-- View shortlink analytics
-
-Type <b>/start</b> then tap <b>URL Shortener</b>
+Type <b>/start</b> then <b>URL Shortener</b>
 
 -----
-Buy phone leads by area code — tap <b>HQ SMS Lead</b>`,
+Buy leads by area code — tap <b>HQ SMS Lead</b>`,
 
-      `<b>SMART MARKETERS USE SMART LINKS</b>
+      `<b>SMART LINKS = 34% MORE CLICKS</b>
 
-Branded short links get up to 34% more clicks.
-Start with 5 FREE trial links today!
-
-+ Use your domain as a shortener
-+ Track performance in real-time
-+ Unlimited Shortit links with plans
+Branded short links. 5 FREE to start.
+Unlimited with subscription plans.
 
 Tap <b>URL Shortener</b>
 
 -----
-Need DMCA-ignored domains? Tap <b>Register Domain Names</b>`,
+DMCA-ignored domains — tap <b>Register Domain Names</b>`,
     ],
 
     leads: [
-      `<b>HQ PHONE LEADS — FUEL YOUR CAMPAIGNS</b>
+      `<b>HQ PHONE LEADS</b>
 
-Target the right audience:
+Filter by country, state, area, carrier.
+From $20/1K. Validate for $15/1K.
 
-- Filter by country, state, area code, carrier
-- SMS-ready & voice-ready leads
-- Starting from $20 per 1,000
-
-Already have numbers? Validate for $15/1000!
-Subscribers get up to 15,000 FREE USA validations!
-
-Tap <b>HQ SMS Lead</b> to start!
+Tap <b>HQ SMS Lead</b>
 
 -----
-Shorten your campaign links — tap <b>URL Shortener</b> for 5 free links`,
+Shorten campaign links — tap <b>URL Shortener</b>`,
 
-      `<b>STOP WASTING MONEY ON BAD LEADS</b>
+      `<b>STOP WASTING ON BAD LEADS</b>
 
-Your campaigns are only as good as your list.
+Verified leads by country & area.
+CNAM lookup. Bulk instant delivery.
 
-+ Verified leads by country & area
-+ CNAM lookup included
-+ Bulk download — instant delivery
-
-Tap <b>HQ SMS Lead</b> now!
+Tap <b>HQ SMS Lead</b>
 
 -----
-Register offshore domains — tap <b>Register Domain Names</b>`,
+Offshore domains — tap <b>Register Domain Names</b>`,
 
       `<b>VALIDATE BEFORE YOU SEND</b>
 
-Sending to dead numbers? You're burning cash.
+Sending to dead numbers = burning cash.
+Upload list, get only ACTIVE numbers. $15/1K.
 
-- Upload your list (any format)
-- Get back only ACTIVE numbers
-- Just $15 per 1,000 validations
-
-<b>HQ SMS Lead</b> then tap <b>Validate PhoneLeads</b>
+<b>HQ SMS Lead</b> then <b>Validate PhoneLeads</b>
 
 -----
-Brand your links with Shortit — tap <b>URL Shortener</b>`,
+Brand your links — tap <b>URL Shortener</b>`,
 
       `<b>FRESH LEADS = FRESH REVENUE</b>
 
-USA | UK | Canada | Australia & more
+USA | UK | Canada | Australia & more.
+SMS & Voice leads. 1K to 5K+ per order.
 
-- SMS & Voice leads available
-- Filter: state, area code, carrier
-- 1,000 to 5,000+ per order
-- Request custom institution targets!
-
-<b>HQ SMS Lead</b> then tap <b>Buy PhoneLeads</b>
+<b>HQ SMS Lead</b> then <b>Buy PhoneLeads</b>
 
 -----
-Need DMCA-ignored domains? Tap <b>Register Domain Names</b>`,
+DMCA-ignored domains — tap <b>Register Domain Names</b>`,
 
-      `<b>SCALE YOUR SMS MARKETING TODAY</b>
+      `<b>SCALE YOUR SMS MARKETING</b>
 
-1. Choose country & region
-2. Pick carrier & format
-3. Select quantity (1K-5K+)
-4. Pay with crypto or wallet
-
-Already have a list? Validate it with us!
-Subscribers get FREE USA validations!
+Pick country, carrier, quantity.
+Pay with crypto or wallet. Instant delivery.
 
 Tap <b>HQ SMS Lead</b>
 
@@ -417,214 +308,159 @@ Shorten campaign links — tap <b>URL Shortener</b>`,
 
   fr: {
     domains: [
-      `<b>VOTRE SITE WEB, VOS REGLES</b>
+      `<b>VOTRE SITE, VOS REGLES</b>
 
-Domaines ignorant le DMCA — aucun retrait.
-
-- .sbs, .com, .net, .org & 400+ extensions
-- Domaines pays : .ng .za .ke .gh .cm .tz
-- Enregistrement offshore — confidentialite totale
-- Configuration DNS instantanee
-
-Appuyez sur <b>Enregistrer des noms de domaine</b> !
-
------
-Raccourcissez vos liens — appuyez sur <b>Raccourcisseur d'URL</b> pour 5 liens gratuits`,
-
-      `<b>OFFRE FLASH DOMAINES</b>
-
-Pourquoi risquer la suppression de votre site ?
-
-+ Enregistrement DMCA-ignore
-+ Controle DNS complet des le premier jour
-+ Domaines .sbs/.xyz gratuits avec abonnements
-+ TLD pays : .ng .za .ke .gh .cm .tz
-
-Tapez <b>/start</b> puis <b>Enregistrer des noms de domaine</b>
-
------
-Leads telephone cibles — appuyez sur <b>Pistes SMS HQ</b>`,
-
-      `<b>POSSEDEZ VOTRE IDENTITE NUMERIQUE</b>
-
-Toute marque serieuse a besoin d'un domaine :
-
-- Enregistrement offshore, confidentialite d'abord
-- .sbs .com .net .org .io et plus
-- Domaines pays : .ng .za .ke .gh
-- Gerez les DNS directement depuis le bot
-
-Appuyez sur <b>Enregistrer des noms de domaine</b> !
-
------
-5 liens gratuits avec Shortit — appuyez sur <b>Raccourcisseur d'URL</b>`,
-
-      `<b>ARRETEZ DE VOUS INQUIETER DES SUPPRESSIONS</b>
-
-Vos concurrents utilisent deja des domaines DMCA-ignores.
-
-- Contenu en ligne — garanti
-- Paiements crypto & bancaires
-- Tous vos domaines au meme endroit
-- TLD pays disponibles ici aussi !
-
-<b>Enregistrer des noms de domaine</b> — commencez !
-
------
-Leads telephone par zone — appuyez sur <b>Pistes SMS HQ</b>`,
-
-      `<b>LA CONFIANCE DE MILLIERS D'UTILISATEURS</b>
-
-Pourquoi choisir l'offshore ?
-
-1. Zero suppression DMCA
-2. Protection vie privee totale
-3. Propagation DNS rapide
-4. Paiements crypto anonymes
-5. Domaines pays (.ng .za .ke .gh) inclus
+Domaines DMCA-ignores — aucun retrait.
+400+ extensions. DNS instantane. Crypto accepte.
 
 Appuyez sur <b>Enregistrer des noms de domaine</b>
 
 -----
-Leads telephone cibles — appuyez sur <b>Pistes SMS HQ</b>`,
+Liens courts gratuits — <b>Raccourcisseur d'URL</b>`,
+
+      `<b>OFFRE FLASH DOMAINES</b>
+
+Enregistrement offshore + DNS complet.
+.sbs/.xyz gratuits avec abonnements.
+
+Tapez <b>/start</b> puis <b>Enregistrer des noms de domaine</b>
+
+-----
+Leads cibles — <b>Pistes SMS HQ</b>`,
+
+      `<b>IDENTITE NUMERIQUE</b>
+
+Enregistrement offshore, confidentialite totale.
+400+ extensions. Gerez DNS depuis le bot.
+
+<b>Enregistrer des noms de domaine</b>
+
+-----
+5 liens gratuits — <b>Raccourcisseur d'URL</b>`,
+
+      `<b>ZERO SUPPRESSIONS DMCA</b>
+
+Contenu en ligne — garanti.
+Paiements crypto & bancaires.
+
+<b>Enregistrer des noms de domaine</b> — commencez !
+
+-----
+Leads par zone — <b>Pistes SMS HQ</b>`,
+
+      `<b>CONFIANCE DE MILLIERS</b>
+
+Protection vie privee totale.
+DNS rapide. Paiements crypto anonymes.
+
+Appuyez sur <b>Enregistrer des noms de domaine</b>
+
+-----
+Leads cibles — <b>Pistes SMS HQ</b>`,
     ],
 
     shortener: [
       `<b>RACCOURCISSEZ. PERSONNALISEZ. ANALYSEZ.</b>
 
-Commencez avec <b>5 liens gratuits</b> — aucun paiement requis !
-
-- URLs personnalisees avec VOTRE domaine
-- Analyse des clics en temps reel
-- Integration Bit.ly disponible
-- Liens illimites avec abonnement
-
-Appuyez sur <b>Raccourcisseur d'URL</b> !
-
------
-Raccourcissez vos liens — appuyez sur <b>Raccourcisseur d'URL</b> pour 5 liens gratuits`,
-
-      `<b>5 LIENS COURTS GRATUITS — SANS ENGAGEMENT</b>
-
-Chaque nouvel utilisateur recoit 5 liens Shortit gratuits.
-
-+ Personnalisez avec VOTRE domaine
-+ Suivez chaque clic
-+ Passez a l'illimite a tout moment
-
-Appuyez sur <b>Raccourcisseur d'URL</b> !
-
------
-Domaines DMCA-ignores — appuyez sur <b>Enregistrer des noms de domaine</b>`,
-
-      `<b>VOTRE MARQUE MERITE DE MEILLEURS LIENS</b>
-
-<code>bit.ly/3xK9mQ2</code> vs <code>votremarque.com/offres</code>
-
-- 5 liens d'essai gratuits pour commencer
-- Utilisez votre propre domaine
-- Voyez qui clique, quand et ou
-
-<b>Raccourcisseur d'URL</b> — essayez Shortit gratuitement !
-
------
-Domaines offshore — appuyez sur <b>Enregistrer des noms de domaine</b>`,
-
-      `<b>RACCOURCISSEMENT DE LIENS PUISSANT</b>
-
-Commencez GRATUITEMENT avec 5 liens Shortit !
-
-- Redirigez & raccourcissez n'importe quelle URL
-- Raccourcisseur domaine personnalise
-- Consultez les analyses de vos liens
-
-Tapez <b>/start</b> puis <b>Raccourcisseur d'URL</b>
-
------
-Leads telephone cibles — appuyez sur <b>Pistes SMS HQ</b>`,
-
-      `<b>LIENS PERSONNALISES = 34% DE CLICS EN PLUS</b>
-
-Commencez avec 5 liens d'essai GRATUITS !
-
-+ Utilisez votre domaine comme raccourcisseur
-+ Suivez la performance en temps reel
-+ Liens Shortit illimites avec les plans
+5 liens gratuits — aucun paiement requis !
+URLs personnalisees + analyse temps reel.
 
 Appuyez sur <b>Raccourcisseur d'URL</b>
 
 -----
-Domaines DMCA-ignores — appuyez sur <b>Enregistrer des noms de domaine</b>`,
+Domaines DMCA — <b>Enregistrer des noms de domaine</b>`,
+
+      `<b>5 LIENS COURTS GRATUITS</b>
+
+Personnalisez avec VOTRE domaine.
+Suivez chaque clic. Illimite avec abo.
+
+Appuyez sur <b>Raccourcisseur d'URL</b>
+
+-----
+Domaines DMCA — <b>Enregistrer des noms de domaine</b>`,
+
+      `<b>MEILLEURS LIENS POUR VOTRE MARQUE</b>
+
+<code>bit.ly/3xK9mQ2</code> vs <code>votremarque.com/offres</code>
+5 liens d'essai gratuits.
+
+<b>Raccourcisseur d'URL</b> — essayez Shortit !
+
+-----
+Domaines offshore — <b>Enregistrer des noms de domaine</b>`,
+
+      `<b>LIENS PUISSANTS</b>
+
+5 liens Shortit gratuits !
+Raccourcisseur domaine personnalise + analyses.
+
+Tapez <b>/start</b> puis <b>Raccourcisseur d'URL</b>
+
+-----
+Leads cibles — <b>Pistes SMS HQ</b>`,
+
+      `<b>34% DE CLICS EN PLUS</b>
+
+Liens personnalises. 5 essais GRATUITS !
+Illimite avec les plans.
+
+Appuyez sur <b>Raccourcisseur d'URL</b>
+
+-----
+Domaines DMCA — <b>Enregistrer des noms de domaine</b>`,
     ],
 
     leads: [
-      `<b>LEADS HQ — ALIMENTEZ VOS CAMPAGNES</b>
+      `<b>LEADS HQ — VOS CAMPAGNES</b>
 
-Ciblez avec precision :
-
-- Filtrez par pays, etat, indicatif, operateur
-- Leads SMS & voix prets
-- A partir de 20$ pour 1 000 leads
-
-Numeros existants ? Validez pour 15$/1000 !
-
-Appuyez sur <b>Pistes SMS HQ</b> !
-
------
-Raccourcissez vos liens — appuyez sur <b>Raccourcisseur d'URL</b> pour 5 liens gratuits`,
-
-      `<b>ARRETEZ DE GASPILLER SUR DE MAUVAIS LEADS</b>
-
-Vos campagnes valent votre liste.
-
-+ Leads verifies par pays & zone
-+ Recherche CNAM incluse
-+ Telechargement masse — livraison instantanee
-
-Appuyez sur <b>Pistes SMS HQ</b> !
-
------
-Domaines DMCA-ignores — appuyez sur <b>Enregistrer des noms de domaine</b>`,
-
-      `<b>VALIDEZ AVANT D'ENVOYER</b>
-
-SMS a des numeros morts ? Vous brulez du cash.
-
-- Uploadez votre liste (tout format)
-- Recuperez uniquement les numeros ACTIFS
-- 15$ pour 1 000 validations
-
-<b>Pistes SMS HQ</b> puis <b>Valider les leads</b>
-
------
-Domaines offshore — appuyez sur <b>Enregistrer des noms de domaine</b>`,
-
-      `<b>LEADS FRAIS = REVENUS FRAIS</b>
-
-USA | UK | Canada | Australie & plus
-
-- Leads SMS & voix disponibles
-- Filtres : etat, indicatif, operateur
-- 1 000 a 5 000+ par commande
-
-<b>Pistes SMS HQ</b> puis <b>Acheter des leads</b>
-
------
-Domaines DMCA-ignores — appuyez sur <b>Enregistrer des noms de domaine</b>`,
-
-      `<b>DEVELOPPEZ VOTRE MARKETING SMS</b>
-
-1. Choisissez pays & region
-2. Selectionnez operateur & format
-3. Quantite (1K-5K+)
-4. Payez en crypto ou portefeuille
-
-Liste existante ? Validez-la chez nous !
+Filtrez par pays, etat, indicatif, operateur.
+A partir de 20$/1000. Validez 15$/1000.
 
 Appuyez sur <b>Pistes SMS HQ</b>
 
 -----
-Raccourcissez vos liens — appuyez sur <b>Raccourcisseur d'URL</b>`,
+Liens courts — <b>Raccourcisseur d'URL</b>`,
+
+      `<b>STOP GASPILLER SUR DE MAUVAIS LEADS</b>
+
+Leads verifies par pays & zone.
+CNAM inclus. Livraison instantanee.
+
+Appuyez sur <b>Pistes SMS HQ</b>
+
+-----
+Domaines DMCA — <b>Enregistrer des noms de domaine</b>`,
+
+      `<b>VALIDEZ AVANT D'ENVOYER</b>
+
+Numeros morts = cash brule.
+Uploadez, recuperez les ACTIFS. 15$/1K.
+
+<b>Pistes SMS HQ</b> puis <b>Valider les leads</b>
+
+-----
+Domaines offshore — <b>Enregistrer des noms de domaine</b>`,
+
+      `<b>LEADS FRAIS = REVENUS FRAIS</b>
+
+USA | UK | Canada | Australie.
+SMS & voix. 1K a 5K+ par commande.
+
+<b>Pistes SMS HQ</b> puis <b>Acheter des leads</b>
+
+-----
+Domaines DMCA — <b>Enregistrer des noms de domaine</b>`,
+
+      `<b>MARKETING SMS — PASSEZ A L'ECHELLE</b>
+
+Pays, operateur, quantite. Crypto ou wallet.
+Validez votre liste existante !
+
+Appuyez sur <b>Pistes SMS HQ</b>
+
+-----
+Liens courts — <b>Raccourcisseur d'URL</b>`,
     ],
   },
 
@@ -632,214 +468,156 @@ Raccourcissez vos liens — appuyez sur <b>Raccourcisseur d'URL</b>`,
     domains: [
       `<b>您的网站 您做主</b>
 
-注册无视DMCA的域名 — 无删除无干扰
-
-- .sbs .com .net .org 及400+扩展名
-- 国家域名: .ng .za .ke .gh .cm .tz
-- 离岸注册 — 完全隐私
-- 即时DNS设置 + 管理面板
-
-点击 <b>注册域名</b> 立即注册!
-
------
-需要电话线索? 点击 <b>HQ 短信线索</b>`,
-
-      `<b>域名限时优惠</b>
-
-为什么冒网站被下架的风险?
-
-+ 无视DMCA域名注册
-+ 从第一天起完全控制DNS
-+ 订阅赠送免费.sbs/.xyz域名
-+ 国家TLD: .ng .za .ke .gh .cm .tz
-
-输入 <b>/start</b> 然后点击 <b>注册域名</b>
-
------
-缩短链接 — 点击 <b>URL 缩短器</b> 免费5个链接`,
-
-      `<b>拥有您的数字身份</b>
-
-每个品牌都需要域名:
-
-- 离岸 隐私优先注册
-- .sbs .com .net .org 等
-- 国家域名: .ng .za .ke .gh
-- 直接从机器人管理DNS
-
-立即点击 <b>注册域名</b>!
-
------
-缩短链接 — 点击 <b>URL 缩短器</b> 免费5个链接`,
-
-      `<b>不再担心内容被删除</b>
-
-竞争对手已在用无视DMCA的域名
-
-- 内容保持在线 — 保证
-- 接受加密货币和银行支付
-- 所有域名一处管理
-- 国家TLD也在这里注册!
-
-<b>注册域名</b> — 立即开始!
-
------
-注册离岸域名 — 点击 <b>注册域名</b>`,
-
-      `<b>数千用户的信赖之选</b>
-
-为什么选择离岸域名?
-
-1. 零DMCA删除
-2. 完全隐私保护
-3. 极速DNS传播
-4. 加密支付保护匿名
-5. 国家域名 (.ng .za .ke .gh) 已包含
+无视DMCA域名 — 无删除
+400+扩展名 离岸注册 即时DNS
 
 点击 <b>注册域名</b>
 
 -----
-缩短链接 — 点击 <b>URL 缩短器</b> 免费5个链接`,
+电话线索 — <b>HQ 短信线索</b>`,
+
+      `<b>域名限时优惠</b>
+
+无视DMCA + 完全DNS控制
+订阅赠送免费域名 加密支付
+
+点击 <b>注册域名</b>
+
+-----
+免费链接 — <b>URL 缩短器</b>`,
+
+      `<b>拥有数字身份</b>
+
+离岸隐私域名 400+扩展
+直接从机器人管理DNS
+
+点击 <b>注册域名</b>
+
+-----
+免费链接 — <b>URL 缩短器</b>`,
+
+      `<b>不再担心删除</b>
+
+内容保持在线 加密与银行支付
+所有域名一处管理
+
+<b>注册域名</b> — 立即开始!
+
+-----
+注册域名 — <b>注册域名</b>`,
+
+      `<b>数千用户信赖</b>
+
+零DMCA删除 完全隐私 极速DNS
+加密支付保护匿名
+
+点击 <b>注册域名</b>
+
+-----
+免费链接 — <b>URL 缩短器</b>`,
     ],
 
     shortener: [
       `<b>缩短 品牌化 追踪</b>
 
-<b>5个免费试用链接</b> — 无需付款即可开始!
-
-- 用您的域名创建品牌短链接
-- 实时点击分析
-- 支持Bit.ly集成
-- 订阅即可无限链接
-
-点击 <b>URL 缩短器</b> 领取免费链接!
-
------
-需要电话线索? 点击 <b>HQ 短信线索</b>`,
-
-      `<b>5个免费短链接 — 无附加条件</b>
-
-每位新用户获得5个免费Shortit试用链接
-
-+ 用自定义域名打造品牌
-+ 追踪每一次点击
-+ 随时升级为无限链接
-
-立即点击 <b>URL 缩短器</b>!
-
------
-缩短营销链接 — 点击 <b>URL 缩短器</b>`,
-
-      `<b>您的品牌值得更好的链接</b>
-
-<code>bit.ly/3xK9mQ2</code> vs <code>您的品牌.com/优惠</code>
-
-- 5个免费试用链接立即开始
-- 用自己的域名创建短链接
-- 查看谁点击了 何时 从哪里
-
-<b>URL 缩短器</b> — 免费试用Shortit!
-
------
-注册域名 — 点击 <b>注册域名</b>`,
-
-      `<b>强大的链接缩短工具</b>
-
-免费开始 — 5个Shortit试用链接!
-
-- 重定向和缩短任何URL
-- 自定义域名缩短器
-- 查看短链接分析数据
-
-输入 <b>/start</b> 然后点击 <b>URL 缩短器</b>
-
------
-缩短链接 — 点击 <b>URL 缩短器</b> 免费5个链接`,
-
-      `<b>聪明的营销人用聪明的链接</b>
-
-品牌短链接点击率高出34%
-立即获取5个免费试用链接!
-
-+ 注册域名用它作缩短器
-+ 实时跟踪性能
-+ 订阅计划享无限Shortit链接
+5个免费试用链接 — 无需付款!
+品牌短链接 + 实时分析
 
 点击 <b>URL 缩短器</b>
 
 -----
-缩短营销链接 — 点击 <b>URL 缩短器</b>`,
+电话线索 — <b>HQ 短信线索</b>`,
+
+      `<b>5个免费短链接</b>
+
+自定义域名品牌 追踪每次点击
+随时升级无限链接
+
+点击 <b>URL 缩短器</b>
+
+-----
+缩短链接 — <b>URL 缩短器</b>`,
+
+      `<b>更好的链接 更多点击</b>
+
+<code>bit.ly/3xK9mQ2</code> vs <code>品牌.com/优惠</code>
+5个免费试用链接
+
+<b>URL 缩短器</b> — 免费试用!
+
+-----
+注册域名 — <b>注册域名</b>`,
+
+      `<b>强大链接缩短</b>
+
+5个免费Shortit链接!
+自定义域名 + 分析数据
+
+输入 <b>/start</b> 然后 <b>URL 缩短器</b>
+
+-----
+免费链接 — <b>URL 缩短器</b>`,
+
+      `<b>聪明链接 34%更多点击</b>
+
+品牌短链接 5个免费开始
+订阅计划享无限链接
+
+点击 <b>URL 缩短器</b>
+
+-----
+缩短链接 — <b>URL 缩短器</b>`,
     ],
 
     leads: [
-      `<b>高质量电话线索 — 驱动营销</b>
+      `<b>高质量电话线索</b>
 
-精准定位目标受众:
-
-- 按国家 州 区号 运营商筛选
-- 短信和语音线索
-- 1000条起仅需$20
-
-已有号码? 验证$15/1000条!
-订阅用户可获得最多15,000次免费USA验证!
-
-点击 <b>HQ 短信线索</b> 开始!
-
------
-缩短链接 — 点击 <b>URL 缩短器</b> 免费5个链接`,
-
-      `<b>停止在劣质线索上浪费</b>
-
-营销效果取决于列表质量
-
-+ 按国家区域购买验证线索
-+ CNAM查询了解联系对象
-+ 批量下载即时交付
-
-立即点击 <b>HQ 短信线索</b>!
-
------
-缩短营销链接 — 点击 <b>URL 缩短器</b>`,
-
-      `<b>发送前先验证</b>
-
-向无效号码发短信就是烧钱
-
-- 上传电话列表 (任何格式)
-- 只返回有效号码
-- 1000次验证仅$15
-
-<b>HQ 短信线索</b> 然后 <b>验证电话线索</b>
-
------
-注册域名 — 点击 <b>注册域名</b>`,
-
-      `<b>新鲜线索 = 新鲜收入</b>
-
-美国 | 英国 | 加拿大 | 澳大利亚等
-
-- 短信和语音线索均可
-- 筛选: 州 区号 运营商
-- 每单1000至5000+条
-
-<b>HQ 短信线索</b> 然后 <b>购买电话线索</b>
-
------
-缩短链接 — 点击 <b>URL 缩短器</b> 免费5个链接`,
-
-      `<b>扩大您的短信营销</b>
-
-1. 选择国家和区域
-2. 选择运营商和格式
-3. 数量 (1K-5K+)
-4. 加密货币或钱包支付
-
-已有列表? 在这里验证!
+按国家 州 区号 运营商筛选
+$20/1K起 验证$15/1K
 
 点击 <b>HQ 短信线索</b>
 
 -----
-缩短营销链接 — 点击 <b>URL 缩短器</b>`,
+缩短链接 — <b>URL 缩短器</b>`,
+
+      `<b>停止浪费劣质线索</b>
+
+验证线索 CNAM查询 即时交付
+
+点击 <b>HQ 短信线索</b>
+
+-----
+缩短链接 — <b>URL 缩短器</b>`,
+
+      `<b>发送前先验证</b>
+
+向无效号码发短信就是烧钱
+上传列表 只返回有效号码 $15/1K
+
+<b>HQ 短信线索</b> 然后 <b>验证电话线索</b>
+
+-----
+注册域名 — <b>注册域名</b>`,
+
+      `<b>新鲜线索 新鲜收入</b>
+
+美国 英国 加拿大 澳大利亚
+SMS和语音线索 每单1K至5K+
+
+<b>HQ 短信线索</b> 然后 <b>购买电话线索</b>
+
+-----
+缩短链接 — <b>URL 缩短器</b>`,
+
+      `<b>扩大SMS营销</b>
+
+选择国家 运营商 数量
+加密或钱包支付 即时交付
+
+点击 <b>HQ 短信线索</b>
+
+-----
+缩短链接 — <b>URL 缩短器</b>`,
     ],
   },
 
@@ -848,213 +626,156 @@ Raccourcissez vos liens — appuyez sur <b>Raccourcisseur d'URL</b>`,
       `<b>आपकी वेबसाइट आपके नियम</b>
 
 DMCA-अनदेखा डोमेन — कोई हटाव नहीं
-
-- .sbs .com .net .org और 400+ एक्सटेंशन
-- देश डोमेन: .ng .za .ke .gh .cm .tz
-- ऑफशोर रजिस्ट्रेशन — पूर्ण गोपनीयता
-- तुरंत DNS सेटअप + प्रबंधन पैनल
-
-<b>डोमेन नाम पंजीकृत करें</b> दबाएं!
-
------
-फोन लीड्स चाहिए? <b>HQ एसएमएस लीड</b> दबाएं`,
-
-      `<b>डोमेन फ्लैश डील</b>
-
-वेबसाइट हटाए जाने का खतरा क्यों उठाएं?
-
-+ DMCA-अनदेखा रजिस्ट्रेशन
-+ पहले दिन से पूर्ण DNS नियंत्रण
-+ प्लान के साथ मुफ्त .sbs/.xyz डोमेन
-+ देश TLD: .ng .za .ke .gh .cm .tz
-
-<b>/start</b> टाइप करें फिर <b>डोमेन नाम पंजीकृत करें</b>
-
------
-लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं 5 मुफ्त लिंक`,
-
-      `<b>अपनी डिजिटल पहचान बनाएं</b>
-
-हर ब्रांड को डोमेन चाहिए:
-
-- ऑफशोर गोपनीयता-प्रथम रजिस्ट्रेशन
-- .sbs .com .net .org और अधिक
-- देश डोमेन: .ng .za .ke .gh
-- बॉट से सीधे DNS प्रबंधित करें
-
-अभी <b>डोमेन नाम पंजीकृत करें</b> दबाएं!
-
------
-लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं 5 मुफ्त लिंक`,
-
-      `<b>हटाव की चिंता छोड़ें</b>
-
-प्रतिद्वंद्वी DMCA-अनदेखा डोमेन इस्तेमाल कर रहे हैं
-
-- सामग्री ऑनलाइन — गारंटी
-- क्रिप्टो और बैंक भुगतान स्वीकृत
-- सभी डोमेन एक जगह
-- देश TLD भी यहां उपलब्ध!
-
-<b>डोमेन नाम पंजीकृत करें</b> — अभी शुरू करें!
-
------
-DMCA-अनदेखा डोमेन — <b>डोमेन नाम पंजीकृत करें</b> दबाएं`,
-
-      `<b>हजारों की भरोसेमंद पसंद</b>
-
-ऑफशोर डोमेन क्यों चुनें?
-
-1. शून्य DMCA हटाव
-2. पूर्ण गोपनीयता सुरक्षा
-3. तेज DNS प्रसारण
-4. क्रिप्टो भुगतान
-5. देश डोमेन (.ng .za .ke .gh) शामिल
+400+ एक्सटेंशन ऑफशोर तुरंत DNS
 
 <b>डोमेन नाम पंजीकृत करें</b> दबाएं
 
 -----
-लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं 5 मुफ्त लिंक`,
+लीड्स — <b>HQ एसएमएस लीड</b>`,
+
+      `<b>डोमेन फ्लैश डील</b>
+
+DMCA-अनदेखा + पूर्ण DNS नियंत्रण
+प्लान के साथ मुफ्त डोमेन क्रिप्टो स्वीकृत
+
+<b>/start</b> फिर <b>डोमेन नाम पंजीकृत करें</b>
+
+-----
+मुफ्त लिंक — <b>URL छोटा करें</b>`,
+
+      `<b>डिजिटल पहचान बनाएं</b>
+
+ऑफशोर गोपनीयता डोमेन 400+ एक्सटेंशन
+बॉट से DNS प्रबंधित करें
+
+<b>डोमेन नाम पंजीकृत करें</b> दबाएं
+
+-----
+मुफ्त लिंक — <b>URL छोटा करें</b>`,
+
+      `<b>हटाव की चिंता छोड़ें</b>
+
+सामग्री ऑनलाइन — गारंटी
+क्रिप्टो और बैंक भुगतान स्वीकृत
+
+<b>डोमेन नाम पंजीकृत करें</b> — शुरू करें!
+
+-----
+DMCA डोमेन — <b>डोमेन नाम पंजीकृत करें</b>`,
+
+      `<b>हजारों की भरोसेमंद पसंद</b>
+
+शून्य DMCA हटाव पूर्ण गोपनीयता
+तेज DNS क्रिप्टो भुगतान
+
+<b>डोमेन नाम पंजीकृत करें</b> दबाएं
+
+-----
+मुफ्त लिंक — <b>URL छोटा करें</b>`,
     ],
 
     shortener: [
       `<b>छोटा करें ब्रांड बनाएं ट्रैक करें</b>
 
-<b>5 मुफ्त ट्रायल लिंक</b> — कोई भुगतान नहीं!
-
-- अपने डोमेन से ब्रांडेड शॉर्ट URL
-- रियल-टाइम क्लिक एनालिटिक्स
-- Bit.ly इंटीग्रेशन उपलब्ध
-- सब्सक्रिप्शन के साथ अनलिमिटेड लिंक
-
-<b>URL छोटा करें</b> दबाएं और मुफ्त लिंक पाएं!
-
------
-लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं 5 मुफ्त लिंक`,
-
-      `<b>5 मुफ्त शॉर्ट लिंक — कोई शर्त नहीं</b>
-
-हर नए यूजर को 5 मुफ्त Shortit ट्रायल लिंक मिलते हैं
-
-+ कस्टम डोमेन से ब्रांड बनाएं
-+ हर क्लिक ट्रैक करें
-+ कभी भी अनलिमिटेड में अपग्रेड करें
-
-अभी <b>URL छोटा करें</b> दबाएं!
-
------
-DMCA-अनदेखा डोमेन — <b>डोमेन नाम पंजीकृत करें</b> दबाएं`,
-
-      `<b>आपका ब्रांड बेहतर लिंक का हकदार है</b>
-
-<code>bit.ly/3xK9mQ2</code> vs <code>आपकाब्रांड.com/ऑफर</code>
-
-- 5 मुफ्त ट्रायल लिंक से शुरू करें
-- अपने डोमेन से शॉर्ट लिंक बनाएं
-- देखें कौन क्लिक करता है कब और कहां से
-
-<b>URL छोटा करें</b> — Shortit मुफ्त में आजमाएं!
-
------
-डोमेन रजिस्टर करें — <b>डोमेन नाम पंजीकृत करें</b> दबाएं`,
-
-      `<b>शक्तिशाली लिंक शॉर्टनिंग</b>
-
-मुफ्त शुरू करें — 5 Shortit ट्रायल लिंक!
-
-- किसी भी URL को रीडायरेक्ट और छोटा करें
-- कस्टम डोमेन शॉर्टनर
-- शॉर्टलिंक एनालिटिक्स देखें
-
-<b>/start</b> टाइप करें फिर <b>URL छोटा करें</b>
-
------
-लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं 5 मुफ्त लिंक`,
-
-      `<b>स्मार्ट मार्केटर स्मार्ट लिंक इस्तेमाल करते हैं</b>
-
-ब्रांडेड लिंक पर 34% ज्यादा क्लिक आते हैं
-आज ही 5 मुफ्त ट्रायल लिंक पाएं!
-
-+ डोमेन रजिस्टर करें शॉर्टनर बनाएं
-+ रियल-टाइम परफॉर्मेंस ट्रैक
-+ सब्सक्रिप्शन प्लान में अनलिमिटेड लिंक
+5 मुफ्त लिंक — कोई भुगतान नहीं!
+ब्रांडेड URL + रियल-टाइम एनालिटिक्स
 
 <b>URL छोटा करें</b> दबाएं
 
 -----
-DMCA-अनदेखा डोमेन — <b>डोमेन नाम पंजीकृत करें</b> दबाएं`,
+मुफ्त लिंक — <b>URL छोटा करें</b>`,
+
+      `<b>5 मुफ्त शॉर्ट लिंक</b>
+
+कस्टम डोमेन से ब्रांड बनाएं
+हर क्लिक ट्रैक अनलिमिटेड अपग्रेड
+
+<b>URL छोटा करें</b> दबाएं
+
+-----
+DMCA डोमेन — <b>डोमेन नाम पंजीकृत करें</b>`,
+
+      `<b>बेहतर लिंक का हकदार</b>
+
+<code>bit.ly/3xK9mQ2</code> vs <code>ब्रांड.com/ऑफर</code>
+5 मुफ्त ट्रायल लिंक
+
+<b>URL छोटा करें</b> — Shortit आजमाएं!
+
+-----
+डोमेन — <b>डोमेन नाम पंजीकृत करें</b>`,
+
+      `<b>शक्तिशाली लिंक शॉर्टनिंग</b>
+
+5 मुफ्त Shortit लिंक!
+कस्टम डोमेन + एनालिटिक्स
+
+<b>/start</b> फिर <b>URL छोटा करें</b>
+
+-----
+मुफ्त लिंक — <b>URL छोटा करें</b>`,
+
+      `<b>स्मार्ट लिंक 34% ज्यादा क्लिक</b>
+
+ब्रांडेड लिंक 5 मुफ्त शुरू
+अनलिमिटेड प्लान उपलब्ध
+
+<b>URL छोटा करें</b> दबाएं
+
+-----
+DMCA डोमेन — <b>डोमेन नाम पंजीकृत करें</b>`,
     ],
 
     leads: [
-      `<b>HQ फोन लीड्स — कैंपेन को ईंधन दें</b>
+      `<b>HQ फोन लीड्स</b>
 
-सटीक लक्ष्यीकरण:
-
-- देश राज्य एरिया कोड कैरियर से फ़िल्टर
-- SMS और वॉइस लीड्स
-- 1000 लीड्स सिर्फ $20 से
-
-नंबर हैं? $15/1000 में वैलिडेट करें!
-सब्सक्राइबर्स को 15,000 तक मुफ्त USA वैलिडेशन!
-
-<b>HQ एसएमएस लीड</b> दबाएं!
-
------
-लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं 5 मुफ्त लिंक`,
-
-      `<b>खराब लीड्स पर पैसा बर्बाद बंद करें</b>
-
-कैंपेन उतनी अच्छी जितनी फोन लिस्ट
-
-+ वेरिफाइड लीड्स देश और क्षेत्र अनुसार
-+ CNAM लुकअप शामिल
-+ बल्क डाउनलोड तुरंत डिलीवरी
-
-अभी <b>HQ एसएमएस लीड</b> दबाएं!
-
------
-DMCA-अनदेखा डोमेन — <b>डोमेन नाम पंजीकृत करें</b> दबाएं`,
-
-      `<b>भेजने से पहले वैलिडेट करें</b>
-
-डेड नंबर्स पर SMS = पैसा जलाना
-
-- फोन लिस्ट अपलोड करें (कोई भी फॉर्मेट)
-- सिर्फ एक्टिव नंबर वापस
-- 1000 वैलिडेशन सिर्फ $15
-
-<b>HQ एसएमएस लीड</b> फिर <b>फोन लीड्स सत्यापित करें</b>
-
------
-डोमेन रजिस्टर करें — <b>डोमेन नाम पंजीकृत करें</b> दबाएं`,
-
-      `<b>ताज़ा लीड्स = ताज़ा रेवेन्यू</b>
-
-USA | UK | कनाडा | ऑस्ट्रेलिया और अधिक
-
-- SMS और वॉइस लीड्स
-- फ़िल्टर: राज्य एरिया कोड कैरियर
-- प्रति ऑर्डर 1000 से 5000+
-
-<b>HQ एसएमएस लीड</b> फिर <b>फोन लीड्स खरीदें</b>
-
------
-लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं 5 मुफ्त लिंक`,
-
-      `<b>SMS मार्केटिंग बढ़ाएं</b>
-
-1. देश और क्षेत्र चुनें
-2. कैरियर और फॉर्मेट चुनें
-3. मात्रा (1K-5K+)
-4. क्रिप्टो या वॉलेट से भुगतान
-
-लिस्ट है? वैलिडेट करें!
+देश राज्य एरिया कोड कैरियर से फ़िल्टर
+$20/1K से शुरू $15/1K वैलिडेट
 
 <b>HQ एसएमएस लीड</b> दबाएं
 
 -----
-लिंक छोटा करें — <b>URL छोटा करें</b> दबाएं`,
+मुफ्त लिंक — <b>URL छोटा करें</b>`,
+
+      `<b>खराब लीड्स पर बर्बादी बंद</b>
+
+वेरिफाइड लीड्स CNAM शामिल
+तुरंत बल्क डिलीवरी
+
+<b>HQ एसएमएस लीड</b> दबाएं
+
+-----
+DMCA डोमेन — <b>डोमेन नाम पंजीकृत करें</b>`,
+
+      `<b>भेजने से पहले वैलिडेट</b>
+
+डेड नंबर = पैसा जलाना
+लिस्ट अपलोड सिर्फ एक्टिव वापस $15/1K
+
+<b>HQ एसएमएस लीड</b> फिर <b>सत्यापित करें</b>
+
+-----
+डोमेन — <b>डोमेन नाम पंजीकृत करें</b>`,
+
+      `<b>ताज़ा लीड्स ताज़ा रेवेन्यू</b>
+
+USA UK कनाडा ऑस्ट्रेलिया
+SMS वॉइस 1K-5K+ प्रति ऑर्डर
+
+<b>HQ एसएमएस लीड</b> फिर <b>खरीदें</b>
+
+-----
+मुफ्त लिंक — <b>URL छोटा करें</b>`,
+
+      `<b>SMS मार्केटिंग बढ़ाएं</b>
+
+देश कैरियर मात्रा चुनें
+क्रिप्टो या वॉलेट भुगतान
+
+<b>HQ एसएमएस लीड</b> दबाएं
+
+-----
+लिंक छोटा करें — <b>URL छोटा करें</b>`,
     ],
   },
 }
@@ -1065,84 +786,46 @@ USA | UK | कनाडा | ऑस्ट्रेलिया और अधि�
 function localToUtc(localHour, localMinute, offsetHours) {
   let utcHour = localHour - Math.floor(offsetHours)
   let utcMinute = localMinute - Math.round((offsetHours % 1) * 60)
-
-  if (utcMinute < 0) {
-    utcMinute += 60
-    utcHour -= 1
-  }
-  if (utcMinute >= 60) {
-    utcMinute -= 60
-    utcHour += 1
-  }
+  if (utcMinute < 0) { utcMinute += 60; utcHour -= 1 }
+  if (utcMinute >= 60) { utcMinute -= 60; utcHour += 1 }
   if (utcHour < 0) utcHour += 24
   if (utcHour >= 24) utcHour -= 24
-
   return { hour: utcHour, minute: utcMinute }
 }
 
 /**
  * Initialize the auto-promo system
- * @param {Object} bot - Telegram bot instance
- * @param {Object} db - MongoDB database instance
- * @param {Object} nameOf - nameOf collection for getting all user chatIds
- * @param {Object} stateCol - state collection for user language/opt-out
  */
 function initAutoPromo(bot, db, nameOf, stateCol) {
   const promoTracker = db.collection('promoTracker')
   const promoOptOut = db.collection('promoOptOut')
   const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID
 
-  // Daily coupon system ref — injected after init
   let dailyCouponSystem = null
   function setDailyCouponSystem(sys) { dailyCouponSystem = sys }
 
   function alertAdmin(msg) {
-    if (adminChatId) {
-      bot.sendMessage(adminChatId, `[AutoPromo Alert] ${msg}`).catch(() => {})
-    }
+    if (adminChatId) bot.sendMessage(adminChatId, `[AutoPromo Alert] ${msg}`).catch(() => {})
   }
 
-  /**
-   * Get the next rotation index for a theme+lang combo
-   */
   async function getRotationIndex(theme, lang) {
     const trackerId = `${theme}_${lang}`
     const tracker = await promoTracker.findOne({ _id: trackerId })
     const currentIndex = tracker?.index || 0
-    const maxVariations = 5
-    const nextIndex = (currentIndex + 1) % maxVariations
-
-    await promoTracker.updateOne(
-      { _id: trackerId },
-      { $set: { index: nextIndex, lastSent: new Date() } },
-      { upsert: true }
-    )
-
+    const nextIndex = (currentIndex + 1) % 5
+    await promoTracker.updateOne({ _id: trackerId }, { $set: { index: nextIndex, lastSent: new Date() } }, { upsert: true })
     return currentIndex
   }
 
-  /**
-   * Check if user has opted out of promos
-   */
   async function isOptedOut(chatId) {
     const record = await promoOptOut.findOne({ _id: chatId })
     return record?.optedOut === true
   }
 
-  /**
-   * Set opt-out status for a user
-   */
   async function setOptOut(chatId, optedOut) {
-    await promoOptOut.updateOne(
-      { _id: chatId },
-      { $set: { optedOut, updatedAt: new Date() } },
-      { upsert: true }
-    )
+    await promoOptOut.updateOne({ _id: chatId }, { $set: { optedOut, updatedAt: new Date() } }, { upsert: true })
   }
 
-  /**
-   * Get all user chatIds from nameOf collection
-   */
   async function getAllChatIds() {
     try {
       const users = await nameOf.find({}).toArray()
@@ -1153,38 +836,22 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
     }
   }
 
-  /**
-   * Get user language preference
-   */
   async function getUserLanguage(chatId) {
     try {
       const userState = await stateCol.findOne({ _id: chatId })
       const lang = userState?.userLanguage || 'en'
       return promoMessages[lang] ? lang : 'en'
-    } catch {
-      return 'en'
-    }
+    } catch { return 'en' }
   }
 
-  /**
-   * Check if error means user is permanently unreachable
-   */
   function isUnreachableError(error) {
     const msg = error.message || ''
-    return msg.includes('chat not found') ||
-           msg.includes('user is deactivated') ||
-           msg.includes('bot was blocked') ||
-           msg.includes('have no rights to send a message')
+    return msg.includes('chat not found') || msg.includes('user is deactivated') || msg.includes('bot was blocked') || msg.includes('have no rights to send a message')
   }
 
-  /**
-   * Send a promo to a single user (with banner image)
-   * @param {string|null} dynamicMessage - AI-generated message, or null to use static
-   */
   async function sendPromoToUser(chatId, theme, variationIndex, lang, dynamicMessage, couponLine) {
     try {
       if (await isOptedOut(chatId)) return { success: true, skipped: true }
-
       let caption = dynamicMessage || (promoMessages[lang]?.[theme] || promoMessages.en[theme])[variationIndex % 5]
       if (couponLine) caption += '\n\n' + couponLine
       const bannerUrl = PROMO_BANNERS[theme]
@@ -1195,10 +862,8 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
           try {
             await bot.sendPhoto(chatId, bannerUrl, { caption, ...opts })
           } catch (photoErr) {
-            // If user is unreachable, don't bother falling back to text
             if (isUnreachableError(photoErr)) throw photoErr
-            // Photo URL failed — fall back to text-only
-            log(`[AutoPromo] Photo send failed for ${chatId}, falling back to text: ${photoErr.message}`)
+            log(`[AutoPromo] Photo failed for ${chatId}, text fallback: ${photoErr.message}`)
             await bot.sendMessage(chatId, caption, { ...opts, disable_web_page_preview: true })
           }
         } else {
@@ -1206,175 +871,113 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
         }
       }
 
-      try {
-        await trySend(true)
-      } catch (parseErr) {
-        // If user is unreachable, don't retry with different formatting
+      try { await trySend(true) }
+      catch (parseErr) {
         if (isUnreachableError(parseErr)) throw parseErr
         if (parseErr.message?.includes('parse') || parseErr.response?.statusCode === 400) {
-          log(`[AutoPromo] HTML parse error for ${chatId}, retrying plain text`)
+          log(`[AutoPromo] HTML parse error for ${chatId}, retrying plain`)
           await trySend(false)
-        } else {
-          throw parseErr
-        }
+        } else throw parseErr
       }
       return { success: true }
     } catch (error) {
       const code = error.response?.statusCode
       if (code === 403 || isUnreachableError(error)) {
         await setOptOut(chatId, true)
-        log(`[AutoPromo] User ${chatId} unreachable (${error.message}), auto opted-out`)
+        log(`[AutoPromo] User ${chatId} unreachable, auto opted-out`)
       } else if (code === 429) {
-        log(`[AutoPromo] Rate limited sending to ${chatId}`)
+        log(`[AutoPromo] Rate limited: ${chatId}`)
       } else {
-        log(`[AutoPromo] Failed to send to ${chatId}: [${code || 'unknown'}] ${error.message}`)
+        log(`[AutoPromo] Failed ${chatId}: [${code || 'unknown'}] ${error.message}`)
       }
       return { success: false, error: error.message }
     }
   }
 
-  /**
-   * Broadcast a promo to users of a specific language
-   */
   async function broadcastPromoForLang(themeIndex, lang) {
     const theme = THEMES[themeIndex]
     const variationIndex = await getRotationIndex(theme, lang)
     const allChatIds = await getAllChatIds()
+    if (allChatIds.length === 0) return log(`[AutoPromo] No users found`)
 
-    if (allChatIds.length === 0) {
-      log(`[AutoPromo] No users found`)
-      return
-    }
-
-    // Filter users by language
     const targetChatIds = []
     for (const chatId of allChatIds) {
       const userLang = await getUserLanguage(chatId)
-      if (userLang === lang) {
-        targetChatIds.push(chatId)
-      }
+      if (userLang === lang) targetChatIds.push(chatId)
     }
+    if (targetChatIds.length === 0) return log(`[AutoPromo] No ${lang} users for ${theme}`)
 
-    if (targetChatIds.length === 0) {
-      log(`[AutoPromo] No ${lang} users for ${theme} promo`)
-      return
-    }
-
-    // Try AI-generated dynamic message first
     let dynamicMessage = null
     let usedAI = false
     try {
       dynamicMessage = await generateDynamicPromo(theme, lang)
-      if (dynamicMessage) {
-        usedAI = true
-        log(`[AutoPromo] AI-generated ${theme}/${lang} message (${dynamicMessage.length} chars)`)
-      }
-    } catch (err) {
-      log(`[AutoPromo] AI generation failed: ${err.message}`)
-    }
+      if (dynamicMessage) { usedAI = true; log(`[AutoPromo] AI ${theme}/${lang} (${dynamicMessage.length} chars)`) }
+    } catch (err) { log(`[AutoPromo] AI fail: ${err.message}`) }
 
     if (!dynamicMessage) {
-      log(`[AutoPromo] Falling back to static message for ${theme}/${lang}`)
-      alertAdmin(`OpenAI failed for ${theme}/${lang} promo. Using static fallback. Check APP_OPEN_API_KEY.`)
+      log(`[AutoPromo] Static fallback for ${theme}/${lang}`)
+      alertAdmin(`OpenAI failed for ${theme}/${lang}. Using static fallback.`)
     }
 
-    log(`[AutoPromo] Starting ${theme} broadcast (${usedAI ? 'AI-generated' : 'static #' + (variationIndex + 1)}) to ${targetChatIds.length} ${lang} users`)
+    log(`[AutoPromo] Broadcasting ${theme} (${usedAI ? 'AI' : 'static #' + (variationIndex + 1)}) to ${targetChatIds.length} ${lang} users`)
 
-    // Attach daily coupon to afternoon promos (slot 1)
     let couponLine = null
     if (dailyCouponSystem) {
       try {
         const codes = await dailyCouponSystem.getTodayCoupons()
-        const codeEntries = Object.entries(codes)
-        if (codeEntries.length > 0) {
-          // Pick one coupon randomly for this broadcast
-          const [code, info] = codeEntries[Math.floor(Math.random() * codeEntries.length)]
-          couponLine = `<b>TODAY ONLY:</b> Use code <code>${code}</code> for ${info.discount}% off any purchase!`
+        const entries = Object.entries(codes)
+        if (entries.length > 0) {
+          const [code, info] = entries[Math.floor(Math.random() * entries.length)]
+          couponLine = `<b>TODAY ONLY:</b> Use code <code>${code}</code> for ${info.discount}% off!`
         }
-      } catch (err) {
-        log(`[AutoPromo] Coupon fetch error: ${err.message}`)
-      }
+      } catch (err) { log(`[AutoPromo] Coupon error: ${err.message}`) }
     }
 
     const { BATCH_SIZE, DELAY_BETWEEN_BATCHES, DELAY_BETWEEN_MESSAGES } = BROADCAST_CONFIG
-    let successCount = 0
-    let errorCount = 0
-    let skippedCount = 0
+    let successCount = 0, errorCount = 0, skippedCount = 0
 
     for (let i = 0; i < targetChatIds.length; i += BATCH_SIZE) {
       const batch = targetChatIds.slice(i, i + BATCH_SIZE)
-
-      const batchPromises = batch.map(async (chatId, index) => {
+      const results = await Promise.allSettled(batch.map(async (chatId, index) => {
         await sleep(index * DELAY_BETWEEN_MESSAGES)
         return sendPromoToUser(chatId, theme, variationIndex, lang, dynamicMessage, couponLine)
-      })
-
-      const results = await Promise.allSettled(batchPromises)
-
+      }))
       for (const result of results) {
         if (result.status === 'fulfilled') {
           if (result.value?.skipped) skippedCount++
           else if (result.value?.success) successCount++
           else errorCount++
-        } else {
-          errorCount++
-        }
+        } else errorCount++
       }
-
-      if (i + BATCH_SIZE < targetChatIds.length) {
-        await sleep(DELAY_BETWEEN_BATCHES)
-      }
+      if (i + BATCH_SIZE < targetChatIds.length) await sleep(DELAY_BETWEEN_BATCHES)
     }
 
-    const stats = {
-      theme,
-      lang,
-      variation: usedAI ? 'ai-generated' : variationIndex + 1,
-      usedAI,
-      total: targetChatIds.length,
-      success: successCount,
-      errors: errorCount,
-      skipped: skippedCount,
-      timestamp: new Date().toISOString()
-    }
-
-    log(`[AutoPromo] Broadcast complete:`, JSON.stringify(stats))
+    const stats = { theme, lang, variation: usedAI ? 'ai' : variationIndex + 1, usedAI, total: targetChatIds.length, success: successCount, errors: errorCount, skipped: skippedCount, timestamp: new Date().toISOString() }
+    log(`[AutoPromo] Done:`, JSON.stringify(stats))
     await db.collection('promoStats').insertOne(stats)
   }
 
-  // Get today's theme rotation (3 themes across 2 slots, cycles every 3 days)
   function getTodayThemes() {
     const dayOfYear = Math.floor(Date.now() / 86400000)
-    const cycle = dayOfYear % 3  // 0, 1, 2
-    // Each day picks 2 of 3 themes
-    const pairs = [
-      [0, 1], // domains + shortener
-      [1, 2], // shortener + leads
-      [2, 0], // leads + domains
-    ]
+    const cycle = dayOfYear % 3
+    const pairs = [[0, 1], [1, 2], [2, 0]]
     return pairs[cycle]
   }
 
-  // Schedule timezone-aware promos — 2 per day per language
   const supportedLangs = Object.keys(TIMEZONE_OFFSETS)
   let scheduledCount = 0
 
   for (const lang of supportedLangs) {
     const offset = TIMEZONE_OFFSETS[lang]
-
     LOCAL_TIMES.forEach((localTime, slotIndex) => {
       const utcTime = localToUtc(localTime.hour, localTime.minute, offset)
       const cronExpr = `${utcTime.minute} ${utcTime.hour} * * *`
-
       schedule.scheduleJob(cronExpr, () => {
         const todayThemes = getTodayThemes()
         const themeIndex = todayThemes[slotIndex]
-        log(`[AutoPromo] Triggered ${THEMES[themeIndex]} for ${lang} users (local ${localTime.hour}:${String(localTime.minute).padStart(2, '0')}, UTC ${utcTime.hour}:${String(utcTime.minute).padStart(2, '0')})`)
-        broadcastPromoForLang(themeIndex, lang).catch(err => {
-          log(`[AutoPromo] Broadcast error: ${err.message}`)
-        })
+        log(`[AutoPromo] Triggered ${THEMES[themeIndex]} for ${lang} (local ${localTime.hour}:${String(localTime.minute).padStart(2, '0')})`)
+        broadcastPromoForLang(themeIndex, lang).catch(err => log(`[AutoPromo] Broadcast error: ${err.message}`))
       })
-
       log(`[AutoPromo] Scheduled slot ${slotIndex + 1} for ${lang.toUpperCase()} at local ${localTime.hour}:${String(localTime.minute).padStart(2, '0')} (UTC ${utcTime.hour}:${String(utcTime.minute).padStart(2, '0')})`)
       scheduledCount++
     })
@@ -1382,7 +985,6 @@ function initAutoPromo(bot, db, nameOf, stateCol) {
 
   log(`[AutoPromo] Initialized with ${scheduledCount} scheduled jobs (${supportedLangs.length} languages x ${LOCAL_TIMES.length} slots, rotating ${THEMES.length} themes)`)
 
-  // Return control functions
   return {
     setOptOut,
     isOptedOut,
