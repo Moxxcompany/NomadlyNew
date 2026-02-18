@@ -5195,13 +5195,23 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpSmsSettings)
       const smsConf = num.features?.smsForwarding || {}
       const tgLabel = `📲 SMS to Telegram ${smsConf.toTelegram !== false ? '✅ ON' : '❌ OFF'}`
-      const emLabel = `📧 SMS to Email ${smsConf.toEmail ? '✅ ' + smsConf.toEmail : '❌ OFF'}`
-      const whLabel = `🔗 Webhook URL ${smsConf.webhookUrl ? '✅ Set' : '❌ Not Set'}`
-      return send(chatId, phoneConfig.txt.smsSettingsMenu(num.phoneNumber, smsConf), k.of([[tgLabel], [emLabel], [whLabel]]))
+      const smsBtns = [[tgLabel]]
+      if (phoneConfig.canAccessFeature(num.plan, 'smsToEmail')) {
+        const emLabel = `📧 SMS to Email ${smsConf.toEmail ? '✅ ' + smsConf.toEmail : '❌ OFF'}`
+        smsBtns.push([emLabel])
+      }
+      if (phoneConfig.canAccessFeature(num.plan, 'smsWebhook')) {
+        const whLabel = `🔗 Webhook URL ${smsConf.webhookUrl ? '✅ Set' : '❌ Not Set'}`
+        smsBtns.push([whLabel])
+      }
+      return send(chatId, phoneConfig.txt.smsSettingsMenu(num.phoneNumber, smsConf), k.of(smsBtns))
     }
 
-    // Voicemail
+    // Voicemail — Pro/Business only (gated by buildManageMenu, but double-check)
     if (message === pc.voicemail) {
+      if (!phoneConfig.canAccessFeature(num.plan, 'voicemail')) {
+        return send(chatId, phoneConfig.upgradeMessage('voicemail', num.plan), k.of(buildManageMenu(num)))
+      }
       set(state, chatId, 'action', a.cpVoicemail)
       const vm = num.features?.voicemail || {}
       const btns = vm.enabled
@@ -5213,12 +5223,40 @@ bot?.on('message', async msg => {
       return send(chatId, phoneConfig.txt.voicemailMenu(num.phoneNumber, vm), k.of(btns))
     }
 
-    // SIP Credentials
+    // SIP Credentials — Pro/Business only
     if (message === pc.sipCredentials) {
+      if (!phoneConfig.canAccessFeature(num.plan, 'sipCredentials')) {
+        return send(chatId, phoneConfig.upgradeMessage('sipCredentials', num.plan), k.of(buildManageMenu(num)))
+      }
       set(state, chatId, 'action', a.cpSipCredentials)
       return send(chatId, phoneConfig.txt.sipCredentialsMsg(num.phoneNumber, num.sipUsername, phoneConfig.SIP_DOMAIN), k.of([
         [pc.revealPassword], [pc.resetPassword], [pc.softphoneGuide]
       ]))
+    }
+
+    // Call Recording — Business only
+    if (message === pc.callRecording) {
+      if (!phoneConfig.canAccessFeature(num.plan, 'callRecording')) {
+        return send(chatId, phoneConfig.upgradeMessage('callRecording', num.plan), k.of(buildManageMenu(num)))
+      }
+      set(state, chatId, 'action', a.cpCallRecording)
+      const isEnabled = num.features?.recording === true
+      return send(chatId, phoneConfig.txt.recordingMenu(num.phoneNumber, num.features), k.of(
+        isEnabled ? [[pc.disableRecording]] : [[pc.enableRecording]]
+      ))
+    }
+
+    // IVR / Auto-attendant — Business only
+    if (message === pc.ivrAutoAttendant) {
+      if (!phoneConfig.canAccessFeature(num.plan, 'ivr')) {
+        return send(chatId, phoneConfig.upgradeMessage('ivr', num.plan), k.of(buildManageMenu(num)))
+      }
+      set(state, chatId, 'action', a.cpIvr)
+      const ivrConf = num.features?.ivr || {}
+      const btns = ivrConf.enabled
+        ? [[pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]]
+        : [[pc.enableIvr]]
+      return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of(btns))
     }
 
     // Call & SMS Logs
