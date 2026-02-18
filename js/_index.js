@@ -7623,6 +7623,34 @@ app.get('/:id', async (req, res) => {
   increment(clicksOn, lookupKey)
 })
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// TELNYX WEBHOOK ENDPOINTS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// Telnyx SMS Webhook — receives inbound SMS
+app.post('/telnyx/sms-webhook', async (req, res) => {
+  try {
+    log('📩 Telnyx SMS webhook received')
+    await handleInboundSms(req.body, bot, phoneNumbersOf, phoneLogs)
+    res.sendStatus(200)
+  } catch (error) {
+    log('Telnyx SMS webhook error:', error.message)
+    res.sendStatus(200) // Always 200 to prevent retries
+  }
+})
+
+// Telnyx Voice Webhook — receives call events
+app.post('/telnyx/voice-webhook', async (req, res) => {
+  try {
+    log('📞 Telnyx voice webhook received:', req.body?.data?.event_type || 'unknown')
+    await handleVoiceWebhook(req.body, bot, phoneNumbersOf, phoneLogs)
+    res.sendStatus(200)
+  } catch (error) {
+    log('Telnyx voice webhook error:', error.message)
+    res.sendStatus(200)
+  }
+})
+
 // Telegram Webhook Endpoint
 app.post('/telegram/webhook', (req, res) => {
   try {
