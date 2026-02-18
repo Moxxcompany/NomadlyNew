@@ -5594,7 +5594,13 @@ bot?.on('message', async msg => {
     if (message === pc.ivrViewOptions) {
       const ivrConf = num.features?.ivr || {}
       return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
-        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.disableIvr]
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
+      ]))
+    }
+    if (message === pc.ivrAnalytics) {
+      const analytics = await getIvrAnalytics(num.phoneNumber, 30)
+      return send(chatId, phoneConfig.txt.ivrAnalyticsReport(num.phoneNumber, analytics), k.of([
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
       ]))
     }
     return send(chatId, 'Select an option.')
