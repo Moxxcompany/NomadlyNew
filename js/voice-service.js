@@ -99,7 +99,7 @@ async function incrementSmsUsed(chatId, phoneNumber) {
     const used = numbers[idx].smsUsed
     if (used >= limit && !numbers[idx]._smsLimitNotified) {
       numbers[idx]._smsLimitNotified = true
-      const msg = `🚫 <b>Inbound SMS Limit Reached</b>\n\n📞 ${formatPhone(phoneNumber)}\nUsed: <b>${used}/${limit}</b> inbound SMS this billing cycle.\n\nIncoming SMS will no longer be forwarded until your plan resets or you upgrade.`
+      const msg = `⚠️ <b>Plan SMS Exhausted</b>\n\n📞 ${formatPhone(phoneNumber)}\nUsed: <b>${used}/${limit}</b> inbound SMS this cycle.\n\nOverage billing is now active at <b>$${OVERAGE_RATE_SMS}/SMS</b> from your wallet. Top up your wallet to keep receiving SMS, or upgrade your plan.`
       _bot?.sendMessage(chatId, msg, { parse_mode: 'HTML' }).catch(() => {})
     }
     await set(_phoneNumbersOf, chatId, { numbers })
