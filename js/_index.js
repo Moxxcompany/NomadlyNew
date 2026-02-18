@@ -290,8 +290,13 @@ async function resolveCoupon(code, chatId) {
 
   return null
 }
-  log('reply: ' + message + ' ' + (options?.reply_markup?.keyboard?.map(i => i) || '') + '\tto: ' + chatId + '\n')
-  bot?.sendMessage(chatId, message, options)?.catch(e => log(e.message + ': ' + chatId))
+  // Auto-detect HTML in message and add parse_mode if not already set
+  const opts = options || {}
+  if (typeof message === 'string' && !opts.parse_mode && /<\/?(?:b|i|u|s|code|pre|a)\b/.test(message)) {
+    opts.parse_mode = 'HTML'
+  }
+  log('reply: ' + message + ' ' + (opts?.reply_markup?.keyboard?.map(i => i) || '') + '\tto: ' + chatId + '\n')
+  bot?.sendMessage(chatId, message, opts)?.catch(e => log(e.message + ': ' + chatId))
 }
 
 // Mask username: show first 2 chars + ***
