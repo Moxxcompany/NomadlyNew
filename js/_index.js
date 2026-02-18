@@ -179,6 +179,7 @@ const { initDailyCoupons } = require('./daily-coupons.js')
 const telnyxApi = require('./telnyx-service.js')
 const { handleInboundSms, initSmsLimits } = require('./sms-service.js')
 const { handleVoiceWebhook, initVoiceService, getIvrAnalytics, incrementSmsUsed, isSmsLimitReached } = require('./voice-service.js')
+const { initCnamService, lookupCnam, batchLookupCnam } = require('./cnam-service.js')
 const phoneConfig = require('./phone-config.js')
 const { initPhoneScheduler } = require('./phone-scheduler.js')
 
