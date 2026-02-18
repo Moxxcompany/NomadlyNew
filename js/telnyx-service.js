@@ -322,7 +322,7 @@ async function initializeTelnyxResources(selfUrl) {
   let messagingProfileId = process.env.TELNYX_MESSAGING_PROFILE_ID
   let callControlAppId = process.env.TELNYX_CALL_CONTROL_APP_ID
 
-  // Create SIP Connection if not exists
+  // Update SIP Connection webhook to current domain
   if (!sipConnectionId) {
     const sip = await createSIPConnection('Nomadly Cloud Phone SIP', voiceWebhook)
     if (sip) {
@@ -330,7 +330,15 @@ async function initializeTelnyxResources(selfUrl) {
       log('Created SIP Connection:', sipConnectionId)
     }
   } else {
-    log('Using existing SIP Connection:', sipConnectionId)
+    // Always update SIP connection webhook to current URL
+    try {
+      await axios.patch(`${BASE}/credential_connections/${sipConnectionId}`, {
+        webhook_event_url: voiceWebhook,
+      }, { headers: headers() })
+      log('Updated SIP Connection webhook:', sipConnectionId)
+    } catch (e) {
+      log('SIP Connection webhook update error:', e.response?.data?.errors?.[0]?.detail || e.message)
+    }
   }
 
   // Create Messaging Profile if not exists
