@@ -5224,6 +5224,53 @@ bot?.on('message', async msg => {
   }
 
   // ━━━ MY NUMBERS ━━━
+
+  // Helper: Show SMS Inbox with CNAM lookups + pagination
+  async function showSmsInbox(chatId, num, page = 1) {
+    const pc = phoneConfig.btn
+    const perPage = 5
+    const cleanNum = num.phoneNumber.replace(/[^+\d]/g, '')
+
+    // Query SMS logs
+    const totalCount = await phoneLogs.countDocuments({ phoneNumber: cleanNum, type: 'sms', direction: 'inbound' })
+    const totalPages = Math.max(1, Math.ceil(totalCount / perPage))
+    const skip = (page - 1) * perPage
+    const messages = await phoneLogs.find({ phoneNumber: cleanNum, type: 'sms', direction: 'inbound' })
+      .sort({ timestamp: -1 })
+      .skip(skip)
+      .limit(perPage)
+      .toArray()
+
+    if (!messages.length && page === 1) {
+      return send(chatId, phoneConfig.txt.smsInboxEmpty, k.of([[pc.inboxRefresh], [pc.back]]))
+    }
+
+    // Batch CNAM lookup for sender numbers
+    const uniqueFroms = [...new Set(messages.map(m => m.from).filter(Boolean))]
+    let cnamResults = {}
+    try {
+      cnamResults = await batchLookupCnam(uniqueFroms)
+    } catch (e) {
+      log(`[SmsInbox] CNAM batch lookup error: ${e.message}`)
+    }
+
+    // Build inbox text
+    let text = phoneConfig.txt.smsInboxHeader(num.phoneNumber, totalCount)
+    messages.forEach((m, i) => {
+      const senderName = cnamResults[m.from] || null
+      const time = m.timestamp ? new Date(m.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—'
+      text += phoneConfig.txt.smsInboxEntry(skip + i + 1, m.from, senderName, m.body || '(no content)', time)
+    })
+    text += phoneConfig.txt.smsInboxFooter(page, totalPages)
+
+    // Build pagination buttons
+    const navBtns = []
+    if (page > 1) navBtns.push(pc.inboxNewerPage)
+    navBtns.push(pc.inboxRefresh)
+    if (page < totalPages) navBtns.push(pc.inboxOlderPage)
+
+    return send(chatId, text, k.of([navBtns, [pc.back]]))
+  }
   if (action === a.cpMyNumbers) {
     const pc = phoneConfig.btn
     if (message === t.back || message === pc.back) return goto.submenu5()
