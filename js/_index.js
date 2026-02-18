@@ -528,8 +528,11 @@ const loadData = async () => {
       telnyxApi,
       telnyxResources,
       ivrAnalytics,
+      walletOf,
+      payments,
+      nanoid,
     })
-    log('[CloudPhone] Voice Service initialized with IVR + Recording')
+    log('[CloudPhone] Voice Service initialized with IVR + Recording + Overage')
   }
 
   // Initialize SMS Service limits (real-time enforcement)
@@ -537,8 +540,12 @@ const loadData = async () => {
     initSmsLimits({
       incrementSmsUsed,
       isSmsLimitReached,
+      walletOf,
+      payments,
+      nanoid,
+      bot,
     })
-    log('[CloudPhone] SMS Service limits initialized')
+    log('[CloudPhone] SMS Service limits initialized with overage billing')
   }
 
   // Initialize CNAM Service
