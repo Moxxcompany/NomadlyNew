@@ -919,5 +919,6 @@ module.exports = {
   targetLeadsTargets,
   targetLeadsCities,
   targetLeadsAreaCodes,
-  targetLeadsAreaCodeButtons
+  targetLeadsAreaCodeButtons,
+  view
 }
