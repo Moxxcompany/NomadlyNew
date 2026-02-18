@@ -5537,6 +5537,32 @@ bot?.on('message', async msg => {
     return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
   }
 
+  // ━━━ SMS INBOX ━━━
+  if (action === a.cpSmsInbox) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back) {
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
+    }
+    if (message === pc.inboxRefresh) {
+      await saveInfo('cpInboxPage', 1)
+      return showSmsInbox(chatId, num, 1)
+    }
+    if (message === pc.inboxOlderPage) {
+      const page = (info?.cpInboxPage || 1) + 1
+      await saveInfo('cpInboxPage', page)
+      return showSmsInbox(chatId, num, page)
+    }
+    if (message === pc.inboxNewerPage) {
+      const page = Math.max(1, (info?.cpInboxPage || 1) - 1)
+      await saveInfo('cpInboxPage', page)
+      return showSmsInbox(chatId, num, page)
+    }
+    return send(chatId, 'Select an option.')
+  }
+
   // ━━━ VOICEMAIL ━━━
   if (action === a.cpVoicemail) {
     const pc = phoneConfig.btn
