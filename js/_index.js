@@ -4984,7 +4984,18 @@ async function isValid(link) {
 
 async function isSubscribed(chatId) {
   const time = await get(planEndingTime, chatId)
-  return time && time > Date.now()
+  if (!time || time <= Date.now()) return false
+
+  // Sanity check: no plan should be valid more than 31 days from now
+  const MAX_REASONABLE_MS = 31 * 86400 * 1000
+  if (time > Date.now() + MAX_REASONABLE_MS) {
+    log(`[isSubscribed] Anomalous planEndingTime for chatId ${chatId}: ${new Date(time).toISOString()} — treating as expired`)
+    // Auto-fix: expire the corrupted plan
+    set(planEndingTime, chatId, 0)
+    return false
+  }
+
+  return true
 }
 
 async function freeLinksAvailable(chatId) {
