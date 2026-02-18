@@ -293,8 +293,8 @@ First month billed now.`,
     const smsUsed = n.smsUsed || 0
     const minDisplay = minLimit === 'Unlimited' ? `${minUsed} (Unlimited)` : `${minUsed} / ${minLimit}`
     const smsDisplay = `${smsUsed} / ${smsLimit}`
-    const minWarning = minLimit !== 'Unlimited' && minUsed >= minLimit ? '\n💰 <b>Overage active</b> — $0.03/min from wallet' : ''
-    const smsWarning = smsUsed >= smsLimit ? '\n💰 <b>Overage active</b> — $0.02/SMS from wallet' : ''
+    const minWarning = minLimit !== 'Unlimited' && minUsed >= minLimit ? `\n💰 <b>Overage active</b> — $${OVERAGE_RATE_MIN}/min from wallet` : ''
+    const smsWarning = smsUsed >= smsLimit ? `\n💰 <b>Overage active</b> — $${OVERAGE_RATE_SMS}/SMS from wallet` : ''
     return `⚙️ Managing: <b>${formatPhone(n.phoneNumber)}</b>
 
 Status: ${n.status === 'active' ? '✅ Active' : '⚠️ ' + n.status}
