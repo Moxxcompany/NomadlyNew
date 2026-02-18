@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Backend Testing for Username Sync Implementation
-Tests the username change detection and automatic update functionality.
+Backend Testing for Domain Shortener and SMS Settings Implementation
+Tests the domain shortener question clarification, activate shortener functionality,
+and SMS settings with plan restrictions.
 """
 
 import requests
@@ -13,7 +14,7 @@ import pymongo
 from datetime import datetime
 from pathlib import Path
 
-class UsernameSyncTester:
+class DomainSmsFeaturesTester:
     def __init__(self):
         # Read backend URL from frontend .env file
         try:
@@ -26,25 +27,6 @@ class UsernameSyncTester:
                     self.base_url = "http://localhost:8001"
         except:
             self.base_url = "http://localhost:8001"
-        
-        # Get MongoDB connection from backend .env
-        try:
-            with open('/app/backend/.env', 'r') as f:
-                content = f.read()
-                mongo_url_match = re.search(r'MONGO_URL=(.+)', content)
-                db_name_match = re.search(r'DB_NAME=(.+)', content)
-                if mongo_url_match and db_name_match:
-                    self.mongo_url = mongo_url_match.group(1).strip()
-                    self.db_name = db_name_match.group(1).strip()
-                    self.mongo_client = pymongo.MongoClient(self.mongo_url)
-                    self.db = self.mongo_client[self.db_name]
-                else:
-                    self.mongo_client = None
-                    self.db = None
-        except Exception as e:
-            print(f"Warning: Could not connect to MongoDB: {e}")
-            self.mongo_client = None
-            self.db = None
         
         self.tests_run = 0
         self.tests_passed = 0
@@ -78,7 +60,7 @@ class UsernameSyncTester:
                 status_ok = data.get("status") in ["healthy", "ok"] or data.get("proxy") == "running"
                 
                 self.log_result(
-                    "Backend health endpoint at /api/health returns ok",
+                    "Backend health endpoint /api/health returns ok",
                     status_ok,
                     f"Status: {data.get('status', 'N/A')}, Proxy: {data.get('proxy', 'N/A')}, Node: {data.get('node', 'N/A')}",
                     "CRITICAL" if not status_ok else "INFO"
@@ -100,269 +82,393 @@ class UsernameSyncTester:
                 "CRITICAL"
             )
 
-    def test_username_sync_code_exists(self):
-        """Test _index.js line ~848-866: reads msg.from.username as currentUsername"""
+    def test_config_js_domain_shortener_question(self):
+        """Test config.js: askDomainToUseWithShortener text explains Yes/No clearly"""
         try:
-            with open('/app/js/_index.js', 'r') as f:
-                lines = f.readlines()
+            with open('/app/js/config.js', 'r') as f:
+                content = f.read()
             
-            # Check lines 848-866 for username sync logic
-            target_lines = lines[847:866] if len(lines) >= 866 else []
-            content = ''.join(target_lines)
+            # Look for askDomainToUseWithShortener text
+            domain_question_match = re.search(r'askDomainToUseWithShortener:\s*`([^`]+)`', content, re.DOTALL)
             
-            # Test conditions
-            reads_username = 'msg?.from?.username' in content
-            uses_current_username = 'currentUsername' in content
-            checks_difference = 'currentUsername !== nameOfChatId' in content or 'currentUsername && currentUsername !== nameOfChatId' in content
-            logs_username_sync = '[UsernameSync]' in content
-            
-            self.log_result(
-                "_index.js line ~848-866: reads msg.from.username as currentUsername",
-                reads_username and uses_current_username,
-                f"Reads username: {reads_username}, Uses currentUsername: {uses_current_username}",
-                "CRITICAL" if not (reads_username and uses_current_username) else "INFO"
-            )
-            
-            self.log_result(
-                "_index.js: if nameOfChatId exists AND currentUsername differs from nameOfChatId, it updates nameOf with new username",
-                checks_difference,
-                f"Checks username difference: {checks_difference}",
-                "CRITICAL" if not checks_difference else "INFO"
-            )
-            
-            self.log_result(
-                "_index.js: logs '[UsernameSync]' when username change is detected",
-                logs_username_sync,
-                f"Contains [UsernameSync] log: {logs_username_sync}",
-                "CRITICAL" if not logs_username_sync else "INFO"
-            )
-            
+            if domain_question_match:
+                question_text = domain_question_match.group(1)
+                
+                # Check if it explains Yes and No options clearly
+                has_yes_explanation = 'DNS will be auto-configured' in question_text and 'shortener' in question_text
+                has_no_explanation = 'register' in question_text and ('activate later' in question_text or 'later' in question_text)
+                mentions_dns_auto_config = 'DNS will be auto-configured' in question_text
+                mentions_activate_later = 'activate later' in question_text or 'activate it for the shortener later' in question_text
+                
+                all_conditions = has_yes_explanation and has_no_explanation and mentions_dns_auto_config and mentions_activate_later
+                
+                self.log_result(
+                    "config.js: askDomainToUseWithShortener text explains Yes means custom URL shortener with DNS auto-configured, and No means register only with option to activate later",
+                    all_conditions,
+                    f"Has Yes explanation: {has_yes_explanation}, Has No explanation: {has_no_explanation}, Mentions DNS auto-config: {mentions_dns_auto_config}, Mentions activate later: {mentions_activate_later}",
+                    "CRITICAL" if not all_conditions else "INFO"
+                )
+            else:
+                self.log_result(
+                    "config.js: askDomainToUseWithShortener text found",
+                    False,
+                    "askDomainToUseWithShortener text not found in config.js",
+                    "CRITICAL"
+                )
+                
         except Exception as e:
             self.log_result(
-                "_index.js username sync code analysis",
+                "config.js domain shortener question analysis",
+                False,
+                f"Error reading config.js: {str(e)}",
+                "CRITICAL"
+            )
+
+    def test_config_js_activate_shortener_button(self):
+        """Test config.js: activateShortener button text exists"""
+        try:
+            with open('/app/js/config.js', 'r') as f:
+                content = f.read()
+            
+            # Look for activateShortener button text
+            activate_button_match = re.search(r'activateShortener:\s*[\'"`]([^\'"`]+)[\'"`]', content)
+            
+            if activate_button_match:
+                button_text = activate_button_match.group(1)
+                
+                # Check if it contains the expected text
+                has_correct_text = '🔗 Activate for URL Shortener' in button_text
+                
+                self.log_result(
+                    "config.js: activateShortener button text exists ('🔗 Activate for URL Shortener')",
+                    has_correct_text,
+                    f"Button text: '{button_text}'",
+                    "CRITICAL" if not has_correct_text else "INFO"
+                )
+            else:
+                self.log_result(
+                    "config.js: activateShortener button text exists",
+                    False,
+                    "activateShortener button text not found in config.js",
+                    "CRITICAL"
+                )
+                
+        except Exception as e:
+            self.log_result(
+                "config.js activateShortener button analysis",
+                False,
+                f"Error reading config.js: {str(e)}",
+                "CRITICAL"
+            )
+
+    def test_config_js_dns_keyboard_array(self):
+        """Test config.js: dns keyboard array includes t.activateShortener button"""
+        try:
+            with open('/app/js/config.js', 'r') as f:
+                content = f.read()
+            
+            # Look for dns keyboard definition
+            dns_keyboard_match = re.search(r'const dns = \{[^}]*keyboard: \[(.*?)\][^}]*\}', content, re.DOTALL)
+            
+            if dns_keyboard_match:
+                keyboard_content = dns_keyboard_match.group(1)
+                
+                # Check if it includes t.activateShortener
+                includes_activate_shortener = 't.activateShortener' in keyboard_content
+                
+                self.log_result(
+                    "config.js: dns keyboard array includes t.activateShortener button",
+                    includes_activate_shortener,
+                    f"DNS keyboard includes activateShortener: {includes_activate_shortener}",
+                    "CRITICAL" if not includes_activate_shortener else "INFO"
+                )
+            else:
+                self.log_result(
+                    "config.js: dns keyboard array found",
+                    False,
+                    "DNS keyboard array not found in config.js",
+                    "CRITICAL"
+                )
+                
+        except Exception as e:
+            self.log_result(
+                "config.js DNS keyboard analysis",
+                False,
+                f"Error reading config.js: {str(e)}",
+                "CRITICAL"
+            )
+
+    def test_phone_config_js_sms_settings_plan_param(self):
+        """Test phone-config.js: smsSettingsMenu function accepts 'plan' parameter and shows locked features"""
+        try:
+            with open('/app/js/phone-config.js', 'r') as f:
+                content = f.read()
+            
+            # Look for smsSettingsMenu function
+            sms_settings_match = re.search(r'smsSettingsMenu:\s*\(([^)]+)\)\s*=>\s*\{', content)
+            
+            if sms_settings_match:
+                params = sms_settings_match.group(1)
+                
+                # Check if it accepts plan parameter
+                has_plan_param = 'plan' in params
+                
+                # Look for the function body to check for locked features
+                function_start = content.find('smsSettingsMenu:')
+                if function_start != -1:
+                    # Find the function body (look for the opening brace and match closing)
+                    brace_count = 0
+                    function_body_start = content.find('{', function_start)
+                    if function_body_start != -1:
+                        i = function_body_start
+                        while i < len(content):
+                            if content[i] == '{':
+                                brace_count += 1
+                            elif content[i] == '}':
+                                brace_count -= 1
+                                if brace_count == 0:
+                                    function_body = content[function_body_start:i+1]
+                                    break
+                            i += 1
+                        else:
+                            function_body = content[function_body_start:function_body_start+2000]  # Fallback
+                    else:
+                        function_body = ""
+                else:
+                    function_body = ""
+                
+                # Check for locked feature indicators
+                has_pro_plan_requirement = '🔒 Requires Pro plan' in function_body
+                checks_plan_access = 'canAccessFeature' in function_body or 'canEmail' in function_body or 'canWebhook' in function_body
+                
+                all_conditions = has_plan_param and (has_pro_plan_requirement or checks_plan_access)
+                
+                self.log_result(
+                    "phone-config.js: smsSettingsMenu function accepts 'plan' parameter and shows '🔒 Requires Pro plan' for email/webhook when plan lacks access",
+                    all_conditions,
+                    f"Has plan param: {has_plan_param}, Has Pro plan requirement: {has_pro_plan_requirement}, Checks plan access: {checks_plan_access}",
+                    "CRITICAL" if not all_conditions else "INFO"
+                )
+            else:
+                self.log_result(
+                    "phone-config.js: smsSettingsMenu function found",
+                    False,
+                    "smsSettingsMenu function not found in phone-config.js",
+                    "CRITICAL"
+                )
+                
+        except Exception as e:
+            self.log_result(
+                "phone-config.js smsSettingsMenu analysis",
+                False,
+                f"Error reading phone-config.js: {str(e)}",
+                "CRITICAL"
+            )
+
+    def test_index_js_sms_settings_locked_buttons(self):
+        """Test _index.js: SMS Settings shows locked buttons for restricted features"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+            
+            # Look for cpSmsSettings action or SMS settings handling
+            sms_email_locked = '🔒 SMS to Email (Pro+)' in content
+            webhook_locked = '🔒 Webhook URL (Pro+)' in content
+            
+            # Look for upgrade message triggers
+            triggers_upgrade_sms_email = content.count('upgradeMessage') >= 1 and 'smsToEmail' in content
+            triggers_upgrade_webhook = content.count('upgradeMessage') >= 1 and 'smsWebhook' in content
+            
+            self.log_result(
+                "_index.js: SMS Settings (cpSmsSettings entry) shows '🔒 SMS to Email (Pro+)' button when plan doesn't have smsToEmail access",
+                sms_email_locked,
+                f"Found SMS to Email locked button: {sms_email_locked}",
+                "CRITICAL" if not sms_email_locked else "INFO"
+            )
+            
+            self.log_result(
+                "_index.js: SMS Settings shows '🔒 Webhook URL (Pro+)' button when plan doesn't have smsWebhook access",
+                webhook_locked,
+                f"Found Webhook URL locked button: {webhook_locked}",
+                "CRITICAL" if not webhook_locked else "INFO"
+            )
+            
+            self.log_result(
+                "_index.js: Tapping '🔒 SMS to Email' triggers upgradeMessage",
+                triggers_upgrade_sms_email,
+                f"Triggers upgrade for SMS Email: {triggers_upgrade_sms_email}",
+                "CRITICAL" if not triggers_upgrade_sms_email else "INFO"
+            )
+            
+            self.log_result(
+                "_index.js: Tapping '🔗 Webhook URL' triggers upgradeMessage",
+                triggers_upgrade_webhook,
+                f"Triggers upgrade for Webhook: {triggers_upgrade_webhook}",
+                "CRITICAL" if not triggers_upgrade_webhook else "INFO"
+            )
+                
+        except Exception as e:
+            self.log_result(
+                "_index.js SMS settings locked buttons analysis",
                 False,
                 f"Error reading _index.js: {str(e)}",
                 "CRITICAL"
             )
 
-    def test_username_sync_updates_collections(self):
-        """Test _index.js: when username changes, it creates new chatIdOf mapping and deletes old mapping"""
+    def test_index_js_sms_settings_menu_plan_param(self):
+        """Test _index.js: smsSettingsMenu is called with num.plan as third parameter"""
         try:
             with open('/app/js/_index.js', 'r') as f:
                 content = f.read()
             
-            # Look for specific patterns in the code
-            updates_nameOf = 'set(nameOf, chatId, currentUsername)' in content
-            creates_chatIdOf = 'set(chatIdOf, currentUsername, chatId)' in content
-            deletes_old_mapping = 'chatIdOf.deleteOne({ _id: nameOfChatId })' in content
+            # Look for smsSettingsMenu calls with plan parameter
+            sms_settings_call_match = re.search(r'smsSettingsMenu\([^)]*num\.plan[^)]*\)', content)
             
-            self.log_result(
-                "_index.js: when username changes, it creates new chatIdOf mapping (set chatIdOf, currentUsername, chatId)",
-                creates_chatIdOf,
-                f"Creates new chatIdOf mapping: {creates_chatIdOf}",
-                "CRITICAL" if not creates_chatIdOf else "INFO"
-            )
+            # Alternative patterns
+            alternative_patterns = [
+                r'smsSettingsMenu\([^,]+,\s*[^,]+,\s*num\.plan',
+                r'phoneConfig\.txt\.smsSettingsMenu\([^,]+,\s*[^,]+,\s*num\.plan',
+                r'smsSettingsMenu\(.*?,.*?,\s*num\.plan'
+            ]
             
-            self.log_result(
-                "_index.js: when username changes, it deletes old chatIdOf mapping (chatIdOf.deleteOne _id: nameOfChatId)",
-                deletes_old_mapping,
-                f"Deletes old chatIdOf mapping: {deletes_old_mapping}",
-                "CRITICAL" if not deletes_old_mapping else "INFO"
-            )
-            
-            self.log_result(
-                "_index.js: updates nameOf collection with new username",
-                updates_nameOf,
-                f"Updates nameOf: {updates_nameOf}",
-                "CRITICAL" if not updates_nameOf else "INFO"
-            )
-                
-        except Exception as e:
-            self.log_result(
-                "_index.js username sync collection updates",
-                False,
-                f"Error analyzing username sync logic: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_mongodb_nameOf_hostbay_support(self):
-        """Test MongoDB nameOf for chatId 5168006768 has val 'Hostbay_support'"""
-        if self.db is None:
-            self.log_result(
-                "MongoDB nameOf for chatId 5168006768 has val 'Hostbay_support'",
-                False,
-                "MongoDB connection not available",
-                "CRITICAL"
-            )
-            return
-        
-        try:
-            nameOf_collection = self.db['nameOf']
-            result = nameOf_collection.find_one({'_id': 5168006768})
-            
-            has_correct_value = result and result.get('val') == 'Hostbay_support'
-            
-            self.log_result(
-                "MongoDB nameOf for chatId 5168006768 has val 'Hostbay_support'",
-                has_correct_value,
-                f"Found value: {result.get('val') if result else 'Not found'}",
-                "CRITICAL" if not has_correct_value else "INFO"
-            )
-            
-        except Exception as e:
-            self.log_result(
-                "MongoDB nameOf query for chatId 5168006768",
-                False,
-                f"Database query error: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_mongodb_chatIdOf_hostbay_support(self):
-        """Test MongoDB chatIdOf has entry _id:'Hostbay_support' val:5168006768"""
-        if self.db is None:
-            self.log_result(
-                "MongoDB chatIdOf has entry _id:'Hostbay_support' val:5168006768",
-                False,
-                "MongoDB connection not available",
-                "CRITICAL"
-            )
-            return
-        
-        try:
-            chatIdOf_collection = self.db['chatIdOf']
-            result = chatIdOf_collection.find_one({'_id': 'Hostbay_support'})
-            
-            has_correct_value = result and result.get('val') == 5168006768
-            
-            self.log_result(
-                "MongoDB chatIdOf has entry _id:'Hostbay_support' val:5168006768",
-                has_correct_value,
-                f"Found value: {result.get('val') if result else 'Not found'}",
-                "CRITICAL" if not has_correct_value else "INFO"
-            )
-            
-        except Exception as e:
-            self.log_result(
-                "MongoDB chatIdOf query for 'Hostbay_support'",
-                False,
-                f"Database query error: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_mongodb_chatIdOf_no_onarrival2(self):
-        """Test MongoDB chatIdOf does NOT have entry _id:'onarrival2' (stale mapping removed)"""
-        if self.db is None:
-            self.log_result(
-                "MongoDB chatIdOf does NOT have entry _id:'onarrival2' (stale mapping removed)",
-                False,
-                "MongoDB connection not available",
-                "CRITICAL"
-            )
-            return
-        
-        try:
-            chatIdOf_collection = self.db['chatIdOf']
-            result = chatIdOf_collection.find_one({'_id': 'onarrival2'})
-            
-            no_stale_mapping = result is None
-            
-            self.log_result(
-                "MongoDB chatIdOf does NOT have entry _id:'onarrival2' (stale mapping removed)",
-                no_stale_mapping,
-                f"onarrival2 entry exists: {result is not None}" if result else "onarrival2 entry does not exist (correct)",
-                "MEDIUM" if not no_stale_mapping else "INFO"
-            )
-            
-        except Exception as e:
-            self.log_result(
-                "MongoDB chatIdOf query for 'onarrival2'",
-                False,
-                f"Database query error: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_mongodb_phoneNumbersOf_entry(self):
-        """Test MongoDB phoneNumbersOf for chatId 5168006768 has number +18556820054 with starter plan and status active"""
-        if self.db is None:
-            self.log_result(
-                "MongoDB phoneNumbersOf for chatId 5168006768 has number +18556820054 with starter plan and status active",
-                False,
-                "MongoDB connection not available",
-                "CRITICAL"
-            )
-            return
-        
-        try:
-            phoneNumbersOf_collection = self.db['phoneNumbersOf']
-            result = phoneNumbersOf_collection.find_one({'_id': 5168006768})
-            
-            if result and result.get('val'):
-                phone_data = result['val']
-                
-                # Check if it's nested under 'numbers' key
-                if 'numbers' in phone_data and isinstance(phone_data['numbers'], list):
-                    phone_entries = phone_data['numbers']
-                else:
-                    phone_entries = []
-                
-                target_phone = None
-                
-                # Find the specific phone number in the list
-                for phone_entry in phone_entries:
-                    if isinstance(phone_entry, dict) and phone_entry.get('phoneNumber') == '+18556820054':
-                        target_phone = phone_entry
+            found_call = sms_settings_call_match is not None
+            if not found_call:
+                for pattern in alternative_patterns:
+                    if re.search(pattern, content):
+                        found_call = True
                         break
+            
+            self.log_result(
+                "_index.js: smsSettingsMenu is called with num.plan as third parameter",
+                found_call,
+                f"Found smsSettingsMenu call with num.plan: {found_call}",
+                "CRITICAL" if not found_call else "INFO"
+            )
                 
-                if target_phone:
-                    has_starter_plan = target_phone.get('plan') == 'starter'
-                    has_active_status = target_phone.get('status') == 'active'
-                    
-                    self.log_result(
-                        "MongoDB phoneNumbersOf for chatId 5168006768 has number +18556820054 with starter plan and status active",
-                        has_starter_plan and has_active_status,
-                        f"Plan: {target_phone.get('plan')}, Status: {target_phone.get('status')}",
-                        "MEDIUM" if not (has_starter_plan and has_active_status) else "INFO"
-                    )
-                else:
-                    available_numbers = [entry.get('phoneNumber') for entry in phone_entries if isinstance(entry, dict)]
-                    self.log_result(
-                        "MongoDB phoneNumbersOf for chatId 5168006768 has number +18556820054",
-                        False,
-                        f"Phone number +18556820054 not found. Available numbers: {available_numbers}",
-                        "MEDIUM"
-                    )
+        except Exception as e:
+            self.log_result(
+                "_index.js smsSettingsMenu plan parameter analysis",
+                False,
+                f"Error reading _index.js: {str(e)}",
+                "CRITICAL"
+            )
+
+    def test_index_js_dns_action_handler(self):
+        """Test _index.js: choose-dns-action handler includes t.activateShortener in valid messages array"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+            
+            # Look for choose-dns-action handler
+            dns_action_pattern = r'choose-dns-action[\'"`]?\s*:'
+            dns_action_match = re.search(dns_action_pattern, content)
+            
+            if dns_action_match:
+                # Find the handler code block
+                start_pos = dns_action_match.end()
+                
+                # Look for the next 2000 characters for the handler logic
+                handler_block = content[start_pos:start_pos+2000]
+                
+                # Check if activateShortener is included in valid messages
+                includes_activate_shortener = 't.activateShortener' in handler_block
+                
+                self.log_result(
+                    "_index.js: choose-dns-action handler includes t.activateShortener in valid messages array",
+                    includes_activate_shortener,
+                    f"Handler includes activateShortener: {includes_activate_shortener}",
+                    "CRITICAL" if not includes_activate_shortener else "INFO"
+                )
             else:
                 self.log_result(
-                    "MongoDB phoneNumbersOf for chatId 5168006768",
+                    "_index.js: choose-dns-action handler found",
                     False,
-                    "No phone numbers found for chatId 5168006768",
-                    "MEDIUM"
+                    "choose-dns-action handler not found in _index.js",
+                    "CRITICAL"
                 )
                 
         except Exception as e:
             self.log_result(
-                "MongoDB phoneNumbersOf query for chatId 5168006768",
+                "_index.js choose-dns-action handler analysis",
                 False,
-                f"Database query error: {str(e)}",
+                f"Error reading _index.js: {str(e)}",
+                "CRITICAL"
+            )
+
+    def test_index_js_activate_shortener_handler(self):
+        """Test _index.js: activateShortener handler calls required functions"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+            
+            # Look for activateShortener handler
+            activate_handler_pattern = r'activateShortener[\'"`]?\s*:'
+            activate_handler_match = re.search(activate_handler_pattern, content)
+            
+            if activate_handler_match:
+                # Find the handler code block (look for next 3000 characters)
+                start_pos = activate_handler_match.end()
+                handler_block = content[start_pos:start_pos+3000]
+                
+                # Check for required function calls
+                calls_save_domain_railway = 'saveDomainInServerRailway' in handler_block
+                calls_save_domain_render = 'saveDomainInServerRender' in handler_block
+                calls_regular_check_dns = 'regularCheckDns' in handler_block
+                sends_success_message = ('DNS propagation' in handler_block or 'success' in handler_block) and 'send' in handler_block
+                
+                has_domain_save = calls_save_domain_railway or calls_save_domain_render
+                
+                all_conditions = has_domain_save and calls_regular_check_dns and sends_success_message
+                
+                self.log_result(
+                    "_index.js: activateShortener handler calls saveDomainInServerRailway/Render and regularCheckDns",
+                    has_domain_save and calls_regular_check_dns,
+                    f"Calls Railway/Render: {calls_save_domain_railway}/{calls_save_domain_render}, Calls regularCheckDns: {calls_regular_check_dns}",
+                    "CRITICAL" if not (has_domain_save and calls_regular_check_dns) else "INFO"
+                )
+                
+                self.log_result(
+                    "_index.js: activateShortener handler sends success message with DNS propagation notification",
+                    sends_success_message,
+                    f"Sends success with DNS notification: {sends_success_message}",
+                    "CRITICAL" if not sends_success_message else "INFO"
+                )
+            else:
+                self.log_result(
+                    "_index.js: activateShortener handler found",
+                    False,
+                    "activateShortener handler not found in _index.js",
+                    "CRITICAL"
+                )
+                
+        except Exception as e:
+            self.log_result(
+                "_index.js activateShortener handler analysis",
+                False,
+                f"Error reading _index.js: {str(e)}",
                 "CRITICAL"
             )
 
     def run_all_tests(self):
-        """Run all username sync tests"""
-        print("🔍 Testing Username Sync Implementation\n")
+        """Run all domain shortener and SMS settings tests"""
+        print("🔍 Testing Domain Shortener and SMS Settings Implementation\n")
         
         # Health endpoint test
         self.test_health_endpoint()
         
-        # Code analysis tests
-        self.test_username_sync_code_exists()
-        self.test_username_sync_updates_collections()
+        # Config.js tests
+        self.test_config_js_domain_shortener_question()
+        self.test_config_js_activate_shortener_button()
+        self.test_config_js_dns_keyboard_array()
         
-        # Database state verification tests
-        self.test_mongodb_nameOf_hostbay_support()
-        self.test_mongodb_chatIdOf_hostbay_support()
-        self.test_mongodb_chatIdOf_no_onarrival2()
-        self.test_mongodb_phoneNumbersOf_entry()
+        # Phone-config.js tests
+        self.test_phone_config_js_sms_settings_plan_param()
+        
+        # _index.js tests
+        self.test_index_js_sms_settings_locked_buttons()
+        self.test_index_js_sms_settings_menu_plan_param()
+        self.test_index_js_dns_action_handler()
+        self.test_index_js_activate_shortener_handler()
         
         # Generate summary
         print(f"\n📊 Test Summary:")
@@ -376,10 +482,6 @@ class UsernameSyncTester:
                 print(f"  {issue['level']}: {issue['test']}")
                 print(f"    {issue['issue']}")
         
-        # Close MongoDB connection
-        if self.mongo_client:
-            self.mongo_client.close()
-        
         return {
             'tests_run': self.tests_run,
             'tests_passed': self.tests_passed, 
@@ -389,7 +491,7 @@ class UsernameSyncTester:
         }
 
 if __name__ == "__main__":
-    tester = UsernameSyncTester()
+    tester = DomainSmsFeaturesTester()
     results = tester.run_all_tests()
     
     # Exit with appropriate code
