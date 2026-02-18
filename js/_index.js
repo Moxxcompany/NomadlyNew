@@ -4514,6 +4514,21 @@ bot?.on('message', async msg => {
     await saveInfo('cameFrom', a.targetSelectAreaCode)
     return goto.buyLeadsSelectCarrier()
   }
+  if (action === a.targetLeadsConfirm) {
+    if (message === t.back) return goto.buyLeadsSelectAmount()
+    if (message === '🎟️ Apply Coupon') {
+      return goto.askCoupon(a.buyLeadsSelectFormat)
+    }
+    if (message.startsWith('✅ Pay')) {
+      const price = info?.couponApplied ? info?.newPrice : info?.price
+      const { usdBal } = await getBalance(walletOf, chatId)
+      if (usdBal < price) return send(chatId, t.walletBalanceLow, k.of([u.deposit]))
+      await saveInfo('coin', u.usd)
+      await saveInfo('couponApplied', info?.couponApplied || false)
+      return walletOk[a.buyLeadsSelectFormat](u.usd)
+    }
+    return send(chatId, t.what)
+  }
   if (action === a.buyLeadsSelectCountry) {
     if (message === t.back) goto.phoneNumberLeads()
     if (!buyLeadsSelectCountry.includes(message)) return send(chatId, t.what)
