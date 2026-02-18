@@ -70,6 +70,10 @@ const {
   continueAtHostbayKeyboard,
   freeDomainsOf,
   freeValidationsOf,
+  targetLeadsTargets,
+  targetLeadsCities,
+  targetLeadsAreaCodes,
+  targetLeadsAreaCodeButtons,
 } = require('./config.js')
 const { user: configUser } = require('./config.js')
 const createShortBitly = require('./bitly.js')
