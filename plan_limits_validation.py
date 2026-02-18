@@ -38,14 +38,16 @@ class PlanLimitsValidator:
                 print("   ❌ Starter Plan limits - Incorrect")
             
             # 2. Check Pro plan: 500 minutes, 200 SMS
-            if 'minutes: 500' in plans_text and 'sms: 200' in plans_text:
+            pro_pattern = r'pro:.*?minutes: 500.*?sms: 200'
+            if re.search(pro_pattern, plans_text, re.DOTALL):
                 print("   ✅ Pro Plan: 500 minutes, 200 SMS - Correct")
                 tests_passed += 1
             else:
                 print("   ❌ Pro Plan limits - Incorrect")
             
-            # 3. Check Business plan: Unlimited minutes, 1000 SMS
-            if "'Unlimited'" in plans_text and 'sms: 1000' in plans_text:
+            # 3. Check Business plan: Unlimited minutes, 1000 SMS  
+            business_pattern = r'business:.*?minutes: \'Unlimited\'.*?sms: 1000'
+            if re.search(business_pattern, plans_text, re.DOTALL):
                 print("   ✅ Business Plan: Unlimited minutes, 1000 SMS - Correct")
                 tests_passed += 1
             else:
