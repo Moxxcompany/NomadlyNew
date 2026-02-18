@@ -5395,28 +5395,29 @@ bot?.on('message', async msg => {
 
     // Call & SMS Logs
     if (message === pc.callSmsLogs) {
-      const logs = await phoneLogs.find({ phoneNumber: num.phoneNumber.replace(/[^+\d]/g, ''), chatId }).sort({ timestamp: -1 }).limit(10).toArray()
-      let text = `📊 <b>Recent Activity</b>\n${phoneConfig.formatPhone(num.phoneNumber)}\n\n`
+      const logs = await phoneLogs.find({ phoneNumber: num.phoneNumber.replace(/[^+\d]/g, '') }).sort({ timestamp: -1 }).limit(15).toArray()
+      let text = `📊 <b>Recent Activity</b> — ${phoneConfig.formatPhone(num.phoneNumber)}\n\n`
       if (!logs.length) {
         text += 'No activity yet.'
       } else {
-        const calls = logs.filter(l => l.type === 'call')
-        const sms = logs.filter(l => l.type === 'sms')
-        if (calls.length) {
-          text += '📞 <b>Calls:</b>\n'
-          calls.forEach(c => {
-            const dir = c.direction === 'inbound' ? '↙️' : '↗️'
-            const status = c.status === 'voicemail' ? '🎙️' : dir
-            text += `  ${status} ${phoneConfig.formatPhone(c.from)} ${phoneConfig.formatDuration(c.duration)} ${phoneConfig.shortDate(c.timestamp)}\n`
-          })
-          text += '\n'
-        }
-        if (sms.length) {
-          text += '📩 <b>SMS:</b>\n'
-          sms.forEach(s => {
-            text += `  ↙️ ${phoneConfig.formatPhone(s.from)} "${(s.body || '').substring(0, 30)}..." ${phoneConfig.shortDate(s.timestamp)}\n`
-          })
-        }
+        logs.forEach(l => {
+          const time = phoneConfig.shortDate(l.timestamp)
+          const from = phoneConfig.formatPhone(l.from || '?')
+          if (l.type === 'sms') {
+            const preview = (l.body || '').substring(0, 40)
+            text += `📩 ${from} — "${preview}${l.body?.length > 40 ? '...' : ''}"\n   ${time}\n`
+          } else if (l.type === 'voicemail') {
+            text += `🎙️ ${from} — Voicemail ${phoneConfig.formatDuration(l.duration)}\n   ${time}\n`
+          } else if (l.type === 'forwarded') {
+            text += `📲 ${from} — Forwarded ${phoneConfig.formatDuration(l.duration)}\n   ${time}\n`
+          } else if (l.type === 'missed') {
+            text += `📞 ${from} — Missed Call\n   ${time}\n`
+          } else if (l.type === 'call_recording') {
+            text += `🔴 ${from} — Recorded ${phoneConfig.formatDuration(l.duration)}\n   ${time}\n`
+          } else {
+            text += `📞 ${from} — ${l.type || 'Call'} ${phoneConfig.formatDuration(l.duration)}\n   ${time}\n`
+          }
+        })
       }
       return send(chatId, text, k.of([[pc.back]]))
     }
