@@ -5271,7 +5271,8 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpVoicemail)
       const vm = num.features?.voicemail || {}
       const btns = vm.enabled
-        ? [['📲 VM to Telegram ' + (vm.forwardToTelegram !== false ? '✅ ON' : '❌ OFF')],
+        ? [['🔊 Greeting'],
+           ['📲 VM to Telegram ' + (vm.forwardToTelegram !== false ? '✅ ON' : '❌ OFF')],
            ['📧 VM to Email ' + (vm.forwardToEmail ? '✅ ' + vm.forwardToEmail : '❌ OFF')],
            [`⏰ Ring Time: ${vm.ringTimeout || 25}s`],
            [pc.disableVoicemail]]
