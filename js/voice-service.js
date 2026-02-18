@@ -206,6 +206,9 @@ async function handleGatherEnded(payload) {
 
   log(`[Voice] DTMF received: "${digits}" for ${num.phoneNumber}`)
 
+  // Track IVR analytics
+  trackIvrAnalytics(num.phoneNumber, chatId, session.from, digits, ivrConfig?.options?.[digits]?.action || 'invalid')
+
   if (!digits || !ivrConfig?.options?.[digits]) {
     // Invalid or no input — replay or hang up
     if (!session.ivrRetried) {
