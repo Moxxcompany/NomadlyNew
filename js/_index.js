@@ -6555,6 +6555,30 @@ const upgradeVPSDetails = async (chatId, lang, vpsDetails) => {
 }
 
 const auth = async (req, res, next) => {
+
+// ── Cloud Phone DB helpers ──
+async function updatePhoneNumberFeature(col, chatId, phoneNumber, featureKey, value) {
+  const userData = await get(col, chatId)
+  if (!userData?.numbers) return
+  const nums = userData.numbers
+  const idx = nums.findIndex(n => n.phoneNumber === phoneNumber)
+  if (idx === -1) return
+  nums[idx].features = nums[idx].features || {}
+  nums[idx].features[featureKey] = value
+  await set(col, chatId, { numbers: nums })
+}
+
+async function updatePhoneNumberField(col, chatId, phoneNumber, fieldKey, value) {
+  const userData = await get(col, chatId)
+  if (!userData?.numbers) return
+  const nums = userData.numbers
+  const idx = nums.findIndex(n => n.phoneNumber === phoneNumber)
+  if (idx === -1) return
+  nums[idx][fieldKey] = value
+  await set(col, chatId, { numbers: nums })
+}
+
+const auth2 = async (req, res, next) => {
   log(req.hostname + req.originalUrl)
   const ref = req?.query?.ref || req?.body?.data?.reference // first for crypto and second for webhook fincra
   const pay = await get(chatIdOfPayment, ref)
