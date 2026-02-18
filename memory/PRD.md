@@ -80,9 +80,10 @@
 - Cloud Phone fully operational
 
 ## Backlog
-- P1: Add phone number expiry scheduler (auto-renew + reminder notifications)
-- P1: Add usage tracking scheduler (daily CDR pull from Telnyx)
+- P1: Add phone number expiry scheduler (auto-renew + reminder notifications) ✅ DONE
+- P1: Add usage tracking scheduler (daily CDR pull from Telnyx) ✅ DONE
 - P2: Domain detection for Railway deployment (auto-update webhook URLs)
 - P2: Admin panel integration (React frontend) — phone number dashboard
 - P3: IVR / Auto-attendant feature
 - P3: Outbound calling via SIP
+- P3: Outbound SMS (reply to forwarded SMS in Telegram)
