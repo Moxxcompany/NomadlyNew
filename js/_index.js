@@ -1059,6 +1059,7 @@ bot?.on('message', async msg => {
     cpIvrAddOption: 'cpIvrAddOption',
     cpIvrRemoveOption: 'cpIvrRemoveOption',
     cpCallRecording: 'cpCallRecording',
+    cpSmsInbox: 'cpSmsInbox',
     cpVmGreeting: 'cpVmGreeting',
     cpVmAudioUpload: 'cpVmAudioUpload',
     cpVmTextGreeting: 'cpVmTextGreeting',
