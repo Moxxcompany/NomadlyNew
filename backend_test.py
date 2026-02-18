@@ -298,22 +298,20 @@ class UsernameSyncTester:
             
             if result and result.get('val'):
                 phone_data = result['val']
-                print(f"DEBUG: Phone data structure: {phone_data}")
                 
                 # Check if it's nested under 'numbers' key
-                if 'numbers' in phone_data:
+                if 'numbers' in phone_data and isinstance(phone_data['numbers'], list):
                     phone_entries = phone_data['numbers']
                 else:
-                    phone_entries = phone_data
+                    phone_entries = []
                 
                 target_phone = None
                 
-                # Find the specific phone number
-                if isinstance(phone_entries, dict):
-                    for phone_number, phone_info in phone_entries.items():
-                        if phone_number == '+18556820054':
-                            target_phone = phone_info
-                            break
+                # Find the specific phone number in the list
+                for phone_entry in phone_entries:
+                    if isinstance(phone_entry, dict) and phone_entry.get('phoneNumber') == '+18556820054':
+                        target_phone = phone_entry
+                        break
                 
                 if target_phone:
                     has_starter_plan = target_phone.get('plan') == 'starter'
@@ -326,7 +324,7 @@ class UsernameSyncTester:
                         "MEDIUM" if not (has_starter_plan and has_active_status) else "INFO"
                     )
                 else:
-                    available_numbers = list(phone_entries.keys()) if isinstance(phone_entries, dict) else []
+                    available_numbers = [entry.get('phoneNumber') for entry in phone_entries if isinstance(entry, dict)]
                     self.log_result(
                         "MongoDB phoneNumbersOf for chatId 5168006768 has number +18556820054",
                         False,
