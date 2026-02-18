@@ -5527,11 +5527,22 @@ bot?.on('message', async msg => {
       const smsBtns = [[tgLabel]]
       if (phoneConfig.canAccessFeature(num.plan, 'smsToEmail')) {
         smsBtns.push([`📧 SMS to Email ${smsConf.toEmail ? '✅ ' + smsConf.toEmail : '❌ OFF'}`])
+      } else {
+        smsBtns.push([`🔒 SMS to Email (Pro+)`])
       }
       if (phoneConfig.canAccessFeature(num.plan, 'smsWebhook')) {
         smsBtns.push([`🔗 Webhook URL ${smsConf.webhookUrl ? '✅ Set' : '❌ Not Set'}`])
+      } else {
+        smsBtns.push([`🔒 Webhook URL (Pro+)`])
       }
-      return send(chatId, phoneConfig.txt.smsSettingsMenu(num.phoneNumber, { ...smsConf, toTelegram: newState }), k.of(smsBtns))
+      return send(chatId, phoneConfig.txt.smsSettingsMenu(num.phoneNumber, { ...smsConf, toTelegram: newState }, num.plan), k.of(smsBtns))
+    }
+    // Locked features — show upgrade message
+    if (message.startsWith('🔒 SMS to Email')) {
+      return send(chatId, phoneConfig.upgradeMessage('smsToEmail', num.plan))
+    }
+    if (message.startsWith('🔒 Webhook URL')) {
+      return send(chatId, phoneConfig.upgradeMessage('smsWebhook', num.plan))
     }
     // Email (gated)
     if (message.startsWith('📧 SMS to Email')) {
