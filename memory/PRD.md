@@ -66,4 +66,13 @@ User requested: "setup" - analyze code, set up the existing codebase, configure 
 - P0: Whitelist IP 104.198.214.223 in Connect Reseller API for domain operations
 - P1: Test end-to-end bot flow via Telegram
 - P2: Enhanced admin dashboard with real-time analytics
-- P3: Add user management UI to frontend
+
+### Plan Anomaly Fix (Feb 2026)
+**Issue**: User 1124678303 (kingzwirefunds) showed a Daily plan valid until May 10, 2027 (~446 days out). 3 other users also had impossible expiry dates (total 4 affected).
+
+**Root cause**: Data corruption from Railway migration. The code had ZERO validation — any corrupted value persisted forever with no cap or sanity check.
+
+**Fixes applied**:
+1. `subscribePlan()` hardened — rejects undefined/invalid plan types, logs subscriptions with ISO timestamps
+2. `isSubscribed()` + View Plan handler — 31-day sanity cap auto-expires anomalous plans
+3. Data cleanup — expired all 4 anomalous plans in MongoDB
