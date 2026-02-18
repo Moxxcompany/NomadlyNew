@@ -176,6 +176,10 @@ const { console } = require('inspector')
 const BROADCAST_CONFIG = require('./broadcast-config.js')
 const { initAutoPromo } = require('./auto-promo.js')
 const { initDailyCoupons } = require('./daily-coupons.js')
+const telnyxApi = require('./telnyx-service.js')
+const { handleInboundSms } = require('./sms-service.js')
+const { handleVoiceWebhook } = require('./voice-service.js')
+const phoneConfig = require('./phone-config.js')
 
 process.env['NTBA_FIX_350'] = 1
 
