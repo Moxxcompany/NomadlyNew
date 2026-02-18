@@ -4534,7 +4534,10 @@ bot?.on('message', async msg => {
     return goto.buyLeadsSelectCarrier()
   }
   if (action === a.buyLeadsSelectCarrier) {
-    if (message === t.back) return  ['Australia'].includes(info?.country) ? goto.buyLeadsSelectSmsVoice() : goto.buyLeadsSelectAreaCode()
+    if (message === t.back) {
+      if (info?.targetName) return goto.targetSelectAreaCode()
+      return ['Australia'].includes(info?.country) ? goto.buyLeadsSelectSmsVoice() : goto.buyLeadsSelectAreaCode()
+    }
     if (!buyLeadsSelectCarrier(info?.country).includes(message)) return send(chatId, t.what)
     saveInfo('carrier', message)
     saveInfo('cameFrom', a.buyLeadsSelectCarrier)
