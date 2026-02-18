@@ -473,16 +473,16 @@ function buildUsageAlertMsg(num, type, used, limit, percent) {
 
 📞 ${formatPhone(num.phoneNumber)}
 
-You've used <b>${used}/${limit}</b> ${type} this month (${percent}%).${type === 'SMS' ? '\nConsider upgrading your plan for more SMS.' : '\nConsider upgrading for more minutes.'}`
+You've used <b>${used}/${limit}</b> inbound ${type} this month (${percent}%).${type === 'SMS' ? '\n📌 SMS is inbound only. Consider upgrading your plan for more inbound SMS.' : '\n📌 All incoming calls (including forwarded) count toward minutes. Consider upgrading for more.'}`
 }
 
 function buildUsageLimitMsg(num, type, used, limit) {
-  return `🚫 <b>${type} Limit Reached</b>
+  return `🚫 <b>Inbound ${type} Limit Reached</b>
 
 📞 ${formatPhone(num.phoneNumber)}
 
-You've used all <b>${limit}</b> ${type} in your plan this month.
-${type === 'SMS' ? 'Additional SMS may not be delivered until your plan resets or you upgrade.' : 'Additional calls may not be connected. Upgrade your plan for more minutes.'}`
+You've used all <b>${limit}</b> inbound ${type} in your plan this month.
+${type === 'SMS' ? '📌 Incoming SMS will no longer be forwarded until your plan resets or you upgrade.\nReminder: SMS is inbound only.' : '📌 Incoming calls will be rejected (including forwarded calls) until your plan resets or you upgrade.'}`
 }
 
 function sendToUser(chatId, text) {
