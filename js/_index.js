@@ -4454,7 +4454,7 @@ bot?.on('message', async msg => {
     return goto.submenu2()
   }
   if (message === user.phoneNumberLeads) {
-    return goto.phoneNumberLeads()
+    return goto.targetSelectTarget()
   }
   if (message === user.hostingDomainsRedirect || message.startsWith('🌐 Offshore Hosting') || message.startsWith('🌐 Hosting')) {
     if (process.env.OFFSHORE_HOSTING_ON === 'false') {
