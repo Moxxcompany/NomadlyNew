@@ -4972,14 +4972,6 @@ bot?.on('message', async msg => {
   if (action === a.cpSelectCountry) {
     const pc = phoneConfig.btn
     if (message === t.back || message === pc.back) return goto.submenu5()
-    if (message === pc.moreCountries) {
-      const moreBtns = phoneConfig.moreCountries.map(c => c.name)
-      const rows = []
-      for (let i = 0; i < moreBtns.length; i += 2) {
-        rows.push(moreBtns.slice(i, i + 2))
-      }
-      return send(chatId, '🌍 More countries:', k.of(rows))
-    }
     const countryCode = phoneConfig.countryByName[message]
     if (!countryCode) return send(chatId, 'Please select a valid country.')
     await saveInfo('cpCountryCode', countryCode)
