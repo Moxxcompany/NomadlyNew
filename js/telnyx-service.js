@@ -286,6 +286,20 @@ async function initializeTelnyxResources(selfUrl) {
     if (app) {
       callControlAppId = app.id
       log('Created Call Control App:', callControlAppId)
+    } else {
+      // Try listing existing apps to find ours
+      try {
+        const listRes = await axios.get(`${BASE}/call_control_applications`, { headers: headers(), params: { 'page[size]': 20 } })
+        const apps = listRes.data?.data || []
+        const existing = apps.find(a => a.application_name === 'Nomadly Cloud Phone Voice')
+        if (existing) {
+          callControlAppId = existing.id
+          await updateCallControlApp(callControlAppId, voiceWebhook)
+          log('Found and updated existing Call Control App:', callControlAppId)
+        }
+      } catch (e) {
+        log('Error listing call control apps:', e.message)
+      }
     }
   } else {
     await updateCallControlApp(callControlAppId, voiceWebhook)
