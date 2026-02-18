@@ -304,9 +304,9 @@ class OverageRatesTestier:
             with open('/app/js/phone-scheduler.js', 'r') as f:
                 content = f.read()
             
-            # Check buildUsageAlertMsg
-            alert_msg_match = re.search(r'buildUsageAlertMsg.*?{(.*?)}', content, re.DOTALL)
-            limit_msg_match = re.search(r'buildUsageLimitMsg.*?{(.*?)}', content, re.DOTALL)
+            # Check buildUsageAlertMsg - look for function definition and variable usage
+            alert_msg_match = re.search(r'function buildUsageAlertMsg.*?\{(.*?)\}', content, re.DOTALL)
+            limit_msg_match = re.search(r'function buildUsageLimitMsg.*?\{(.*?)\}', content, re.DOTALL)
             
             alert_msg_ok = False
             limit_msg_ok = False
@@ -314,12 +314,14 @@ class OverageRatesTestier:
             
             if alert_msg_match:
                 alert_text = alert_msg_match.group(1)
-                alert_msg_ok = 'OVERAGE_RATE_SMS' in alert_text or 'OVERAGE_RATE_MIN' in alert_text
+                # Look for the rate variable calculation and usage
+                alert_msg_ok = ('OVERAGE_RATE_SMS' in alert_text and 'OVERAGE_RATE_MIN' in alert_text) or 'const rate = type === \'SMS\' ?' in alert_text
                 service_pauses_found = service_pauses_found or ('service pauses if wallet is empty' in alert_text.lower())
             
             if limit_msg_match:
                 limit_text = limit_msg_match.group(1)
-                limit_msg_ok = 'OVERAGE_RATE_SMS' in limit_text or 'OVERAGE_RATE_MIN' in limit_text
+                # Look for the rate variable calculation and usage  
+                limit_msg_ok = ('OVERAGE_RATE_SMS' in limit_text and 'OVERAGE_RATE_MIN' in limit_text) or 'const rate = type === \'SMS\' ?' in limit_text
                 service_pauses_found = service_pauses_found or ('service pauses if wallet' in limit_text.lower() and 'runs out' in limit_text.lower())
             
             self.log_result(
