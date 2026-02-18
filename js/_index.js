@@ -2393,6 +2393,10 @@ bot?.on('message', async msg => {
   }
 
   if (message === '/start') {
+    // Auto-exit support mode if active
+    if (action === a.supportChat) {
+      await set(supportSessions, chatId, 0)
+    }
     set(state, chatId, 'action', 'none')
 
     // Keep original admin behavior
@@ -2400,6 +2404,32 @@ bot?.on('message', async msg => {
 
     // Show main keyboard for regular users
     return send(chatId, 'Welcome! Please select an option:', trans('o'))
+  }
+
+  // /done — exit support chat
+  if (message === '/done') {
+    if (action === a.supportChat) {
+      await set(supportSessions, chatId, 0)
+      set(state, chatId, 'action', 'none')
+      const name = await get(nameOf, chatId)
+      send(chatId, '✅ Support session ended. Thank you for reaching out!', trans('o'))
+      send(TELEGRAM_ADMIN_CHAT_ID, `📴 Support session closed by user <b>${name || chatId}</b> (${chatId})`, { parse_mode: 'HTML' })
+      log(`[Support] Session ended by user ${chatId}`)
+      return
+    }
+    return send(chatId, 'No active support session.', trans('o'))
+  }
+
+  // ═══════════════════════════════════════════════════
+  // Support chat mode — forward user messages to admin (private only, not groups)
+  // ═══════════════════════════════════════════════════
+  if (action === a.supportChat) {
+    const name = await get(nameOf, chatId)
+    const displayName = name || msg?.from?.username || chatId
+    send(TELEGRAM_ADMIN_CHAT_ID, `💬 <b>${displayName}</b> (${chatId}):\n${message}\n\n↩️ /reply ${chatId} <i>type response</i>`, { parse_mode: 'HTML' })
+    send(chatId, '✉️ Message sent to support. We\'ll respond shortly.', { reply_markup: { keyboard: [['/done']], resize_keyboard: true } })
+    log(`[Support] ${chatId} -> admin: ${message}`)
+    return
   }
 
   // /refresh command — force refresh keyboard for users seeing old buttons
