@@ -484,6 +484,18 @@ const loadData = async () => {
     log('[AutoPromo] Skipped — Telegram bot is disabled')
   }
 
+  // Initialize Telnyx Cloud Phone resources
+  if (process.env.TELNYX_API_KEY && process.env.PHONE_SERVICE_ON === 'true') {
+    try {
+      telnyxResources = await telnyxApi.initializeTelnyxResources(SELF_URL)
+      log('[CloudPhone] Telnyx resources initialized')
+    } catch (e) {
+      log('[CloudPhone] Telnyx init error:', e.message)
+    }
+  } else {
+    log('[CloudPhone] Skipped — TELNYX_API_KEY or PHONE_SERVICE_ON not set')
+  }
+
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // Scheduled auto-cleanup: reset stale user states every 6 hours
   // Users idle in a flow for >24h get reset to 'none' so they see fresh keyboards
