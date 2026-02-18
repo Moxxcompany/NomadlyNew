@@ -485,6 +485,11 @@ async function handleCallHangup(payload) {
     log(`[Voice] Billed ${minutesBilled} min for ${to} (${duration}s call, ${session.phase})`)
   }
 
+  // Clean up mid-call limit timer
+  if (session._limitTimer) {
+    clearInterval(session._limitTimer)
+  }
+
   // Notify based on phase
   if (session.phase === 'forwarding' || session.phase === 'ivr_forward') {
     const forwardTo = num.features?.callForwarding?.forwardTo || 'unknown'
