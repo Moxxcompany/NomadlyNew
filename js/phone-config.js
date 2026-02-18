@@ -195,6 +195,7 @@ Buy virtual phone numbers, receive inbound SMS directly in Telegram, configure c
 
 📩 SMS: <b>Inbound only</b> — receive SMS, not send.
 📞 Minutes: All inbound calls (including forwarded calls) count toward your plan minutes.
+💰 Overage: Beyond plan limits, additional usage is charged at <b>$${OVERAGE_RATE_MIN}/min</b> and <b>$${OVERAGE_RATE_SMS}/SMS</b> from wallet balance. Service pauses if wallet is empty.
 
 Select an option:`,
 
