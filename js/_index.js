@@ -5377,11 +5377,7 @@ bot?.on('message', async msg => {
     if (!num) return goto.submenu5()
     if (message === t.back || message === pc.back) {
       set(state, chatId, 'action', a.cpManageNumber)
-      return send(chatId, phoneConfig.txt.manageNumber(num), k.of([
-        [pc.callForwarding], [pc.smsSettings], [pc.voicemail],
-        [pc.sipCredentials], [pc.callSmsLogs],
-        [pc.renewChangePlan], [pc.releaseNumber],
-      ]))
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
     const smsConf = num.features?.smsForwarding || {}
     // Toggle Telegram
@@ -5392,17 +5388,28 @@ bot?.on('message', async msg => {
       await saveInfo('cpActiveNumber', num)
       send(chatId, phoneConfig.txt.smsToggled('📲 SMS to Telegram', newState))
       const tgLabel = `📲 SMS to Telegram ${newState ? '✅ ON' : '❌ OFF'}`
-      const emLabel = `📧 SMS to Email ${smsConf.toEmail ? '✅ ' + smsConf.toEmail : '❌ OFF'}`
-      const whLabel = `🔗 Webhook URL ${smsConf.webhookUrl ? '✅ Set' : '❌ Not Set'}`
-      return send(chatId, phoneConfig.txt.smsSettingsMenu(num.phoneNumber, { ...smsConf, toTelegram: newState }), k.of([[tgLabel], [emLabel], [whLabel]]))
+      const smsBtns = [[tgLabel]]
+      if (phoneConfig.canAccessFeature(num.plan, 'smsToEmail')) {
+        smsBtns.push([`📧 SMS to Email ${smsConf.toEmail ? '✅ ' + smsConf.toEmail : '❌ OFF'}`])
+      }
+      if (phoneConfig.canAccessFeature(num.plan, 'smsWebhook')) {
+        smsBtns.push([`🔗 Webhook URL ${smsConf.webhookUrl ? '✅ Set' : '❌ Not Set'}`])
+      }
+      return send(chatId, phoneConfig.txt.smsSettingsMenu(num.phoneNumber, { ...smsConf, toTelegram: newState }), k.of(smsBtns))
     }
-    // Email
+    // Email (gated)
     if (message.startsWith('📧 SMS to Email')) {
+      if (!phoneConfig.canAccessFeature(num.plan, 'smsToEmail')) {
+        return send(chatId, phoneConfig.upgradeMessage('smsToEmail', num.plan))
+      }
       set(state, chatId, 'action', a.cpEnterEmail)
       return send(chatId, phoneConfig.txt.enterEmail)
     }
-    // Webhook
+    // Webhook (gated)
     if (message.startsWith('🔗 Webhook URL')) {
+      if (!phoneConfig.canAccessFeature(num.plan, 'smsWebhook')) {
+        return send(chatId, phoneConfig.upgradeMessage('smsWebhook', num.plan))
+      }
       set(state, chatId, 'action', a.cpEnterWebhook)
       return send(chatId, phoneConfig.txt.enterWebhook)
     }
