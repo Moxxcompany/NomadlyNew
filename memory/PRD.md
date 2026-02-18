@@ -1,50 +1,40 @@
 # NomadlyBot - Product Requirements Document
 
 ## Original Problem Statement
-User requested: "analyze and setup" the existing codebase
+User requested: "analyze and setup" then "update .env and ensure webhook is working"
 
 ## Architecture
 - **Node.js Backend** (`/app/js/`) - Telegram bot with Express server on port 5000
-  - URL shortening (Bitly, Cuttly, custom domains)
-  - Domain name sales (Connect Reseller API)
-  - Phone number leads (SMS/Voice validation)
-  - Crypto payments (BlockBee, DynoPay)
-  - Bank payments (Fincra)
-  - Web hosting (cPanel/Plesk plans)
-  - VPS management
-  - Wallet system (USD/NGN)
-- **FastAPI Python Backend** (`/app/backend/server.py`) - Reverse proxy on port 8001 → Node.js (5000)
+- **FastAPI Python Backend** (`/app/backend/server.py`) - Reverse proxy on port 8001 → Node.js (5000), strips `/api` prefix
 - **React Frontend** (`/app/frontend/`) - Admin dashboard on port 3000
 - **MongoDB** - Data storage (Railway-hosted)
 
-## Tech Stack
-- Node.js (Express, node-telegram-bot-api, mongodb driver)
-- Python (FastAPI, httpx, uvicorn)
-- React 18 (CRA with Craco, Tailwind CSS)
-- MongoDB
+## Key Routing
+- Kubernetes ingress routes `/api/*` → FastAPI (port 8001)
+- FastAPI strips `/api` prefix and proxies to Node.js Express (port 5000)
+- Webhook URL: `https://onboarding-hub-25.preview.emergentagent.com/api/telegram/webhook`
+- SELF_URL set to `https://onboarding-hub-25.preview.emergentagent.com/api`
 
 ## What's Been Implemented
-- [Jan 2026] Initial setup and analysis completed
-  - Installed Node.js dependencies (`npm install`)
-  - Installed frontend dependencies (`yarn install`)
-  - Started all services (backend, frontend, MongoDB)
-  - Verified health endpoint returns: Bot Running, DB Connected, REST APIs Active
-  - Frontend admin dashboard loading correctly
+- [Jan 2026] Initial setup: installed deps, started services
+- [Jan 2026] Full .env configuration with all API keys and credentials
+  - Updated SELF_URL/SELF_URL_PROD to current pod URL with /api suffix
+  - Updated FastAPI proxy to strip /api prefix before forwarding to Node.js
+  - Telegram webhook set and verified: URL matches, pending_update_count=0
+  - Bot token configured: YES, Environment: PRODUCTION
+  - MongoDB connected, bot running, REST APIs active
 
 ## Current Status
 - Backend (FastAPI proxy): RUNNING
 - Frontend (React): RUNNING
-- Node.js bot: Started but paused (missing TELEGRAM_BOT_TOKEN env var)
+- Node.js bot: RUNNING with webhook active
 - MongoDB: RUNNING and connected
-- Health check: All systems showing online
+- Telegram Webhook: VERIFIED at `https://onboarding-hub-25.preview.emergentagent.com/api/telegram/webhook`
+- Connect Reseller: IP needs whitelisting (35.184.53.215)
 
-## Missing Environment Variables (for full bot functionality)
-- `TELEGRAM_BOT_TOKEN` - Required for Telegram bot to work
-- `TELEGRAM_BOT_ON` - Must be set to 'true' to enable bot
-- Various optional API keys (Connect Reseller, BlockBee, Fincra, DynoPay)
+## Note
+- Connect Reseller API requires IP whitelist: add `35.184.53.215` at https://global.connectreseller.com/tools/profile
 
 ## Backlog
-- P0: Set TELEGRAM_BOT_TOKEN to enable the Telegram bot
-- P1: Configure webhook URL (SELF_URL) for production
-- P2: Configure payment integrations (BlockBee, Fincra, DynoPay)
-- P2: Configure Connect Reseller API for domain management
+- P1: Whitelist pod IP in Connect Reseller for domain management
+- P2: Monitor webhook reliability in production
