@@ -200,6 +200,17 @@ async function createCallControlApp(name, webhookUrl) {
 async function updateCallControlApp(appId, webhookUrl) {
   try {
     const body = { webhook_event_url: webhookUrl, webhook_api_version: '2' }
+    // Ensure outbound voice profile is assigned (required for call forwarding/transfer)
+    const appRes = await axios.get(`${BASE}/call_control_applications/${appId}`, { headers: headers() })
+    if (!appRes.data?.data?.outbound?.outbound_voice_profile_id) {
+      // Find an active outbound voice profile
+      const profiles = await axios.get(`${BASE}/outbound_voice_profiles`, { headers: headers() })
+      const active = (profiles.data?.data || []).find(p => p.enabled)
+      if (active) {
+        body.outbound = { outbound_voice_profile_id: active.id }
+        log('Assigning outbound voice profile:', active.id, active.name)
+      }
+    }
     const res = await axios.patch(`${BASE}/call_control_applications/${appId}`, body, { headers: headers() })
     return res.data?.data || null
   } catch (e) {
