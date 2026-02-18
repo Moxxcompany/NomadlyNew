@@ -840,7 +840,7 @@ class UsageLimitTester:
     
     def run_all_tests(self):
         """Run all tests"""
-        print(f"🚀 Starting Nomadly Telegram Bot Tests - NEW FEATURES")
+        print(f"🚀 Starting Nomadly Telegram Bot Tests - THREE NEW FEATURES")
         print(f"   Target: {self.base_url}")
         print(f"   Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         
@@ -858,16 +858,36 @@ class UsageLimitTester:
         results['telnyx_service'] = self.test_telnyx_service_functions()
         results['webhook_config'] = self.test_webhook_url_configuration()
         
-        # NEW FEATURE TESTS
-        print(f"\n🆕 TESTING NEW FEATURES:")
+        # PREVIOUS FEATURE TESTS
+        print(f"\n📋 TESTING PREVIOUS FEATURES:")
         results['plan_downgrade'] = self.test_plan_downgrade_feature()
         results['ivr_analytics'] = self.test_ivr_analytics_implementation()
         results['custom_voicemail'] = self.test_custom_voicemail_greeting()
+        
+        # THREE NEW FEATURES TESTS 
+        print(f"\n🆕 TESTING THREE NEW FEATURES:")
+        print(f"   1️⃣ Mid-call limit monitor (auto-disconnect when limit reached)")
+        print(f"   2️⃣ SMS Inbox (CNAM lookup + pagination)")  
+        print(f"   3️⃣ UX improvements (menu organization + enhanced logs)")
+        results['mid_call_limit_monitor'] = self.test_mid_call_limit_monitor()
+        results['sms_inbox'] = self.test_sms_inbox_functionality()
+        results['ux_improvements'] = self.test_ux_improvements()
         
         # Summary
         print(f"\n📊 Test Results Summary")
         print(f"   Tests Passed: {self.tests_passed}/{self.tests_run}")
         print(f"   Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%")
+        
+        # Feature-specific summary
+        new_features_passed = 0
+        new_features_total = 3
+        if results['mid_call_limit_monitor'][0]: new_features_passed += 1
+        if results['sms_inbox'][0]: new_features_passed += 1
+        if results['ux_improvements'][0]: new_features_passed += 1
+        
+        print(f"\n🎯 NEW FEATURES VALIDATION:")
+        print(f"   New Features Passed: {new_features_passed}/{new_features_total}")
+        print(f"   New Features Success Rate: {(new_features_passed/new_features_total*100):.1f}%")
         
         return results
 
