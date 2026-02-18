@@ -37,6 +37,23 @@ User requested: "setup" - analyze code, set up the existing codebase, configure 
 - Enabled Telegram bot (`TELEGRAM_BOT_ON=true`) with production bot token
 - Webhook verified by Telegram API: URL correct, pending_update_count: 0
 
+### MongoDB Connection Stability Fix (Jan 2026)
+**Root cause**: Railway MongoDB proxy (`caboose.proxy.rlwy.net`) aggressively closes idle connections, causing repeated heartbeat failures, pool clears, and operation timeouts (e.g., `planEndingTime` read fails mid-request).
+
+**Fix 1 — MongoClient options** (`_index.js`):
+- `maxIdleTimeMS`: 60s → 15s (close idle connections before proxy kills them)
+- `heartbeatFrequencyMS`: 30s → 10s (detect drops faster, keep-alive effect)
+- `maxPoolSize`: 5 → 10, `minPoolSize`: 1 → 2 (more available connections during recovery)
+- `serverSelectionTimeoutMS`: 10s → 20s (give pool time to recover before failing operations)
+- `connectTimeoutMS`: 10s → 20s (Railway proxy can be slow to establish)
+- Added `waitQueueTimeoutMS: 15000`
+- Reduced heartbeat failure log noise (only logs after 3+ consecutive failures)
+
+**Fix 2 — Retry logic in db.js** (all CRUD operations):
+- Added `withRetry()` wrapper with 2 retries and exponential backoff (800ms, 1600ms)
+- Detects retryable errors: `MongoServerSelectionError`, `MongoNetworkError`, timeout, pool cleared
+- Applied to: `get()`, `set()`, `getAll()`, `del()`, `atomicIncrement()`, `insert()`, `assignPackageToUser()`, `removeKeyFromDocumentById()`
+
 ## Current Status
 - All services: RUNNING
 - Database: CONNECTED
