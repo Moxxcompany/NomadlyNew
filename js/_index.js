@@ -465,6 +465,8 @@ const loadData = async () => {
     log('[AutoPromo] System loaded successfully')
     dailyCouponSystem = initDailyCoupons(db, bot, nameOf, state)
     log('[DailyCoupon] System loaded successfully')
+    // Link coupon system to promo for coupon-in-promo messages
+    autoPromo.setDailyCouponSystem(dailyCouponSystem)
   } else {
     log('[AutoPromo] Skipped — Telegram bot is disabled')
   }
