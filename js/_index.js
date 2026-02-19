@@ -5309,6 +5309,14 @@ bot?.on('message', async msg => {
     }
     const planKey = phoneConfig.planByButton[message]
     if (!planKey) return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectPlan)
+
+    // Check if plan is available
+    if (!phoneConfig.isPlanAvailable(planKey)) {
+      return send(chatId, phoneConfig.comingSoonText(planKey), k.of([
+        [pc.starterPlan], [pc.proPlan], [pc.businessPlan]
+      ]))
+    }
+
     const plan = phoneConfig.plans[planKey]
     await saveInfo('cpPlanKey', planKey)
     await saveInfo('cpPrice', plan.price)
