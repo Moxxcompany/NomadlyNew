@@ -184,7 +184,7 @@ Partage des bénéfices : Gagnez une commission compétitive de 65/35 % sur chaq
 
 Frais d'installation : Contactez le support pour plus de détails.
 
-Intéressé ? Contactez-nous à ${SUPPORT_HANDLE} pour en savoir plus sur ce partenariat lucratif.
+Intéressé ? Appuyez sur 💬 Obtenir de l'aide pour en savoir plus sur ce partenariat lucratif.
 
 Dans l'attente d'une éventuelle collaboration avec vous !
 
@@ -236,7 +236,7 @@ L'équipe ${CHAT_BOT_BRAND}
   what: `Cette option n'est pas disponible. Veuillez choisir parmi les boutons ci-dessous.`,
   whatNum: `Veuillez choisir un numéro valide.`,
   phoneGenTimeout: `Délai expiré.`,
-  phoneGenNoGoodHits: `Veuillez contacter le support ${SUPPORT_HANDLE} ou sélectionner un autre indicatif régional.`,
+  phoneGenNoGoodHits: `Veuillez appuyer sur 💬 Obtenir de l'aide ou sélectionner un autre indicatif régional.`,
 
   subscribeRCS: p =>
     `Abonné ! Désabonnez-vous à tout moment en cliquant sur le <a href="${SELF_URL}/unsubscribe?a=b&Phone=${p}">lien</a>.`,
@@ -295,7 +295,7 @@ ${CHAT_BOT_NAME}`,
       ? `Vous vous êtes abonné avec succès au plan {{plan}} ! Profitez de domaines ".sbs/.xyz" gratuits, de liens Shortit illimités et de validations de numéros USA gratuites. Besoin d'une carte E-sim ? Contactez ${SUPPORT_HANDLE}.`
       : `Vous vous êtes abonné avec succès au plan {{plan}} ! Profitez de domaines ".sbs/.xyz" gratuits, de liens Shortit illimités, de validations USA gratuites et de ${SMS_APP_NAME}. Téléchargez l'application ici : ${SMS_APP_LINK}. Besoin d'une carte E-sim ? Contactez ${SUPPORT_HANDLE}.`,
   alreadySubscribedPlan: days => `Votre abonnement est actif et expire dans ${days} jours.`,
-  payError: `Session de paiement introuvable. Veuillez réessayer ou contacter l'assistance ${SUPPORT_USERNAME}. Découvrez plus sur ${TG_HANDLE}.`,
+  payError: `Session de paiement introuvable. Veuillez réessayer ou appuyer sur 💬 Obtenir de l'aide. Découvrez plus sur ${TG_HANDLE}.`,
   chooseFreeDomainText: `<b>Bonne nouvelle !</b> Ce domaine est disponible gratuitement avec votre abonnement. Souhaitez-vous le réclamer ?`,
 
   chooseDomainToBuy: text =>
@@ -303,7 +303,7 @@ ${CHAT_BOT_NAME}`,
   askDomainToUseWithShortener: `Souhaitez-vous utiliser ce domaine avec le raccourcisseur ?`,
   blockUser: `Veuillez partager le nom d'utilisateur de l'utilisateur à bloquer.`,
   unblockUser: `Veuillez partager le nom d'utilisateur de l'utilisateur à débloquer.`,
-  blockedUser: `Vous êtes actuellement bloqué d'utiliser le bot. Veuillez contacter le support ${SUPPORT_USERNAME}. Découvrez plus ${TG_HANDLE}.`,
+  blockedUser: `Vous êtes actuellement bloqué d'utiliser le bot. Veuillez appuyer sur 💬 Obtenir de l'aide. Découvrez plus ${TG_HANDLE}.`,
   greet: `${CHAT_BOT_BRAND} — raccourcissez vos URLs, enregistrez des domaines, achetez des leads et developpez votre activite. Directement depuis Telegram.
 Commencez avec ${FREE_LINKS} liens Shortit d'essai — /start
 Support: ${SUPPORT_USERNAME}`,
