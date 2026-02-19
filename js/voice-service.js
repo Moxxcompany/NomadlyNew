@@ -408,8 +408,8 @@ async function handleGatherEnded(payload) {
   switch (option.action) {
     case 'forward':
       session.phase = 'ivr_forward'
-      log(`[Voice] IVR: forwarding to ${option.forwardTo}`)
-      await _telnyxApi.transferCall(callControlId, option.forwardTo)
+      log(`[Voice] IVR: forwarding to ${option.forwardTo} from ${session.to}`)
+      await _telnyxApi.transferCall(callControlId, option.forwardTo, session.to)
       notifyUser(chatId, num, 'ivr_forward', session, { digit: digits, forwardTo: option.forwardTo })
       break
 
