@@ -80,7 +80,7 @@ const user = {
   wallet: '👛 Mon portefeuille',
   urlShortenerMain: `🔗✂️ Raccourcisseur d'URL - ${FREE_LINKS} Essais`,
   vpsPlans: 'Acheter un VPS Bulletproof🛡️ - Horaire/Mensuel',
-  buyPlan: '🔔 Souscrire ici',
+  buyPlan: '⚡ Améliorer le plan',
   domainNames: '🌐 Register Bulletproof Domain ¹⁰⁰⁰⁺ ᵀᴸᴰ',
   viewPlan: '📋 Mes Abonnements',
   becomeReseller: '💼 Devenir revendeur',
@@ -735,8 +735,7 @@ const userKeyboard = {
       [user.cloudPhone],
       [user.phoneNumberLeads],
       HIDE_SMS_APP === 'true' ? [user.domainNames] : [user.freeTrialAvailable, user.domainNames],
-      [user.wallet, user.viewPlan],
-      [user.buyPlan],
+      [user.wallet, user.viewPlan, user.buyPlan],
       HIDE_BECOME_RESELLER === 'true'
         ? [user.changeSetting, user.getSupport, user.joinChannel]
         : [user.changeSetting, user.becomeReseller, user.getSupport],
