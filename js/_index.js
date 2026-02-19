@@ -7214,6 +7214,17 @@ bot?.on('message', async msg => {
       ]))
     }
 
+    // Block "Coming Soon" plans
+    if (message.includes('Coming Soon')) {
+      const comingPlan = message.includes('Starter') ? 'starter' : message.includes('Pro') ? 'pro' : message.includes('Business') ? 'business' : null
+      if (comingPlan) {
+        return send(chatId, phoneConfig.comingSoonText(comingPlan), k.of([
+          [pc.changePlan],
+        ]))
+      }
+    }
+
+
     // Check if this is a confirmation of a pending plan change
     if (message === '✅ Confirm Change' && info?.cpPendingPlan) {
       const newPlan = info.cpPendingPlan
