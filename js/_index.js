@@ -6341,7 +6341,7 @@ bot?.on('message', async msg => {
     if (message === t.back || message === pc.back || message === t.cancel) {
       set(state, chatId, 'action', a.cpIvrGreeting)
       return send(chatId, `🎤 <b>Set IVR Greeting</b>\n\nChoose how to create your greeting:`, k.of([
-        ['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio'],
+        ['📋 Use Template'], ['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio'],
       ]))
     }
     // Check if user is selecting a voice (after text + language were entered)
