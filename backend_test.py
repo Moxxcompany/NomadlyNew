@@ -665,7 +665,7 @@ class NomadlyBackendTester:
 
 def main():
     tester = NomadlyBackendTester(BACKEND_URL)
-    print(f"🚀 Starting Nomadly Backend Tests")
+    print(f"🚀 Starting Nomadly Backend Tests - Iteration 37")
     print(f"Backend URL: {BACKEND_URL}")
     print(f"Test Time: {datetime.now().isoformat()}")
     
@@ -673,26 +673,35 @@ def main():
     test_results = []
     
     # Health check tests
-    test_results.append(tester.run_test("Backend health check /api/health", tester.test_health_endpoint))
-    test_results.append(tester.run_test("API health check /api/api/health", tester.test_api_health_endpoint))
+    test_results.append(tester.run_test("Backend health check /api/health returns ok with node running and db connected", tester.test_health_endpoint))
+    test_results.append(tester.run_test("API health endpoint returns healthy status", tester.test_api_health_endpoint))
     
-    # TTS service and template tests
-    test_results.append(tester.run_test("TTS service exports", tester.test_tts_service_exports))
-    test_results.append(tester.run_test("Template categories existence", tester.test_template_categories))
-    test_results.append(tester.run_test("Greeting templates counts", tester.test_greeting_templates_counts))
+    # IVR option wizard tests
+    test_results.append(tester.run_test("IVR option wizard handlers exist: cpIvrOptionKey, cpIvrOptionAction, cpIvrOptionMsg, cpIvrOptionVoice, cpIvrOptionPreview", tester.test_ivr_option_handlers_exist))
+    test_results.append(tester.run_test("cpIvrOptionKey handler validates digit input (0-9) and shows used keys", tester.test_cpivr_option_key_validates_digits))
+    test_results.append(tester.run_test("cpIvrOptionAction handler offers 3 actions: Forward Call, Play Message, Send to Voicemail", tester.test_cpivr_option_action_offers_three_actions))
+    test_results.append(tester.run_test("cpIvrOptionMsg handler: for forward asks phone number, for message offers Template/TTS/Upload", tester.test_cpivr_option_msg_handler_features))
+    test_results.append(tester.run_test("cpIvrOptionVoice handler: language selection with translation + voice selection + TTS generation", tester.test_cpivr_option_voice_handler_features))
+    test_results.append(tester.run_test("cpIvrOptionPreview handler: save option with correct ivrConf.options[key] structure", tester.test_cpivr_option_preview_saves_correctly))
     
-    # Action handler tests
-    test_results.append(tester.run_test("VM and IVR template action handlers", tester.test_action_handlers_exist))
-    test_results.append(tester.run_test("Template buttons in menus", tester.test_template_buttons_in_menus))
-    test_results.append(tester.run_test("Translation support", tester.test_translation_support))
+    # Leads payment system tests
+    test_results.append(tester.run_test("'leads-pay' goto handler exists and shows Crypto/Bank/Wallet options", tester.test_leads_pay_goto_handler_exists))
+    test_results.append(tester.run_test("'leads-pay' action handler routes to crypto-pay-leads, bank-pay-leads, or walletSelectCurrency", tester.test_leads_pay_action_handler_routing))
+    test_results.append(tester.run_test("'crypto-pay-leads' action handler supports both BlockBee and DynoPay paths", tester.test_crypto_pay_leads_action_handler))
+    test_results.append(tester.run_test("'bank-pay-leads' action handler sends bank checkout URL", tester.test_bank_pay_leads_action_handler))
     
-    # Crypto payment tests
-    test_results.append(tester.run_test("BlockBee crypto callback", tester.test_blockbee_crypto_callback))
-    test_results.append(tester.run_test("DynoPay crypto callback", tester.test_dynopay_crypto_callback))
-    test_results.append(tester.run_test("Bank pay phone handler", tester.test_bank_pay_phone_handler))
-    test_results.append(tester.run_test("Crypto pay phone action", tester.test_crypto_pay_phone_action))
-    test_results.append(tester.run_test("DynoPay actions config", tester.test_dynopay_actions_config))
-    test_results.append(tester.run_test("Crypto callback order processing", tester.test_crypto_callback_order_processing))
+    # Payment callback tests
+    test_results.append(tester.run_test("app.get('/crypto-pay-leads') BlockBee callback exists and processes leads order directly", tester.test_blockbee_crypto_pay_leads_callback))
+    test_results.append(tester.run_test("app.post('/dynopay/crypto-pay-leads') DynoPay callback exists and processes leads order", tester.test_dynopay_crypto_pay_leads_callback))
+    test_results.append(tester.run_test("bankApis has '/bank-pay-leads' handler that processes leads order", tester.test_bankapis_bank_pay_leads_handler))
+    
+    # Flow changes tests
+    test_results.append(tester.run_test("askCoupon + buyLeadsSelectFormat now calls goto['leads-pay']() instead of goto.walletSelectCurrency()", tester.test_askcoupon_buyleads_uses_leads_pay))
+    test_results.append(tester.run_test("askCoupon + validatorSelectFormat now calls goto['leads-pay']() instead of goto.walletSelectCurrency()", tester.test_askcoupon_validator_uses_leads_pay))
+    test_results.append(tester.run_test("targetLeadsConfirm now calls goto['leads-pay']() instead of direct wallet deduction", tester.test_target_leads_confirm_uses_leads_pay))
+    
+    # Config tests
+    test_results.append(tester.run_test("dynopayActions.payLeads exists in config.js", tester.test_dynopay_actions_payleads_exists))
     
     # Print results summary
     print(f"\n📊 Test Results Summary:")
