@@ -74,15 +74,18 @@ async function generateTTS(text, voiceKey = DEFAULT_VOICE, langCode = null) {
   if (!EDENAI_API_KEY) throw new Error('EDENAI_API_KEY not configured')
   if (!text || text.trim().length === 0) throw new Error('Text cannot be empty')
 
-  const voice = VOICES[voiceKey] || GENERIC_VOICES[voiceKey] || VOICES[DEFAULT_VOICE]
-  const language = langCode || voice.lang || 'en'
+  const voice = VOICES[voiceKey] || VOICES[DEFAULT_VOICE]
+  const language = langCode || 'en'
 
-  const res = await axios.post('https://api.edenai.run/v2/audio/text_to_speech', {
+  // Use ElevenLabs via EdenAI with specific voice_id for distinct voices
+  const requestBody = {
     providers: 'elevenlabs',
     text: text.trim(),
     language: language,
-    option: voice.option,
-  }, {
+    option: voice.voiceId,
+  }
+
+  const res = await axios.post('https://api.edenai.run/v2/audio/text_to_speech', requestBody, {
     headers: {
       Authorization: `Bearer ${EDENAI_API_KEY}`,
       'Content-Type': 'application/json',
