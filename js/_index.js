@@ -6345,23 +6345,39 @@ bot?.on('message', async msg => {
       return send(chatId, warningMsg, k.of([['✅ Confirm Change', pc.back]]))
     }
 
-    // No feature loss (upgrade or same-tier) — apply directly
+    // No feature loss (upgrade or same-tier) — show what they'll gain and confirm
     const newPrice = phoneConfig.plans[newPlan].price
-    await updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'plan', newPlan)
-    await updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'planPrice', newPrice)
-    num.plan = newPlan
-    num.planPrice = newPrice
-
-    // Re-enable SIP if upgrading to a plan that supports it
-    if (phoneConfig.canAccessFeature(newPlan, 'sipCredentials') && num.sipDisabled) {
-      await updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'sipDisabled', false)
-      num.sipDisabled = false
+    const gainedFeatures = []
+    if (phoneConfig.canAccessFeature(newPlan, 'sipCredentials') && !phoneConfig.canAccessFeature(oldPlan, 'sipCredentials')) {
+      gainedFeatures.push('🔑 SIP Credentials')
+    }
+    if (phoneConfig.canAccessFeature(newPlan, 'voicemail') && !phoneConfig.canAccessFeature(oldPlan, 'voicemail')) {
+      gainedFeatures.push('🎙️ Voicemail')
+    }
+    if (phoneConfig.canAccessFeature(newPlan, 'smsToEmail') && !phoneConfig.canAccessFeature(oldPlan, 'smsToEmail')) {
+      gainedFeatures.push('📧 SMS to Email & Webhook')
+    }
+    if (phoneConfig.canAccessFeature(newPlan, 'callRecording') && !phoneConfig.canAccessFeature(oldPlan, 'callRecording')) {
+      gainedFeatures.push('🔴 Call Recording')
+    }
+    if (phoneConfig.canAccessFeature(newPlan, 'ivr') && !phoneConfig.canAccessFeature(oldPlan, 'ivr')) {
+      gainedFeatures.push('🤖 IVR / Auto-attendant')
     }
 
-    await saveInfo('cpActiveNumber', num)
-    send(chatId, `✅ Plan upgraded to <b>${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)}</b> — $${newPrice}/mo`)
-    set(state, chatId, 'action', a.cpManageNumber)
-    return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
+    const oldPlanObj = phoneConfig.plans[oldPlan]
+    const newPlanObj = phoneConfig.plans[newPlan]
+    let upgradeMsg = `⬆️ <b>Upgrade Preview</b>\n\n`
+    upgradeMsg += `${oldPlan.charAt(0).toUpperCase() + oldPlan.slice(1)} → <b>${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)}</b> ($${newPrice}/mo)\n\n`
+    if (gainedFeatures.length > 0) {
+      upgradeMsg += `<b>New features you'll unlock:</b>\n${gainedFeatures.join('\n')}\n\n`
+    }
+    upgradeMsg += `<b>Limits upgrade:</b>\n`
+    upgradeMsg += `📞 Minutes: ${oldPlanObj?.minutes || 0} → ${newPlanObj?.minutes === 'Unlimited' ? 'Unlimited' : newPlanObj?.minutes || 0}\n`
+    upgradeMsg += `📩 SMS: ${oldPlanObj?.sms || 0} → ${newPlanObj?.sms || 0}\n\n`
+    upgradeMsg += `Confirm upgrade?`
+
+    await saveInfo('cpPendingPlan', newPlan)
+    return send(chatId, upgradeMsg, k.of([['✅ Confirm Change', pc.back]]))
   }
 
   // ━━━ RELEASE NUMBER ━━━
