@@ -6046,8 +6046,17 @@ bot?.on('message', async msg => {
       draft.voice = null; draft.audioPath = null
       await saveInfo('cpTtsDraft', draft)
       set(state, chatId, 'action', a.cpVmGreetingVoice)
-      const voiceBtns = ttsService.getVoiceButtons().map(v => [v])
+      const voiceBtns = ttsService.getVoiceButtons(draft.lang || 'en').map(v => [v])
       return send(chatId, `🎙️ Choose a different voice:`, k.of(voiceBtns))
+    }
+    if (message === '🌐 Change Language') {
+      draft.lang = null; draft.voice = null; draft.audioPath = null
+      await saveInfo('cpTtsDraft', draft)
+      set(state, chatId, 'action', a.cpVmGreetingVoice)
+      const langBtns = ttsService.getLanguageButtons()
+      const langRows = []
+      for (let i = 0; i < langBtns.length; i += 2) langRows.push(langBtns.slice(i, i + 2))
+      return send(chatId, `🌐 Select the language for your greeting:`, k.of(langRows))
     }
     if (message === '📝 Re-type Text') {
       draft.text = null; draft.voice = null; draft.audioPath = null
