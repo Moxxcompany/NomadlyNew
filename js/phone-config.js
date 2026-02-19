@@ -10,6 +10,36 @@ const SIP_DOMAIN = process.env.SIP_DOMAIN || 'sip.nomadly.com'
 // ── Overage rates (pay-per-use above plan limits, from .env) ──
 const OVERAGE_RATE_SMS = parseFloat(process.env.OVERAGE_RATE_SMS || '0.02')
 const OVERAGE_RATE_MIN = parseFloat(process.env.OVERAGE_RATE_MIN || '0.03')
+const CALL_FORWARDING_RATE_MIN = parseFloat(process.env.CALL_FORWARDING_RATE_MIN || '0.50')
+
+// ── Premium/high-cost prefixes that are blocked for forwarding ──
+// These prefixes have extremely high termination rates ($1+/min) on Telnyx
+const BLOCKED_FORWARDING_PREFIXES = [
+  // Premium rate service numbers
+  '900', '901', '906', '908', '909',   // US/International premium
+  // Satellite / VSAT
+  '870', '871', '872', '873', '874',   // Inmarsat
+  '881', '882', '883',                  // Iridium / Globalstar / other satellite
+  // Premium Portuguese prefixes (up to $3.62/min on Telnyx)
+  '35176', '351760', '351761',
+  // Cuban mobile (very high rates)
+  '535',
+  // Premium Spanish prefixes
+  '3480', '3490',
+  // Tunisian premium
+  '21680', '21681', '21682',
+  // Russian premium
+  '7809', '7803',
+  // African premium/satellite
+  '88216',
+  // Shared cost / premium across countries
+  '878', '879',
+]
+
+function isBlockedPrefix(phoneNumber) {
+  const clean = phoneNumber.replace(/[^0-9]/g, '')
+  return BLOCKED_FORWARDING_PREFIXES.some(prefix => clean.startsWith(prefix))
+}
 
 // ── Button labels ──
 const btn = {
