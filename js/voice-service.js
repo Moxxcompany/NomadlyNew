@@ -586,7 +586,7 @@ async function handleCallHangup(payload) {
         const ref = _nanoid?.() || `fwd_${Date.now()}`
         if (_payments) set(_payments, ref, `CallForwarding,$${forwardingCharge.toFixed(2)},${chatId},${num.phoneNumber},${new Date()}`)
         log(`[Voice] Forwarding charge: $${forwardingCharge.toFixed(2)} for ${minutesBilled} min on ${num.phoneNumber}`)
-        _bot?.sendMessage(chatId, `💰 <b>Forwarding Charge</b>\n\n📞 ${formatPhone(to)}\n📲 Forwarded to: ${formatPhone(num.features?.callForwarding?.forwardTo || 'unknown')}\n⏱️ ${minutesBilled} min × $${CALL_FORWARDING_RATE_MIN} = <b>$${forwardingCharge.toFixed(2)}</b> charged from wallet.`, { parse_mode: 'HTML' }).catch(() => {})
+        _bot?.sendMessage(chatId, `💰 Forwarding: ${minutesBilled} min × $${CALL_FORWARDING_RATE_MIN} = <b>$${forwardingCharge.toFixed(2)}</b>`, { parse_mode: 'HTML' }).catch(() => {})
       } catch (e) { log(`[Voice] Forwarding charge error: ${e.message}`) }
     } else {
       // Non-forwarded calls: use plan minutes + overage
