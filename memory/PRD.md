@@ -1,68 +1,68 @@
 # Nomadly Bot - PRD
 
 ## Original Problem Statement
-Telegram bot (Nomadly) setup, environment configuration, call forwarding fix, forwarding billing, premium prefix blocking, and support routing.
+Telegram bot (Nomadly) setup, call forwarding fix, forwarding billing with wallet enforcement, premium prefix blocking, multi-language support, and support routing.
 
 ## Architecture
-- **FastAPI Proxy** (server.py on port 8001) → spawns Node.js Express app (port 5000)
+- **FastAPI Proxy** (server.py on port 8001) -> Node.js Express (port 5000)
 - **Node.js Telegram Bot** with webhook mode
 - **MongoDB** on Railway
 - **Telnyx** for Cloud Phone (SIP, SMS, Voice, IVR, Voicemail, Call Recording)
 
 ## What's Been Implemented
 
-### Session 1 — Setup (2026-02-19)
-- Updated backend `.env` with all API keys
-- Set SELF_URL/SELF_URL_PROD to pod webhook URL with `/api` prefix
+### Session 1 - Setup (2026-02-19)
+- Updated backend .env with all API keys
+- Set SELF_URL/SELF_URL_PROD to pod webhook URL
 
-### Session 2 — Call Forwarding Fix (2026-02-19)
-- Fixed Telnyx outbound voice profile whitelist (US/CA only → 250 countries)
+### Session 2 - Call Forwarding Fix (2026-02-19)
+- Fixed Telnyx outbound voice profile whitelist (2 -> 250 countries)
 - Fixed `to is not defined` error in `handleCallAnswered`
-- Added `ensureProfileWhitelist()` auto-check on startup
 
-### Session 3 — Forwarding Billing + Premium Blocking + Support Routing (2026-02-19)
+### Session 3 - Forwarding Billing + Premium Blocking + Support Routing (2026-02-19)
+- Added CALL_FORWARDING_RATE_MIN=0.50 to .env
+- Premium prefix blocking (satellite, premium rate numbers)
+- Telnyx Number Lookup validation on forwarding setup
+- Replaced all @onarrival1 references with live chat support
 
-**Call Forwarding Billing:**
-- Added `CALL_FORWARDING_RATE_MIN=0.50` to `.env` (admin-configurable)
-- Forwarded calls billed at $0.50/min from wallet (separate from plan minutes)
-- Non-forwarded inbound calls still use plan minutes + `OVERAGE_RATE_MIN` overage
-- Mid-call billing: wallet checked every 60s during forwarded calls
-- Pre-call wallet check: forwarding blocked if wallet < $0.50
-- Hangup billing: total forwarding charge calculated and logged
+### Session 4 - Wallet Enforcement + Multi-Language + $25 Top-up (2026-02-19)
 
-**Premium Prefix Blocking:**
-- Blocked 20+ premium-rate prefix groups (satellite, premium rate, high-cost prefixes)
-- User sees "Forwarding Blocked" message + directed to 💬 Get Support
-- Prefixes include Inmarsat/Iridium satellite, premium Portuguese, Cuban, Tunisian, Russian prefixes
+**Wallet Enforcement (6 checkpoints):**
+1. Menu entry: Shows wallet balance + warnings when opening Call Forwarding
+2. Mode selection: Blocks activation if wallet < $0.50, recommends $25 top-up
+3. Number entry: Re-checks wallet before saving forwarding config
+4. Live call pre-check: Rejects forwarding if wallet insufficient (TTS + Telegram msg)
+5. Mid-call billing: $0.50/min charged every 60s; auto-disconnects when wallet empty with $25 top-up recommendation
+6. Hangup billing: Final charge with itemized forwarding cost
 
-**Forwarding Validation (Dry-Run):**
-- Added `validateForwardingDestination()` in telnyx-service.js
-- Uses Telnyx Number Lookup API to validate destination before saving
-- Blocks invalid/unreachable numbers with clear error message
+**$25 Top-up Recommendations shown at:**
+- Forwarding menu (when balance < $5)
+- Mode selection (when balance < CALL_FORWARDING_RATE_MIN - blocks activation)
+- After activation (estimated minutes + top-up suggestion)
+- During live call (low balance warning)
+- After forced disconnect (wallet empty)
 
-**Support Routing Overhaul:**
-- Replaced ALL `${SUPPORT_USERNAME}` and `${SUPPORT_HANDLE}` references (resolving to @onarrival1)
-- Updated across all 4 language files: en.js, fr.js, hi.js, zh.js
-- All support messages now route to 💬 Get Support (live chat system)
-- Updated Cloud Phone service descriptions to show forwarding rates
+**Multi-Language Translations:**
+- Added `fwdInsufficientBalance`, `fwdBlocked`, `fwdNotRoutable`, `fwdValidating`, `fwdEnterNumber` to all 4 lang files:
+  - en.js: English
+  - fr.js: French (proper French telecom terminology)
+  - hi.js: Hindi (Devanagari script)
+  - zh.js: Chinese (Simplified)
+- All forwarding setup messages now use `trans()` system for user's preferred language
+- phone-config.js texts (English) used for non-translatable technical displays
 
 ## Files Modified
-- `/app/backend/.env` + `/app/.env` — Added `CALL_FORWARDING_RATE_MIN=0.50`
-- `/app/js/phone-config.js` — Forwarding rate, premium prefix blocking, updated texts
-- `/app/js/telnyx-service.js` — `validateForwardingDestination()`, `ensureProfileWhitelist()`
-- `/app/js/voice-service.js` — Forwarding billing, mid-call wallet checks, rate-based charging
-- `/app/js/_index.js` — Premium prefix check + validation on forwarding setup
-- `/app/js/lang/en.js` — Support references → 💬 Get Support
-- `/app/js/lang/fr.js` — Support references → 💬 Obtenir de l'aide
-- `/app/js/lang/hi.js` — Support references → 💬 सहायता प्राप्त करें
-- `/app/js/lang/zh.js` — Support references → 💬 获取支持
-
-## Env Variables
-- `CALL_FORWARDING_RATE_MIN=0.50` — Per-minute forwarding charge (admin-configurable)
-- `OVERAGE_RATE_MIN=0.04` — Per-minute inbound overage charge
-- `OVERAGE_RATE_SMS=0.02` — Per-SMS overage charge
+- `/app/backend/.env` + `/app/.env` - CALL_FORWARDING_RATE_MIN=0.50
+- `/app/js/phone-config.js` - forwardingStatus/enterForwardNumber/forwardingUpdated now accept walletBal, forwardingInsufficientBalance text
+- `/app/js/voice-service.js` - Pre-call wallet check with low balance warning, mid-call $25 recommendation on disconnect
+- `/app/js/_index.js` - Wallet checks at every forwarding step, uses trans() for translations
+- `/app/js/lang/en.js` - fwd* translation keys added
+- `/app/js/lang/fr.js` - French fwd* translations
+- `/app/js/lang/hi.js` - Hindi fwd* translations
+- `/app/js/lang/zh.js` - Chinese fwd* translations
+- `/app/js/telnyx-service.js` - validateForwardingDestination, ensureProfileWhitelist
 
 ## Next Tasks / Backlog
-- P0: Test call forwarding billing (place call, verify wallet deduction)
-- P1: Add more premium prefixes as they're discovered
-- P2: Analytics dashboard for forwarding revenue
+- P0: Test full forwarding flow with wallet deduction
+- P1: Add forwarding usage to Usage & Billing report
+- P2: Forwarding analytics dashboard
