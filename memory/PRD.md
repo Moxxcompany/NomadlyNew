@@ -1,54 +1,50 @@
 # Nomadly Bot - PRD
 
 ## Original Problem Statement
-Telegram bot (Nomadly) — setup, call forwarding fix, forwarding billing, premium prefix blocking, multi-language, support routing, UI cleanup, subscriptions aggregation.
+Telegram bot (Nomadly) — full setup, call forwarding fix/billing, UI cleanup, subscriptions aggregation, expiry reminders, branding.
 
 ## What's Been Implemented
 
-### Session 5 — UI Cleanup, Dedup, Subscriptions, Branding (2026-02-19)
+### Sessions 1-4 (2026-02-19)
+- Environment setup + webhook configuration
+- Call forwarding fix (Telnyx outbound whitelist 2→250 countries)
+- Forwarding billing ($0.50/min from wallet, admin-configurable)
+- Premium prefix blocking + destination validation
+- Support routing (@onarrival → live chat) across 4 languages
+- Wallet enforcement (6 checkpoints) + $25 top-up recommendations
 
-**1. Hub Welcome Text — Concise with forwarding cost:**
-- Trimmed from 6 lines to 3 lines
-- Shows: SMS inbound only · Calls plan minutes · Forwarding $0.50/min · Overage rates
+### Session 5 — UI Cleanup + Subscriptions + Branding
+- Hub welcome trimmed to 3 lines with forwarding cost
+- Duplicate "Call Forwarded" fix (_hangupProcessed guard)
+- "My Plan" → "📋 My Subscriptions" with aggregated view
+- "Cloud Phone" → "📞 CloudPhone ˢᵖᵉᵉᶜʰᶜᵘᵉ"
+- All verbose texts trimmed 40-60% across all languages
 
-**2. Duplicate Message Fix:**
-- Root cause: Telnyx fires multiple `call.hangup` events for transferred calls
-- Fix: Added `_hangupProcessed` guard flag on session to prevent double-processing
+### Session 6 — Leads Rename + Expiry Reminders
+- "🎯 Targeted Leads & Validation" → "🎯 Buy Valid Leads | Verify Yours" (all 4 langs)
+- 3-day expiry reminders for:
+  - Bot Plans (Daily/Weekly/Monthly) — scans planEndingTime, sends translated reminder
+  - VPS Plans — scans vpsPlansOf, marks _reminder3DaySent flag
+  - CloudPhone — already had 3-day + 1-day reminders in phone-scheduler.js
+- Reminder runs every 5 min via existing schedule.scheduleJob
+- Multi-language reminder messages (EN/FR/HI/ZH)
 
-**3. "My Plan" → "My Subscriptions":**
-- Renamed across all 4 lang files (EN/FR/HI/ZH)
-- Rewrote handler to aggregate ALL subscriptions:
-  - Bot Plan (daily/weekly/monthly) with expiry + days left
-  - CloudPhone numbers with plan tier + expiry
-  - VPS servers with status + expiry
-  - Hosting plans with type + expiry
-- Single clean message showing all active subscriptions
+## Files Modified This Session
+- `/app/js/lang/en.js` — phoneNumberLeads renamed
+- `/app/js/lang/fr.js` — phoneNumberLeads renamed
+- `/app/js/lang/hi.js` — phoneNumberLeads renamed
+- `/app/js/lang/zh.js` — phoneNumberLeads renamed
+- `/app/js/_index.js` — Expiry reminders for bot plans + VPS (3-day)
 
-**4. "Cloud Phone" → "CloudPhone ˢᵖᵉᵉᶜʰᶜᵘᵉ":**
-- Updated keyboard text in all 4 lang files
-- Uses Unicode superscript for "Speechcue" to keep it smaller
-
-**5. Verbose Text Cleanup (end-to-end):**
-- Hub welcome: 6 lines → 3 lines
-- Plan selection: Removed redundant footnotes
-- Order summary: Condensed to single-line per field
-- Forwarding status/setup/updated: All trimmed 40-60%
-- Call forwarded hangup notification: Single line layout
-- Mid-call billing alerts: One-liner style
-- Overage notifications: Compact format
-- Wallet insufficient messages: Concise with $25 top-up
-- All lang translations (FR/HI/ZH) trimmed to match
-
-## Files Modified
-- `/app/js/voice-service.js` — Duplicate fix (_hangupProcessed), trimmed all notifications
-- `/app/js/phone-config.js` — Concise hub welcome, plan text, forwarding texts, order summary
-- `/app/js/_index.js` — My Subscriptions aggregation handler, forwarding flow
-- `/app/js/lang/en.js` — CloudPhone branding, My Subscriptions, concise fwd translations
-- `/app/js/lang/fr.js` — Same updates in French
-- `/app/js/lang/hi.js` — Same updates in Hindi
-- `/app/js/lang/zh.js` — Same updates in Chinese
+## Reminder Coverage
+| Service | 3-Day | 1-Day | On Expire |
+|---------|-------|-------|-----------|
+| Bot Plan | ✅ New | — | — |
+| CloudPhone | ✅ Existing | ✅ Existing | ✅ Auto-release |
+| VPS | ✅ New | — | — |
+| Freedom Plan | — | ✅ 1hr | ✅ Existing |
 
 ## Next Tasks / Backlog
-- P0: Test My Subscriptions with user who has multiple active services
-- P1: Test call forwarding deduplication (should be single notification now)
-- P2: Add subscription renewal reminders (3 days before expiry)
+- P1: Add 1-day reminders for bot plans and VPS
+- P2: Auto-renew option for bot plans (from wallet)
+- P2: Subscription renewal analytics
