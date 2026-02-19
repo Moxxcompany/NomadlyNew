@@ -6420,6 +6420,23 @@ bot?.on('message', async msg => {
 
     const oldPlanObj = phoneConfig.plans[oldPlan]
     const newPlanObj = phoneConfig.plans[newPlan]
+
+    // Calculate pro-rated charge
+    const expiresAt = num.expiresAt ? new Date(num.expiresAt) : null
+    let chargeAmount = 0
+    if (expiresAt && expiresAt > new Date()) {
+      const daysRemaining = Math.ceil((expiresAt - new Date()) / (1000 * 60 * 60 * 24))
+      const daysInMonth = 30
+      const dailyDiff = (newPrice - (oldPlanObj?.price || num.planPrice)) / daysInMonth
+      chargeAmount = Math.max(0, parseFloat((dailyDiff * daysRemaining).toFixed(2)))
+    } else {
+      chargeAmount = newPrice - (oldPlanObj?.price || num.planPrice)
+    }
+
+    // Check wallet balance
+    let walletBal = 0
+    try { const { usdBal } = await getBalance(walletOf, chatId); walletBal = usdBal } catch (e) {}
+
     let upgradeMsg = `⬆️ <b>Upgrade Preview</b>\n\n`
     upgradeMsg += `${oldPlan.charAt(0).toUpperCase() + oldPlan.slice(1)} → <b>${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)}</b> ($${newPrice}/mo)\n\n`
     if (gainedFeatures.length > 0) {
@@ -6428,6 +6445,14 @@ bot?.on('message', async msg => {
     upgradeMsg += `<b>Limits upgrade:</b>\n`
     upgradeMsg += `📞 Minutes: ${oldPlanObj?.minutes || 0} → ${newPlanObj?.minutes === 'Unlimited' ? 'Unlimited' : newPlanObj?.minutes || 0}\n`
     upgradeMsg += `📩 SMS: ${oldPlanObj?.sms || 0} → ${newPlanObj?.sms || 0}\n\n`
+    if (chargeAmount > 0) {
+      upgradeMsg += `💰 <b>Pro-rated charge: $${chargeAmount.toFixed(2)}</b>\n`
+      upgradeMsg += `👛 Wallet: $${walletBal.toFixed(2)}`
+      if (walletBal < chargeAmount) {
+        upgradeMsg += ` ⚠️ <b>Insufficient — top up $${(chargeAmount - walletBal).toFixed(2)} first</b>`
+      }
+      upgradeMsg += `\n\n`
+    }
     upgradeMsg += `Confirm upgrade?`
 
     await saveInfo('cpPendingPlan', newPlan)
