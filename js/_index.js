@@ -6637,7 +6637,361 @@ bot?.on('message', async msg => {
     return send(chatId, `Choose an option:`, k.of([['✅ Save Greeting'], ['🔄 Try Different Voice'], ['📝 Re-type Text']]))
   }
 
-  // (IVR Add Option — replaced by step-by-step wizard: cpIvrOptionKey → cpIvrOptionAction → cpIvrOptionMsg → cpIvrOptionVoice → cpIvrOptionPreview)
+  // (IVR Add Option — step-by-step wizard: cpIvrOptionKey → cpIvrOptionAction → cpIvrOptionMsg → cpIvrOptionVoice → cpIvrOptionPreview)
+
+  // ── IVR Option: Step 1 — Select key number (0-9) ──
+  if (action === a.cpIvrOptionKey) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back || message === t.cancel) {
+      set(state, chatId, 'action', a.cpIvr)
+      const ivrConf = num.features?.ivr || {}
+      return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
+      ]))
+    }
+    const key = message.trim()
+    if (!/^[0-9]$/.test(key)) {
+      const ivrConf = num.features?.ivr || {}
+      const usedKeys = Object.keys(ivrConf.options || {}).join(', ') || 'none'
+      return send(chatId, `➕ <b>Add Menu Option</b>\n\nUsed keys: ${usedKeys}\n\nEnter a number (0-9):`, k.of([['0','1','2','3','4','5','6','7','8','9']]))
+    }
+    const ivrConf = num.features?.ivr || {}
+    if (ivrConf.options?.[key]) {
+      return send(chatId, `⚠️ Key <b>${key}</b> is already assigned. Remove it first, or pick a different key.\n\nUsed keys: ${Object.keys(ivrConf.options).join(', ')}`, k.of([['0','1','2','3','4','5','6','7','8','9']]))
+    }
+    await saveInfo('cpIvrDraft', { key })
+    set(state, chatId, 'action', a.cpIvrOptionAction)
+    return send(chatId, `🔢 Key <b>${key}</b> selected.\n\nWhat should happen when a caller presses <b>${key}</b>?`, k.of([
+      ['📞 Forward Call'],
+      ['💬 Play Message'],
+      ['📬 Send to Voicemail'],
+    ]))
+  }
+
+  // ── IVR Option: Step 2 — Select action type ──
+  if (action === a.cpIvrOptionAction) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back || message === t.cancel) {
+      set(state, chatId, 'action', a.cpIvrOptionKey)
+      const ivrConf = num.features?.ivr || {}
+      const usedKeys = Object.keys(ivrConf.options || {}).join(', ') || 'none'
+      return send(chatId, `➕ <b>Add Menu Option</b>\n\nUsed keys: ${usedKeys}\n\nEnter the key number (0-9):`, k.of([['0','1','2','3','4','5','6','7','8','9']]))
+    }
+    const draft = info?.cpIvrDraft || {}
+    if (message === '📞 Forward Call') {
+      draft.action = 'forward'
+      await saveInfo('cpIvrDraft', draft)
+      set(state, chatId, 'action', a.cpIvrOptionMsg)
+      return send(chatId, `📞 <b>Forward Call</b>\n\nEnter the phone number to forward calls to:\n\n<i>Example: +15551234567</i>`, k.of([]))
+    }
+    if (message === '💬 Play Message') {
+      draft.action = 'message'
+      await saveInfo('cpIvrDraft', draft)
+      set(state, chatId, 'action', a.cpIvrOptionMsg)
+      return send(chatId, `💬 <b>Play Message</b>\n\nHow do you want to create the message?`, k.of([
+        ['📋 Use Template'],
+        ['📝 Type Text (AI Voice)'],
+        ['🎙️ Upload Audio'],
+      ]))
+    }
+    if (message === '📬 Send to Voicemail') {
+      draft.action = 'voicemail'
+      await saveInfo('cpIvrDraft', draft)
+      // Save directly
+      const ivrConf = num.features?.ivr || { enabled: true, options: {} }
+      if (!ivrConf.options) ivrConf.options = {}
+      ivrConf.options[draft.key] = { action: 'voicemail' }
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'ivr', ivrConf)
+      num.features.ivr = ivrConf
+      await saveInfo('cpActiveNumber', num)
+      await saveInfo('cpIvrDraft', null)
+      send(chatId, `✅ Key <b>${draft.key}</b> → Send to Voicemail — saved!`)
+      set(state, chatId, 'action', a.cpIvr)
+      return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
+      ]))
+    }
+    return send(chatId, `Select an action for this key:`, k.of([['📞 Forward Call'], ['💬 Play Message'], ['📬 Send to Voicemail']]))
+  }
+
+  // ── IVR Option: Step 3 — Enter message text / forward number / upload ──
+  if (action === a.cpIvrOptionMsg) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back || message === t.cancel) {
+      set(state, chatId, 'action', a.cpIvrOptionAction)
+      return send(chatId, `What should happen when a caller presses <b>${(info?.cpIvrDraft || {}).key}</b>?`, k.of([
+        ['📞 Forward Call'], ['💬 Play Message'], ['📬 Send to Voicemail'],
+      ]))
+    }
+    const draft = info?.cpIvrDraft || {}
+
+    // ── FORWARD CALL: user enters phone number ──
+    if (draft.action === 'forward') {
+      const phone = message.replace(/[^+\d]/g, '')
+      if (phone.length < 7 || phone.length > 16) {
+        return send(chatId, `❌ Invalid phone number. Enter a valid number (e.g. +15551234567):`, k.of([]))
+      }
+      draft.forwardTo = phone
+      await saveInfo('cpIvrDraft', draft)
+      // Save immediately
+      const ivrConf = num.features?.ivr || { enabled: true, options: {} }
+      if (!ivrConf.options) ivrConf.options = {}
+      ivrConf.options[draft.key] = { action: 'forward', forwardTo: phone }
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'ivr', ivrConf)
+      num.features.ivr = ivrConf
+      await saveInfo('cpActiveNumber', num)
+      await saveInfo('cpIvrDraft', null)
+      send(chatId, `✅ Key <b>${draft.key}</b> → Forward to <b>${phone}</b> — saved!`)
+      set(state, chatId, 'action', a.cpIvr)
+      return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
+      ]))
+    }
+
+    // ── PLAY MESSAGE: sub-options ──
+    if (draft.action === 'message') {
+      // Template selection
+      if (message === '📋 Use Template') {
+        draft.method = 'template'
+        draft.templateCategory = null
+        await saveInfo('cpIvrDraft', draft)
+        const catBtns = ttsService.getTemplateCategoryButtons().map(b => [b])
+        return send(chatId, `📋 <b>Message Templates</b>\n\nSelect a category:`, k.of(catBtns))
+      }
+      // Template category selected
+      if (draft.method === 'template' && !draft.templateCategory) {
+        const catKey = ttsService.getCategoryByButton(message)
+        if (catKey) {
+          draft.templateCategory = catKey
+          await saveInfo('cpIvrDraft', draft)
+          const tplBtns = ttsService.getTemplateButtons(catKey).map(b => [b])
+          return send(chatId, `📋 <b>${message}</b>\n\nSelect a template:`, k.of(tplBtns))
+        }
+        const catBtns = ttsService.getTemplateCategoryButtons().map(b => [b])
+        return send(chatId, `📋 Select a category:`, k.of(catBtns))
+      }
+      // Template selected from category
+      if (draft.method === 'template' && draft.templateCategory && !draft.text) {
+        const tpl = ttsService.getTemplateByButton(draft.templateCategory, message)
+        if (tpl) {
+          draft.text = tpl.text
+          draft.templateKey = tpl.key
+          await saveInfo('cpIvrDraft', draft)
+          return send(chatId, `📋 <b>${tpl.icon} ${tpl.name}</b>\n\n<code>${tpl.text}</code>\n\n✏️ Type your modified version, or tap <b>✅ Use As-Is</b>:`, k.of([['✅ Use As-Is']]))
+        }
+        const tplBtns = ttsService.getTemplateButtons(draft.templateCategory).map(b => [b])
+        return send(chatId, `Select a template:`, k.of(tplBtns))
+      }
+      // Template "Use As-Is" or user edited text → go to language selection
+      if (draft.method === 'template' && draft.text && !draft.lang) {
+        if (message !== '✅ Use As-Is') {
+          draft.text = message // User edited
+        }
+        draft.lang = null
+        draft.voice = null
+        await saveInfo('cpIvrDraft', draft)
+        set(state, chatId, 'action', a.cpIvrOptionVoice)
+        const langBtns = ttsService.getLanguageButtons()
+        const langRows = []
+        for (let i = 0; i < langBtns.length; i += 2) langRows.push(langBtns.slice(i, i + 2))
+        return send(chatId, `🌐 Select the language:\n\n<i>The message will be translated automatically.</i>`, k.of(langRows))
+      }
+      // Type Text
+      if (message === '📝 Type Text (AI Voice)') {
+        draft.method = 'tts'
+        await saveInfo('cpIvrDraft', draft)
+        return send(chatId, `📝 Type the message callers will hear when they press <b>${draft.key}</b>:`, k.of([]))
+      }
+      // Upload Audio
+      if (message === '🎙️ Upload Audio') {
+        draft.method = 'upload'
+        await saveInfo('cpIvrDraft', draft)
+        return send(chatId, `🎙️ Send a voice message or audio file:`, k.of([]))
+      }
+      // Handle audio upload
+      if (rawMsg?.voice || rawMsg?.audio) {
+        const fileId = rawMsg.voice?.file_id || rawMsg.audio?.file_id
+        try {
+          const localPath = await ttsService.downloadTelegramAudio(bot, fileId, 'ivr_option')
+          draft.audioPath = localPath
+          draft.method = 'uploaded'
+          await saveInfo('cpIvrDraft', draft)
+          await bot.sendVoice(chatId, localPath)
+          set(state, chatId, 'action', a.cpIvrOptionPreview)
+          return send(chatId, `✅ Audio received for key <b>${draft.key}</b>. Save this?`, k.of([['✅ Save Option'], ['🎙️ Re-upload']]))
+        } catch (e) {
+          return send(chatId, `❌ Failed. Try again.`, k.of([]))
+        }
+      }
+      // User typed TTS text
+      if (draft.method === 'tts' && message) {
+        draft.text = message
+        draft.lang = null
+        draft.voice = null
+        await saveInfo('cpIvrDraft', draft)
+        set(state, chatId, 'action', a.cpIvrOptionVoice)
+        const langBtns = ttsService.getLanguageButtons()
+        const langRows = []
+        for (let i = 0; i < langBtns.length; i += 2) langRows.push(langBtns.slice(i, i + 2))
+        return send(chatId, `🌐 Select the language:\n\n<i>"${message.length > 80 ? message.slice(0, 80) + '...' : message}"</i>`, k.of(langRows))
+      }
+      return send(chatId, `Choose:`, k.of([['📋 Use Template'], ['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio']]))
+    }
+    return send(chatId, `Unexpected state. Try again.`, k.of([]))
+  }
+
+  // ── IVR Option: Step 4 — Language + Voice selection for TTS ──
+  if (action === a.cpIvrOptionVoice) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back || message === t.cancel) {
+      const draft = info?.cpIvrDraft || {}
+      draft.lang = null; draft.voice = null; draft.audioPath = null
+      await saveInfo('cpIvrDraft', draft)
+      set(state, chatId, 'action', a.cpIvrOptionMsg)
+      if (draft.method === 'template') {
+        return send(chatId, `📋 <b>Message</b>\n\n<code>${draft.text}</code>\n\n✏️ Type your modified version, or tap <b>✅ Use As-Is</b>:`, k.of([['✅ Use As-Is']]))
+      }
+      return send(chatId, `📝 Type the message callers will hear when they press <b>${draft.key}</b>:`, k.of([]))
+    }
+    const draft = info?.cpIvrDraft || {}
+    // Voice selection (after language was picked)
+    if (draft.text && draft.lang && !draft.voice) {
+      const voiceKey = ttsService.getVoiceKeyByButton(message, draft.lang)
+      draft.voice = voiceKey
+      await saveInfo('cpIvrDraft', draft)
+      send(chatId, '🔄 Generating audio preview...')
+      try {
+        const result = await ttsService.generateTTS(draft.text, voiceKey, draft.lang)
+        draft.audioPath = result.audioPath
+        draft.audioUrl = result.audioUrl
+        await saveInfo('cpIvrDraft', draft)
+        await bot.sendVoice(chatId, result.audioPath)
+        set(state, chatId, 'action', a.cpIvrOptionPreview)
+        return send(chatId, `✅ Preview for key <b>${draft.key}</b> (${result.voice})\n\nSave this option?`, k.of([
+          ['✅ Save Option'], ['🔄 Try Different Voice'], ['🌐 Change Language'], ['📝 Re-type Text'],
+        ]))
+      } catch (e) {
+        log(`[TTS] Error: ${e.message}`)
+        draft.voice = null
+        await saveInfo('cpIvrDraft', draft)
+        return send(chatId, `❌ Audio generation failed: ${e.message}`, k.of([['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio']]))
+      }
+    }
+    // Language selection
+    if (draft.text && !draft.lang) {
+      const langCode = ttsService.getLanguageByButton(message)
+      if (langCode) {
+        if (langCode !== 'en') {
+          send(chatId, `🌐 Translating to ${message}...`)
+          const translated = await ttsService.translateText(draft.text, langCode)
+          draft.translatedText = translated
+          draft.originalText = draft.text
+          draft.text = translated
+        }
+        draft.lang = langCode
+        await saveInfo('cpIvrDraft', draft)
+        const voiceBtns = ttsService.getVoiceButtons(langCode).map(v => [v])
+        if (langCode !== 'en' && draft.translatedText) {
+          return send(chatId, `🌐 <b>Translated:</b>\n\n<i>${draft.translatedText.length > 300 ? draft.translatedText.slice(0, 300) + '...' : draft.translatedText}</i>\n\n🎙️ Choose a voice:`, k.of(voiceBtns))
+        }
+        return send(chatId, `🎙️ Choose a voice:`, k.of(voiceBtns))
+      }
+      const langBtns = ttsService.getLanguageButtons()
+      const langRows = []
+      for (let i = 0; i < langBtns.length; i += 2) langRows.push(langBtns.slice(i, i + 2))
+      return send(chatId, `🌐 Select the language:`, k.of(langRows))
+    }
+    return send(chatId, `Type the message text:`, k.of([]))
+  }
+
+  // ── IVR Option: Step 5 — Preview & Save ──
+  if (action === a.cpIvrOptionPreview) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back || message === t.cancel) {
+      set(state, chatId, 'action', a.cpIvr)
+      const ivrConf = num.features?.ivr || {}
+      return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
+      ]))
+    }
+    const draft = info?.cpIvrDraft || {}
+    if (message === '🔄 Try Different Voice') {
+      draft.voice = null; draft.audioPath = null
+      await saveInfo('cpIvrDraft', draft)
+      set(state, chatId, 'action', a.cpIvrOptionVoice)
+      const voiceBtns = ttsService.getVoiceButtons(draft.lang || 'en').map(v => [v])
+      return send(chatId, `🎙️ Choose a different voice:`, k.of(voiceBtns))
+    }
+    if (message === '🌐 Change Language') {
+      draft.lang = null; draft.voice = null; draft.audioPath = null
+      if (draft.originalText) draft.text = draft.originalText
+      await saveInfo('cpIvrDraft', draft)
+      set(state, chatId, 'action', a.cpIvrOptionVoice)
+      const langBtns = ttsService.getLanguageButtons()
+      const langRows = []
+      for (let i = 0; i < langBtns.length; i += 2) langRows.push(langBtns.slice(i, i + 2))
+      return send(chatId, `🌐 Select the language:`, k.of(langRows))
+    }
+    if (message === '📝 Re-type Text') {
+      draft.text = null; draft.voice = null; draft.audioPath = null; draft.originalText = null; draft.translatedText = null
+      await saveInfo('cpIvrDraft', draft)
+      set(state, chatId, 'action', a.cpIvrOptionMsg)
+      return send(chatId, `📝 Type the message:`, k.of([]))
+    }
+    if (message === '🎙️ Re-upload') {
+      draft.audioPath = null; draft.method = 'upload'
+      await saveInfo('cpIvrDraft', draft)
+      set(state, chatId, 'action', a.cpIvrOptionMsg)
+      return send(chatId, `🎙️ Send a voice message or audio file:`, k.of([]))
+    }
+    // Handle audio in preview state
+    if (rawMsg?.voice || rawMsg?.audio) {
+      const fileId = rawMsg.voice?.file_id || rawMsg.audio?.file_id
+      try {
+        const localPath = await ttsService.downloadTelegramAudio(bot, fileId, 'ivr_option')
+        draft.audioPath = localPath; draft.method = 'uploaded'
+        await saveInfo('cpIvrDraft', draft)
+        await bot.sendVoice(chatId, localPath)
+        return send(chatId, `✅ Audio received for key <b>${draft.key}</b>. Save this?`, k.of([['✅ Save Option'], ['🎙️ Re-upload']]))
+      } catch (e) {
+        return send(chatId, `❌ Failed. Try again.`, k.of([]))
+      }
+    }
+    if (message === '✅ Save Option') {
+      const ivrConf = num.features?.ivr || { enabled: true, options: {} }
+      if (!ivrConf.options) ivrConf.options = {}
+      const optionData = { action: draft.action }
+      if (draft.action === 'message') {
+        optionData.message = draft.text || 'Thank you for calling.'
+        if (draft.audioPath) optionData.audioPath = draft.audioPath
+        if (draft.audioUrl) optionData.audioUrl = draft.audioUrl
+        if (draft.voice) optionData.voice = draft.voice
+        if (draft.lang) optionData.language = draft.lang
+      }
+      ivrConf.options[draft.key] = optionData
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'ivr', ivrConf)
+      num.features.ivr = ivrConf
+      await saveInfo('cpActiveNumber', num)
+      await saveInfo('cpIvrDraft', null)
+      const actionLabel = draft.action === 'message' ? 'Play Message' : draft.action === 'forward' ? 'Forward Call' : 'Voicemail'
+      send(chatId, `✅ Key <b>${draft.key}</b> → ${actionLabel} — saved!`)
+      set(state, chatId, 'action', a.cpIvr)
+      return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
+      ]))
+    }
+    return send(chatId, `Choose:`, k.of([['✅ Save Option'], ['🔄 Try Different Voice'], ['📝 Re-type Text']]))
+  }
 
   // IVR Remove Option
   if (action === a.cpIvrRemoveOption) {
