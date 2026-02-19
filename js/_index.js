@@ -5537,12 +5537,12 @@ bot?.on('message', async msg => {
         walletBal = usdBal
       } catch (e) {}
       if (walletBal < phoneConfig.CALL_FORWARDING_RATE_MIN) {
-        send(chatId, phoneConfig.txt.forwardingInsufficientBalance(walletBal), { parse_mode: 'HTML' })
+        send(chatId, t.fwdInsufficientBalance(walletBal, phoneConfig.CALL_FORWARDING_RATE_MIN), { parse_mode: 'HTML' })
         set(state, chatId, 'action', a.cpManageNumber)
         return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
       }
       set(state, chatId, 'action', a.cpEnterForwardNumber)
-      return send(chatId, phoneConfig.txt.enterForwardNumber(walletBal), { parse_mode: 'HTML' })
+      return send(chatId, t.fwdEnterNumber(phoneConfig.CALL_FORWARDING_RATE_MIN, walletBal), { parse_mode: 'HTML' })
     }
     return send(chatId, 'Select a forwarding mode.')
   }
@@ -5565,23 +5565,23 @@ bot?.on('message', async msg => {
 
     // ── Block premium-rate prefixes ──
     if (phoneConfig.isBlockedPrefix(forwardTo)) {
-      return send(chatId, phoneConfig.txt.forwardingBlocked(forwardTo), { parse_mode: 'HTML' })
+      return send(chatId, t.fwdBlocked(forwardTo), { parse_mode: 'HTML' })
     }
 
     // ── Re-check wallet balance ──
     let walletBal = 0
     try { const { usdBal } = await getBalance(walletOf, chatId); walletBal = usdBal } catch (e) {}
     if (walletBal < phoneConfig.CALL_FORWARDING_RATE_MIN) {
-      send(chatId, phoneConfig.txt.forwardingInsufficientBalance(walletBal), { parse_mode: 'HTML' })
+      send(chatId, t.fwdInsufficientBalance(walletBal, phoneConfig.CALL_FORWARDING_RATE_MIN), { parse_mode: 'HTML' })
       set(state, chatId, 'action', a.cpManageNumber)
       return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
 
     // ── Validate destination is routable via Telnyx ──
-    send(chatId, '⏳ Validating forwarding destination...')
+    send(chatId, t.fwdValidating)
     const validation = await telnyxApi.validateForwardingDestination(forwardTo)
     if (!validation.valid) {
-      return send(chatId, phoneConfig.txt.forwardingNotRoutable(forwardTo), { parse_mode: 'HTML' })
+      return send(chatId, t.fwdNotRoutable(forwardTo), { parse_mode: 'HTML' })
     }
 
     const mode = info?.cpForwardMode || 'always'
