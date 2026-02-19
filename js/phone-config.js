@@ -340,17 +340,20 @@ Plan: ${n.plan.charAt(0).toUpperCase() + n.plan.slice(1)} ($${n.planPrice}/mo)
     if (config?.enabled) {
       text += `\nMode: ${config.mode}\nForward to: ${formatPhone(config.forwardTo)}`
     }
-    text += '\n\n<i>Note: Forwarded calls count toward your inbound minutes.</i>'
+    text += `\n\n<i>Forwarding rate: <b>$${CALL_FORWARDING_RATE_MIN}/min</b> charged from wallet per forwarded call (covers inbound + outbound).\nInbound-only calls use your plan minutes / overage rate.</i>`
     return text
   },
-  enterForwardNumber: 'Enter the phone number to forward calls to.\nInclude country code (e.g. +14155551234):',
+  enterForwardNumber: `Enter the phone number to forward calls to.\nInclude country code (e.g. +14155551234):\n\n<i>Forwarding rate: <b>$${CALL_FORWARDING_RATE_MIN}/min</b> from wallet.</i>`,
   forwardingUpdated: (number, forwardTo, mode) => `✅ <b>Call Forwarding Updated!</b>
 
 📞 ${formatPhone(number)}
 📲 Forward to: ${formatPhone(forwardTo)}
 📋 Mode: ${mode}
+💰 Rate: <b>$${CALL_FORWARDING_RATE_MIN}/min</b> from wallet
 
 All incoming calls will now be forwarded.`,
+  forwardingBlocked: (number) => `🚫 <b>Forwarding Blocked</b>\n\nThe number ${formatPhone(number)} is a premium-rate or high-cost destination. Call forwarding to this number is not available.\n\nPlease tap 💬 <b>Get Support</b> to request activation for this destination.`,
+  forwardingNotRoutable: (number) => `⚠️ <b>Destination Not Routable</b>\n\nThe number ${formatPhone(number)} could not be validated as a routable destination.\n\nPlease check the number and try again, or tap 💬 <b>Get Support</b> for assistance.`,
   forwardingDisabled: (number) => `✅ Call forwarding disabled for ${formatPhone(number)}.`,
 
   // SMS Settings
