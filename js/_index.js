@@ -9368,6 +9368,72 @@ app.post('/dynopay/crypto-pay-phone', authDyno, async (req, res) => {
   res.send(html())
 })
 
+// Dynopay Leads / Validation
+app.post('/dynopay/crypto-pay-leads', authDyno, async (req, res) => {
+  const { ref, chatId, price, lastStep, leadsData } = req.pay
+  const { amount:value, currency:coin, payment_id:id } = req.body
+  log({ method: 'dynopay/crypto-pay-leads', ref, chatId, price, coin, value })
+  if (!ref || !chatId || !price || !coin || !value || !lastStep) return log(translation('t.argsErr')) || res.send(html(translation('t.argsErr')))
+  const info = await state.findOne({ _id: parseFloat(chatId) })
+  const lang = info?.userLanguage ?? 'en'
+  del(chatIdOfDynopayPayment, ref)
+  const name = await get(nameOf, chatId)
+  const isValidator = lastStep === 'validatorSelectFormat'
+  const label = isValidator ? 'Validation' : 'Leads'
+  set(payments, ref, `Crypto,${label},$${price},${chatId},${name},${new Date()},${value} ${coin},transaction,${id}`)
+  const ticker = tickerViewOfDyno[coin]
+  const usdIn = await convert(value, ticker, 'usd')
+  if (usdIn * 1.06 < price) {
+    sendMessage(chatId, translation('t.sentLessMoney', lang, `$${price}`, `$${usdIn}`))
+    addFundsTo(walletOf, chatId, 'usd', usdIn, lang)
+    return res.send(html(translation('t.lowPrice')))
+  }
+  if (usdIn > price) {
+    addFundsTo(walletOf, chatId, 'usd', usdIn - price, lang)
+    sendMessage(chatId, translation('t.sentMoreMoney', lang, `$${price}`, `$${usdIn}`))
+  }
+  try {
+    const ld = leadsData || {}
+    let cc = countryCodeOf[ld.country]
+    const cnam = ld.country === 'USA' ? ld.cnamMode : false
+    const format = ld.format
+    const l = format === buyLeadsSelectFormat[0]
+    if (isValidator) {
+      sendMessage(chatId, translation('t.validatorBulkNumbersStart', lang))
+      const phones = info?.phones?.slice(0, ld.amount)
+      const result = await validatePhoneBulkFile(ld.carrier, phones, cc, cnam, bot, chatId)
+      if (!result) return sendMessage(chatId, translation('t.validatorError', lang)) || res.send(html())
+      sendMessage(chatId, translation('t.validatorSuccess', lang, ld.amount, result.length))
+      cc = '+' + cc; const re = cc === '+1' ? '' : '0'
+      fs.writeFile('leads.txt', result.map(a => (l ? a[0].replace(cc, re) : a[0])).join('\n'), () => bot?.sendDocument(chatId, 'leads.txt').catch(() => {}))
+      if (cnam) { fs.writeFile('leads_with_cnam.txt', result.map(a => (l ? a[0].replace(cc, re) : a[0]) + ' ' + a[3]).join('\n'), () => { bot?.sendDocument(chatId, 'leads_with_cnam.txt').catch(() => {}); bot?.sendDocument(TELEGRAM_ADMIN_CHAT_ID, 'leads_with_cnam.txt').catch(() => {}) }) }
+      else if (ld.country !== 'USA') { fs.writeFile('leads_with_carriers.txt', result.map(a => (l ? a[0].replace(cc, re) : a[0]) + ' ' + a[1]).join('\n'), () => { bot?.sendDocument(chatId, 'leads_with_carriers.txt').catch(() => {}); bot?.sendDocument(TELEGRAM_ADMIN_CHAT_ID, 'leads_with_carriers.txt').catch(() => {}) }) }
+    } else {
+      const _startMsg = ld.targetName ? '🎯 Sourcing real data in progress. Please wait...' : translation('t.validatorBulkNumbersStart', lang)
+      sendMessage(chatId, _startMsg)
+      let areaCodes
+      if (info?.targetAreaCodes) { areaCodes = ld.area === 'Mixed Area Codes' ? info.targetAreaCodes : [ld.area] }
+      else if (['Australia'].includes(ld.country)) { areaCodes = ['4'] }
+      else { areaCodes = ld.area === 'Mixed Area Codes' ? _buyLeadsSelectAreaCode(ld.country, ld.area) : [ld.area] }
+      const result = await validateBulkNumbers(ld.carrier, ld.amount, cc, areaCodes, cnam, bot, chatId, lang)
+      if (!result) return sendMessage(chatId, translation('t.buyLeadsError', lang)) || res.send(html())
+      const _successMsg = ld.targetName ? `🎯 Your ${ld.amount} targeted leads are ready.` : translation('t.buyLeadsSuccess', lang, ld.amount)
+      sendMessage(chatId, _successMsg)
+      cc = '+' + cc; const re = cc === '+1' ? '' : '0'
+      fs.writeFile('leads.txt', result.map(a => (l ? a[0].replace(cc, re) : a[0])).join('\n'), () => bot?.sendDocument(chatId, 'leads.txt').catch(() => {}))
+      if (cnam) { fs.writeFile('leads_with_cnam.txt', result.map(a => (l ? a[0].replace(cc, re) : a[0]) + ' ' + a[3]).join('\n'), () => { bot?.sendDocument(chatId, 'leads_with_cnam.txt').catch(() => {}); bot?.sendDocument(TELEGRAM_ADMIN_CHAT_ID, 'leads_with_cnam.txt').catch(() => {}) }) }
+      else if (ld.country !== 'USA') { fs.writeFile('leads_with_carriers.txt', result.map(a => (l ? a[0].replace(cc, re) : a[0]) + ' ' + a[1]).join('\n'), () => { bot?.sendDocument(chatId, 'leads_with_carriers.txt').catch(() => {}); bot?.sendDocument(TELEGRAM_ADMIN_CHAT_ID, 'leads_with_carriers.txt').catch(() => {}) }) }
+    }
+    set(payments, nanoid(), `Crypto,${label},${ld.amount} leads,$${price},${chatId},${name},${new Date()},DynoPay ${coin}`)
+    notifyGroup(`📱 <b>${label} Acquired!</b>\nUser ${maskName(name)} just got ${ld.amount?.toLocaleString()} verified phone leads via crypto.\nQuality leads on demand — try it — /start`)
+  } catch (e) {
+    log(`[dynopay-crypto-pay-leads] Error: ${e.message}`)
+    sendMessage(chatId, `✅ Payment received! Your wallet has been credited $${Number(price).toFixed(2)}. Use wallet to complete your ${label.toLowerCase()} purchase.`)
+    addFundsTo(walletOf, chatId, 'usd', Number(price), lang)
+  }
+  res.send(html())
+})
+
 // Dynopay VPS
 app.post('/dynopay/crypto-pay-vps', authDyno, async (req, res) => {
   // Validate
