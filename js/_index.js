@@ -6066,34 +6066,178 @@ bot?.on('message', async msg => {
     return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectOption)
   }
 
-  // IVR Greeting input
+  // ── IVR Greeting: Choose method ──
   if (action === a.cpIvrGreeting) {
     const pc = phoneConfig.btn
     const num = info?.cpActiveNumber
     if (!num) return goto.submenu5()
-    if (message === t.back || message === pc.back) {
+    if (message === t.back || message === pc.back || message === t.cancel) {
       set(state, chatId, 'action', a.cpIvr)
       const ivrConf = num.features?.ivr || {}
       return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
         [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
       ]))
     }
-    if (message === t.cancel) return goto.submenu5()
-    // Reject IVR button text as greeting
+    if (message === '📝 Type Text (AI Voice)') {
+      set(state, chatId, 'action', a.cpIvrGreetingVoice)
+      await saveInfo('cpTtsDraft', { type: 'ivrGreeting' })
+      return send(chatId, `📝 Type the greeting callers will hear.\n\n<i>Example: "Thank you for calling Nomadly. Press 1 for sales, press 2 for support."</i>`, k.of([]))
+    }
+    if (message === '🎙️ Upload Audio') {
+      set(state, chatId, 'action', a.cpIvrGreetingPreview)
+      await saveInfo('cpTtsDraft', { type: 'ivrGreeting', method: 'upload' })
+      return send(chatId, `🎙️ Send a voice message or audio file for your IVR greeting.`, k.of([]))
+    }
+    return send(chatId, `Choose an option:`, k.of([['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio']]))
+  }
+
+  // ── IVR Greeting: Enter text → select voice ──
+  if (action === a.cpIvrGreetingVoice) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back || message === t.cancel) {
+      set(state, chatId, 'action', a.cpIvrGreeting)
+      return send(chatId, `🎤 <b>Set IVR Greeting</b>\n\nChoose how to create your greeting:`, k.of([
+        ['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio'],
+      ]))
+    }
+    // Check if user is selecting a voice (after text was entered)
+    const draft = info?.cpTtsDraft || {}
+    if (draft.text && !draft.voice) {
+      // User is picking a voice
+      const voiceKey = ttsService.getVoiceKeyByButton(message)
+      draft.voice = voiceKey
+      await saveInfo('cpTtsDraft', draft)
+      // Generate TTS preview
+      send(chatId, '🔄 Generating audio preview...')
+      try {
+        const result = await ttsService.generateTTS(draft.text, voiceKey)
+        draft.audioPath = result.audioPath
+        draft.audioUrl = result.audioUrl
+        await saveInfo('cpTtsDraft', draft)
+        // Send preview audio
+        await bot.sendVoice(chatId, result.audioPath)
+        set(state, chatId, 'action', a.cpIvrGreetingPreview)
+        return send(chatId, `✅ Preview generated (${result.voice})\n\n✅ Save this greeting?\n🔄 Try a different voice?\n📝 Re-type the text?`, k.of([
+          ['✅ Save Greeting'],
+          ['🔄 Try Different Voice'],
+          ['📝 Re-type Text'],
+        ]))
+      } catch (e) {
+        log(`[TTS] Error: ${e.message}`)
+        return send(chatId, `❌ Audio generation failed: ${e.message}\n\nTry again or upload your own audio.`, k.of([
+          ['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio'],
+        ]))
+      }
+    }
+    // User is entering text — reject button-like text
     const ivrButtons = [pc.ivrGreeting, pc.ivrAddOption, pc.ivrRemoveOption, pc.ivrViewOptions, pc.ivrAnalytics, pc.disableIvr, pc.enableIvr]
     if (ivrButtons.includes(message)) {
-      return send(chatId, phoneConfig.txt.ivrSetGreeting, k.of([]))
+      return send(chatId, `📝 Type the greeting callers will hear:`, k.of([]))
     }
-    const ivrConf = num.features?.ivr || { enabled: true, options: {} }
-    ivrConf.greeting = message
-    await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'ivr', ivrConf)
-    num.features.ivr = ivrConf
-    await saveInfo('cpActiveNumber', num)
-    send(chatId, phoneConfig.txt.ivrGreetingSet(message))
-    set(state, chatId, 'action', a.cpIvr)
-    return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
-      [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
-    ]))
+    // Save text, ask to select voice
+    draft.text = message
+    await saveInfo('cpTtsDraft', draft)
+    const voiceBtns = ttsService.getVoiceButtons().map(v => [v])
+    return send(chatId, `🎙️ Choose a voice for your greeting:\n\n<i>"${message.length > 80 ? message.slice(0, 80) + '...' : message}"</i>`, k.of(voiceBtns))
+  }
+
+  // ── IVR Greeting: Preview & Save ──
+  if (action === a.cpIvrGreetingPreview) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back || message === t.cancel) {
+      set(state, chatId, 'action', a.cpIvr)
+      const ivrConf = num.features?.ivr || {}
+      return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
+      ]))
+    }
+    const draft = info?.cpTtsDraft || {}
+
+    // Handle audio upload
+    if (draft.method === 'upload') {
+      if (rawMsg?.voice || rawMsg?.audio) {
+        const fileId = rawMsg.voice?.file_id || rawMsg.audio?.file_id
+        try {
+          const localPath = await ttsService.downloadTelegramAudio(bot, fileId, 'ivr_greeting')
+          draft.audioPath = localPath
+          draft.method = 'uploaded'
+          await saveInfo('cpTtsDraft', draft)
+          await bot.sendVoice(chatId, localPath)
+          return send(chatId, `✅ Audio received. Save as your IVR greeting?`, k.of([
+            ['✅ Save Greeting'],
+            ['🎙️ Re-upload'],
+          ]))
+        } catch (e) {
+          return send(chatId, `❌ Failed to process audio. Try again.`, k.of([]))
+        }
+      }
+      return send(chatId, `🎙️ Send a voice message or audio file.`, k.of([]))
+    }
+
+    if (message === '🔄 Try Different Voice') {
+      draft.voice = null
+      draft.audioPath = null
+      await saveInfo('cpTtsDraft', draft)
+      const voiceBtns = ttsService.getVoiceButtons().map(v => [v])
+      return send(chatId, `🎙️ Choose a different voice:`, k.of(voiceBtns))
+    }
+    if (message === '📝 Re-type Text') {
+      draft.text = null
+      draft.voice = null
+      draft.audioPath = null
+      await saveInfo('cpTtsDraft', draft)
+      set(state, chatId, 'action', a.cpIvrGreetingVoice)
+      return send(chatId, `📝 Type the greeting callers will hear:`, k.of([]))
+    }
+    if (message === '🎙️ Re-upload') {
+      draft.audioPath = null
+      draft.method = 'upload'
+      await saveInfo('cpTtsDraft', draft)
+      return send(chatId, `🎙️ Send a voice message or audio file.`, k.of([]))
+    }
+    if (message === '✅ Save Greeting') {
+      const ivrConf = num.features?.ivr || { enabled: true, options: {} }
+      if (draft.audioPath) {
+        ivrConf.greetingType = 'audio'
+        ivrConf.greetingAudioPath = draft.audioPath
+        ivrConf.greetingAudioUrl = draft.audioUrl || null
+        ivrConf.greeting = draft.text || null
+        ivrConf.greetingVoice = draft.voice || null
+      } else {
+        ivrConf.greeting = draft.text || ivrConf.greeting
+      }
+      await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'ivr', ivrConf)
+      num.features.ivr = ivrConf
+      await saveInfo('cpActiveNumber', num)
+      await saveInfo('cpTtsDraft', null)
+      send(chatId, `✅ IVR greeting saved!`)
+      set(state, chatId, 'action', a.cpIvr)
+      return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
+      ]))
+    }
+    // If user sends voice/audio in preview state
+    if (rawMsg?.voice || rawMsg?.audio) {
+      const fileId = rawMsg.voice?.file_id || rawMsg.audio?.file_id
+      try {
+        const localPath = await ttsService.downloadTelegramAudio(bot, fileId, 'ivr_greeting')
+        draft.audioPath = localPath
+        draft.method = 'uploaded'
+        await saveInfo('cpTtsDraft', draft)
+        await bot.sendVoice(chatId, localPath)
+        return send(chatId, `✅ Audio received. Save as your IVR greeting?`, k.of([
+          ['✅ Save Greeting'],
+          ['🎙️ Re-upload'],
+        ]))
+      } catch (e) {
+        return send(chatId, `❌ Failed to process audio. Try again.`, k.of([]))
+      }
+    }
+    return send(chatId, `Choose an option:`, k.of([['✅ Save Greeting'], ['🔄 Try Different Voice'], ['📝 Re-type Text']]))
   }
 
   // IVR Add Option input
