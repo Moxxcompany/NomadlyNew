@@ -433,6 +433,13 @@ ${
 
 संपर्क: ${CHAT_BOT_NAME}`,
 
+  showDepositCryptoInfoPhone: (priceCrypto, tickerView, address, phoneNumber) =>
+    `कृपया ${priceCrypto} ${tickerView} को\n\n<code>${address}</code> भेजें
+
+कृपया ध्यान दें कि क्रिप्टो लेनदेन को पूरा होने में 30 मिनट तक का समय लग सकता है। एक बार जब लेनदेन की पुष्टि हो जाती है, तो आप स्वचालित रूप से सूचित किए जाएंगे और आपका क्लाउड फ़ोन नंबर ${phoneNumber} सक्रिय हो जाएगा।
+
+संपर्क: ${CHAT_BOT_NAME}`,
+
   showDepositCryptoInfo: (priceCrypto, tickerView, address) =>
     `कृपया ${priceCrypto} ${tickerView} भेजें\n\n<code>${address}</code>\n\nकृपया ध्यान दें, क्रिप्टो लेनदेन को पूरा होने में 30 मिनट तक का समय लग सकता है। लेन-देन की पुष्टि होने के बाद आपको तुरंत सूचना दी जाएगी और आपके वॉलेट को अपडेट किया जाएगा।\n\nसादर,\n${CHAT_BOT_NAME}`,
 

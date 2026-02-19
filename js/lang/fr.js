@@ -440,6 +440,14 @@ Veuillez noter que les transactions cryptographiques peuvent prendre jusqu'à 30
 Cordialement,
 ${CHAT_BOT_NAME}`,
 
+  showDepositCryptoInfoPhone: (priceCrypto, tickerView, address, phoneNumber) =>
+    `Veuillez envoyer ${priceCrypto} ${tickerView} à\n\n<code>${address}</code>
+
+Veuillez noter que les transactions cryptographiques peuvent prendre jusqu'à 30 minutes pour être complétées. Une fois la transaction confirmée, vous serez notifié immédiatement et votre numéro Cloud Phone ${phoneNumber} sera activé.
+
+Cordialement,
+${CHAT_BOT_NAME}`,
+
   showDepositCryptoInfo: (priceCrypto, tickerView, address) =>
     `Veuillez envoyer ${priceCrypto} ${tickerView} à\n\n<code>${address}</code>\n\nVeuillez noter que les transactions cryptographiques peuvent prendre jusqu'à 30 minutes pour être confirmées. Une fois la transaction confirmée, vous serez notifié rapidement et votre portefeuille sera mis à jour.\n\nCordialement,\n${CHAT_BOT_NAME}`,
 

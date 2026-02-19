@@ -480,6 +480,14 @@ Please note, crypto transactions can take up to 30 minutes to complete. Once the
 Best regards,
 ${CHAT_BOT_NAME}`,
 
+  showDepositCryptoInfoPhone: (priceCrypto, tickerView, address, phoneNumber) =>
+    `Please remit ${priceCrypto} ${tickerView} to\n\n<code>${address}</code>
+
+Please note, crypto transactions can take up to 30 minutes to complete. Once the transaction has been confirmed, you will be promptly notified, and your Cloud Phone number ${phoneNumber} will be activated.
+
+Best regards,
+${CHAT_BOT_NAME}`,
+
   showDepositCryptoInfo: (priceCrypto, tickerView, address) =>
     `Please remit ${priceCrypto} ${tickerView} to\n\n<code>${address}</code>
 

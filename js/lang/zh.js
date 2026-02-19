@@ -433,6 +433,14 @@ ${CHAT_BOT_NAME}`,
 问候，
 ${CHAT_BOT_NAME}`,
 
+  showDepositCryptoInfoPhone: (priceCrypto, tickerView, address, phoneNumber) =>
+    `请发送 ${priceCrypto} ${tickerView} 至\n\n<code>${address}</code>
+
+请注意，加密货币交易可能需要最多 30 分钟完成。一旦交易确认，您将立即收到通知，您的云电话号码 ${phoneNumber} 将被激活。
+
+问候，
+${CHAT_BOT_NAME}`,
+
   showDepositCryptoInfo: (priceCrypto, tickerView, address) =>
     `请汇 ${priceCrypto} ${tickerView} 至\n\n<code>${address}</code>\n\n请注意，加密货币交易可能需要最多30分钟才能完成。一旦交易确认，您将立即收到通知，并且您的钱包将更新。\n\n问候,\n${CHAT_BOT_NAME}`,
 

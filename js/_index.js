@@ -5399,7 +5399,7 @@ bot?.on('message', async msg => {
       await sendQrCode(bot, chatId, url, info?.userLanguage ?? 'en')
       set(state, chatId, 'action', 'none')
       const priceCrypto = await convert(price, 'usd', coin)
-      return send(chatId, t.showDepositCryptoInfoDomain(priceCrypto, ticker, url, info?.cpSelectedNumber || 'Cloud Phone'), trans('o'))
+      return send(chatId, t.showDepositCryptoInfoPhone(priceCrypto, ticker, url, info?.cpSelectedNumber || 'Cloud Phone'), trans('o'))
     } else {
       const coin = tickerOfDyno[ticker]
       const redirect_url = `${SELF_URL}/dynopay/crypto-pay-phone`
@@ -5415,7 +5415,7 @@ bot?.on('message', async msg => {
       await generateQr(bot, chatId, qr_code, info?.userLanguage ?? 'en')
       set(state, chatId, 'action', 'none')
       const priceCrypto = await convert(price, 'usd', tickerOf[ticker])
-      return send(chatId, t.showDepositCryptoInfoDomain(priceCrypto, ticker, address, info?.cpSelectedNumber || 'Cloud Phone'), trans('o'))
+      return send(chatId, t.showDepositCryptoInfoPhone(priceCrypto, ticker, address, info?.cpSelectedNumber || 'Cloud Phone'), trans('o'))
     }
   }
 
