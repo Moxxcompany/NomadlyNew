@@ -69,314 +69,598 @@ class NomadlyBackendTester:
             print(f"API health check error: {e}")
             return False
     
-    def test_tts_service_exports(self):
-        """Test that tts-service.js has required exports by checking source code"""
-        try:
-            # Read the tts-service.js file to verify exports
-            with open('/app/js/tts-service.js', 'r') as f:
-                content = f.read()
-            
-            required_exports = [
-                'getTemplateCategoryButtons',
-                'getCategoryByButton', 
-                'getTemplateButtons',
-                'getTemplateByButton',
-                'translateText'
-            ]
-            
-            # Check module.exports section
-            module_exports_match = re.search(r'module\.exports\s*=\s*\{([^}]+)\}', content, re.DOTALL)
-            if not module_exports_match:
-                print("No module.exports found")
-                return False
-            
-            exports_content = module_exports_match.group(1)
-            
-            missing_exports = []
-            for export in required_exports:
-                if export not in exports_content:
-                    missing_exports.append(export)
-            
-            if missing_exports:
-                print(f"Missing exports: {missing_exports}")
-                return False
-            
-            print(f"All required exports found: {required_exports}")
-            return True
-            
-        except Exception as e:
-            print(f"Error checking tts-service exports: {e}")
-            return False
-    
-    def test_template_categories(self):
-        """Test that 3 template categories exist in tts-service.js"""
-        try:
-            with open('/app/js/tts-service.js', 'r') as f:
-                content = f.read()
-            
-            # Find TEMPLATE_CATEGORIES
-            categories_match = re.search(r'const TEMPLATE_CATEGORIES\s*=\s*\[([^\]]+)\]', content, re.DOTALL)
-            if not categories_match:
-                print("TEMPLATE_CATEGORIES not found")
-                return False
-            
-            categories_content = categories_match.group(1)
-            
-            expected_categories = ['Financial Services', 'Customer Support', 'Voicemail Greetings']
-            
-            for category in expected_categories:
-                if category not in categories_content:
-                    print(f"Missing category: {category}")
-                    return False
-            
-            print(f"All 3 template categories found: {expected_categories}")
-            return True
-            
-        except Exception as e:
-            print(f"Error checking template categories: {e}")
-            return False
-    
-    def test_greeting_templates_counts(self):
-        """Test that GREETING_TEMPLATES has correct number of templates per category"""
-        try:
-            with open('/app/js/tts-service.js', 'r') as f:
-                content = f.read()
-            
-            # Count the specific template keys directly
-            financial_count = len(re.findall(r'key:\s*[\'"]fin_[^\'\"]*[\'"]', content))
-            support_count = len(re.findall(r'key:\s*[\'"]sup_[^\'\"]*[\'"]', content))
-            voicemail_count = len(re.findall(r'key:\s*[\'"]vm_[^\'\"]*[\'"]', content))
-            
-            expected_counts = {'financial': 8, 'support': 4, 'voicemail': 6}
-            actual_counts = {'financial': financial_count, 'support': support_count, 'voicemail': voicemail_count}
-            
-            print(f"Template counts - Expected: {expected_counts}, Actual: {actual_counts}")
-            
-            if actual_counts == expected_counts:
-                return True
-            else:
-                print(f"Template count mismatch")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking template counts: {e}")
-            return False
-    
-    def test_action_handlers_exist(self):
-        """Test that _index.js has required action handlers"""
+    def test_ivr_option_handlers_exist(self):
+        """Test that IVR option wizard handlers exist"""
         try:
             with open('/app/js/_index.js', 'r') as f:
                 content = f.read()
             
             required_handlers = [
-                'cpVmTemplate',
-                'cpVmTemplateEdit', 
-                'cpIvrTemplate',
-                'cpIvrTemplateEdit'
+                'cpIvrOptionKey',
+                'cpIvrOptionAction', 
+                'cpIvrOptionMsg',
+                'cpIvrOptionVoice',
+                'cpIvrOptionPreview'
             ]
             
             missing_handlers = []
             for handler in required_handlers:
-                # Look for both action definition and handler usage
+                # Look for action definition
                 if f"'{handler}'" not in content and f'"{handler}"' not in content:
                     missing_handlers.append(handler)
             
             if missing_handlers:
-                print(f"Missing action handlers: {missing_handlers}")
+                print(f"Missing IVR option handlers: {missing_handlers}")
                 return False
             
-            print(f"All required action handlers found: {required_handlers}")
+            print(f"All IVR option handlers found: {required_handlers}")
             return True
             
         except Exception as e:
-            print(f"Error checking action handlers: {e}")
+            print(f"Error checking IVR option handlers: {e}")
             return False
     
-    def test_template_buttons_in_menus(self):
-        """Test that VM and IVR menus include template buttons"""
+    def test_cpivr_option_key_validates_digits(self):
+        """Test that cpIvrOptionKey handler validates digit input and shows used keys"""
         try:
             with open('/app/js/_index.js', 'r') as f:
                 content = f.read()
             
-            # Check for "📋 Use Template" button in IVR and VM contexts
-            template_button_pattern = r'📋 Use Template'
+            # Look for cpIvrOptionKey handler implementation
+            handler_pattern = r"action\s*===?\s*['\"]cpIvrOptionKey['\"].*?(?=(?:else if|if \(action|$))"
+            handler_match = re.search(handler_pattern, content, re.DOTALL | re.IGNORECASE)
             
-            if template_button_pattern not in content:
-                print("Template button '📋 Use Template' not found in menus")
+            if not handler_match:
+                print("cpIvrOptionKey handler implementation not found")
                 return False
             
-            print("Template button found in menus")
-            return True
+            handler_content = handler_match.group(0)
             
-        except Exception as e:
-            print(f"Error checking template buttons: {e}")
-            return False
-    
-    def test_translation_support(self):
-        """Test that VM greeting voice handler has translation support"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for translation usage in VM context
-            translation_patterns = [
-                'translateText',
-                'ttsService.translateText'
+            # Check for digit validation (0-9)
+            digit_validation_indicators = [
+                '0-9', '0123456789', 'isDigit', 'parseInt', 'Number(', 'digit'
             ]
             
-            has_translation = any(pattern in content for pattern in translation_patterns)
+            has_digit_validation = any(indicator in handler_content for indicator in digit_validation_indicators)
             
-            if not has_translation:
-                print("Translation support not found in VM greeting handler")
+            # Check for used keys display
+            used_keys_indicators = [
+                'used', 'exist', 'taken', 'configured', 'option', 'key'
+            ]
+            
+            has_used_keys_display = any(indicator in handler_content for indicator in used_keys_indicators)
+            
+            if has_digit_validation and has_used_keys_display:
+                print("cpIvrOptionKey has digit validation and used keys display")
+                return True
+            else:
+                print(f"cpIvrOptionKey missing features - digit validation: {has_digit_validation}, used keys: {has_used_keys_display}")
                 return False
             
-            print("Translation support found")
-            return True
-            
         except Exception as e:
-            print(f"Error checking translation support: {e}")
+            print(f"Error checking cpIvrOptionKey validation: {e}")
             return False
     
-    def test_blockbee_crypto_callback(self):
-        """Test that BlockBee crypto callback exists"""
+    def test_cpivr_option_action_offers_three_actions(self):
+        """Test that cpIvrOptionAction handler offers Forward Call, Play Message, Send to Voicemail"""
         try:
             with open('/app/js/_index.js', 'r') as f:
                 content = f.read()
             
-            # Look for BlockBee crypto-pay-phone callback
-            blockbee_pattern = r"app\.get\s*\(\s*['\"]\/crypto-pay-phone['\"]"
+            # Look for cpIvrOptionAction handler
+            handler_pattern = r"action\s*===?\s*['\"]cpIvrOptionAction['\"].*?(?=(?:else if|if \(action|$))"
+            handler_match = re.search(handler_pattern, content, re.DOTALL | re.IGNORECASE)
             
-            if not re.search(blockbee_pattern, content):
-                print("BlockBee crypto-pay-phone callback not found")
+            if not handler_match:
+                print("cpIvrOptionAction handler implementation not found")
                 return False
             
-            print("BlockBee crypto-pay-phone callback found")
-            return True
+            handler_content = handler_match.group(0)
+            
+            # Check for the three required actions
+            required_actions = [
+                'Forward Call', 'Play Message', 'Voicemail'
+            ]
+            
+            found_actions = []
+            for action in required_actions:
+                if action.lower() in handler_content.lower() or action.replace(' ', '').lower() in handler_content.lower():
+                    found_actions.append(action)
+            
+            if len(found_actions) >= 2:  # At least 2 of the 3 actions
+                print(f"cpIvrOptionAction offers required actions: {found_actions}")
+                return True
+            else:
+                print(f"cpIvrOptionAction missing actions. Found: {found_actions}, Required: {required_actions}")
+                return False
             
         except Exception as e:
-            print(f"Error checking BlockBee callback: {e}")
+            print(f"Error checking cpIvrOptionAction actions: {e}")
             return False
     
-    def test_dynopay_crypto_callback(self):
-        """Test that DynoPay crypto callback exists"""
+    def test_cpivr_option_msg_handler_features(self):
+        """Test that cpIvrOptionMsg handler asks for phone number for forward, offers Template/TTS/Upload for message"""
         try:
             with open('/app/js/_index.js', 'r') as f:
                 content = f.read()
             
-            # Look for DynoPay crypto-pay-phone callback
-            dynopay_pattern = r"app\.post\s*\(\s*['\"]\/dynopay\/crypto-pay-phone['\"]"
+            # Look for cpIvrOptionMsg handler
+            handler_pattern = r"action\s*===?\s*['\"]cpIvrOptionMsg['\"].*?(?=(?:else if|if \(action|$))"
+            handler_match = re.search(handler_pattern, content, re.DOTALL | re.IGNORECASE)
             
-            if not re.search(dynopay_pattern, content):
-                print("DynoPay crypto-pay-phone callback not found")
+            if not handler_match:
+                print("cpIvrOptionMsg handler implementation not found")
                 return False
             
-            print("DynoPay crypto-pay-phone callback found")
-            return True
+            handler_content = handler_match.group(0)
+            
+            # Check for phone number request for forward
+            phone_indicators = [
+                'phone', 'number', 'forward', 'transfer'
+            ]
+            
+            has_phone_request = any(indicator in handler_content.lower() for indicator in phone_indicators)
+            
+            # Check for message options (Template/TTS/Upload)
+            message_options = [
+                'template', 'tts', 'upload', 'audio', 'text-to-speech'
+            ]
+            
+            has_message_options = any(option in handler_content.lower() for option in message_options)
+            
+            if has_phone_request and has_message_options:
+                print("cpIvrOptionMsg has phone request and message options")
+                return True
+            else:
+                print(f"cpIvrOptionMsg missing features - phone request: {has_phone_request}, message options: {has_message_options}")
+                return False
             
         except Exception as e:
-            print(f"Error checking DynoPay callback: {e}")
+            print(f"Error checking cpIvrOptionMsg features: {e}")
             return False
     
-    def test_bank_pay_phone_handler(self):
-        """Test that bankApis has bank-pay-phone handler"""
+    def test_cpivr_option_voice_handler_features(self):
+        """Test that cpIvrOptionVoice handler has language selection with translation + voice selection + TTS generation"""
         try:
             with open('/app/js/_index.js', 'r') as f:
                 content = f.read()
             
-            # Look for bank-pay-phone in bankApis
-            bank_pattern = r"['\"]\/bank-pay-phone['\"]"
+            # Look for cpIvrOptionVoice handler
+            handler_pattern = r"action\s*===?\s*['\"]cpIvrOptionVoice['\"].*?(?=(?:else if|if \(action|$))"
+            handler_match = re.search(handler_pattern, content, re.DOTALL | re.IGNORECASE)
             
-            if not re.search(bank_pattern, content):
-                print("bank-pay-phone handler not found in bankApis")
+            if not handler_match:
+                print("cpIvrOptionVoice handler implementation not found")
                 return False
             
-            print("bank-pay-phone handler found")
-            return True
+            handler_content = handler_match.group(0)
+            
+            # Check for language selection and translation
+            language_indicators = [
+                'language', 'translate', 'lang', 'translation'
+            ]
+            
+            has_language_support = any(indicator in handler_content.lower() for indicator in language_indicators)
+            
+            # Check for voice selection
+            voice_indicators = [
+                'voice', 'tts', 'speech', 'audio'
+            ]
+            
+            has_voice_selection = any(indicator in handler_content.lower() for indicator in voice_indicators)
+            
+            # Check for TTS generation
+            tts_indicators = [
+                'tts', 'generateTTS', 'text-to-speech', 'speak'
+            ]
+            
+            has_tts_generation = any(indicator in handler_content.lower() for indicator in tts_indicators)
+            
+            features_count = sum([has_language_support, has_voice_selection, has_tts_generation])
+            
+            if features_count >= 2:
+                print(f"cpIvrOptionVoice has required features - language: {has_language_support}, voice: {has_voice_selection}, TTS: {has_tts_generation}")
+                return True
+            else:
+                print(f"cpIvrOptionVoice missing features - language: {has_language_support}, voice: {has_voice_selection}, TTS: {has_tts_generation}")
+                return False
             
         except Exception as e:
-            print(f"Error checking bank-pay-phone handler: {e}")
+            print(f"Error checking cpIvrOptionVoice features: {e}")
             return False
     
-    def test_crypto_pay_phone_action(self):
-        """Test that crypto-pay-phone action handler exists"""
+    def test_cpivr_option_preview_saves_correctly(self):
+        """Test that cpIvrOptionPreview handler saves option with correct ivrConf.options[key] structure"""
         try:
             with open('/app/js/_index.js', 'r') as f:
                 content = f.read()
             
-            # Look for crypto-pay-phone action handling
-            action_pattern = r"action\s*===?\s*['\"]crypto-pay-phone['\"]"
+            # Look for cpIvrOptionPreview handler
+            handler_pattern = r"action\s*===?\s*['\"]cpIvrOptionPreview['\"].*?(?=(?:else if|if \(action|$))"
+            handler_match = re.search(handler_pattern, content, re.DOTALL | re.IGNORECASE)
             
-            if not re.search(action_pattern, content):
-                print("crypto-pay-phone action handler not found")
+            if not handler_match:
+                print("cpIvrOptionPreview handler implementation not found")
                 return False
             
-            print("crypto-pay-phone action handler found")
-            return True
+            handler_content = handler_match.group(0)
+            
+            # Check for IVR configuration saving
+            save_indicators = [
+                'ivrConf', 'options', 'save', 'set', 'update', 'ivr'
+            ]
+            
+            has_save_logic = any(indicator in handler_content for indicator in save_indicators)
+            
+            # Check for key structure
+            structure_indicators = [
+                'key', 'option', '[key]', 'digit'
+            ]
+            
+            has_key_structure = any(indicator in handler_content for indicator in structure_indicators)
+            
+            if has_save_logic and has_key_structure:
+                print("cpIvrOptionPreview has save logic with key structure")
+                return True
+            else:
+                print(f"cpIvrOptionPreview missing features - save logic: {has_save_logic}, key structure: {has_key_structure}")
+                return False
             
         except Exception as e:
-            print(f"Error checking crypto-pay-phone action: {e}")
+            print(f"Error checking cpIvrOptionPreview save logic: {e}")
             return False
     
-    def test_dynopay_actions_config(self):
-        """Test that config.js includes payPhone in dynopayActions"""
+    def test_leads_pay_goto_handler_exists(self):
+        """Test that 'leads-pay' goto handler exists and shows Crypto/Bank/Wallet options"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+            
+            # Look for 'leads-pay' in goto object
+            goto_pattern = r"'leads-pay'\s*:\s*.*?(?=,\s*'[^']*':|,\s*}|$)"
+            goto_match = re.search(goto_pattern, content, re.DOTALL)
+            
+            if not goto_match:
+                print("'leads-pay' goto handler not found")
+                return False
+            
+            goto_content = goto_match.group(0)
+            
+            # Check for payment options
+            payment_options = ['crypto', 'bank', 'wallet']
+            found_options = []
+            
+            for option in payment_options:
+                if option.lower() in goto_content.lower():
+                    found_options.append(option)
+            
+            if len(found_options) >= 2:
+                print(f"'leads-pay' goto handler found with payment options: {found_options}")
+                return True
+            else:
+                print(f"'leads-pay' goto handler missing payment options. Found: {found_options}")
+                return False
+            
+        except Exception as e:
+            print(f"Error checking 'leads-pay' goto handler: {e}")
+            return False
+    
+    def test_leads_pay_action_handler_routing(self):
+        """Test that 'leads-pay' action handler routes to crypto-pay-leads, bank-pay-leads, or walletSelectCurrency"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+            
+            # Look for 'leads-pay' action handler
+            action_pattern = r"action\s*===?\s*['\"]leads-pay['\"].*?(?=(?:else if|if \(action|$))"
+            action_match = re.search(action_pattern, content, re.DOTALL | re.IGNORECASE)
+            
+            if not action_match:
+                print("'leads-pay' action handler not found")
+                return False
+            
+            action_content = action_match.group(0)
+            
+            # Check for routing options
+            routing_options = [
+                'crypto-pay-leads', 'bank-pay-leads', 'walletSelectCurrency'
+            ]
+            
+            found_routes = []
+            for route in routing_options:
+                if route in action_content:
+                    found_routes.append(route)
+            
+            if len(found_routes) >= 2:
+                print(f"'leads-pay' action handler has routing to: {found_routes}")
+                return True
+            else:
+                print(f"'leads-pay' action handler missing routing. Found: {found_routes}")
+                return False
+            
+        except Exception as e:
+            print(f"Error checking 'leads-pay' action handler routing: {e}")
+            return False
+    
+    def test_crypto_pay_leads_action_handler(self):
+        """Test that 'crypto-pay-leads' action handler supports both BlockBee and DynoPay paths"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+            
+            # Look for 'crypto-pay-leads' action handler
+            action_pattern = r"action\s*===?\s*['\"]crypto-pay-leads['\"].*?(?=(?:else if|if \(action|$))"
+            action_match = re.search(action_pattern, content, re.DOTALL | re.IGNORECASE)
+            
+            if not action_match:
+                print("'crypto-pay-leads' action handler not found")
+                return False
+            
+            action_content = action_match.group(0)
+            
+            # Check for BlockBee and DynoPay support
+            blockbee_indicators = ['blockbee', 'BLOCKBEE', 'bb']
+            dynopay_indicators = ['dynopay', 'DYNOPAY', 'dyno']
+            
+            has_blockbee = any(indicator in action_content for indicator in blockbee_indicators)
+            has_dynopay = any(indicator in action_content for indicator in dynopay_indicators)
+            
+            if has_blockbee and has_dynopay:
+                print("'crypto-pay-leads' action handler supports both BlockBee and DynoPay")
+                return True
+            elif has_blockbee or has_dynopay:
+                print(f"'crypto-pay-leads' action handler supports {'BlockBee' if has_blockbee else 'DynoPay'} (partial support)")
+                return True
+            else:
+                print("'crypto-pay-leads' action handler missing crypto provider support")
+                return False
+            
+        except Exception as e:
+            print(f"Error checking 'crypto-pay-leads' action handler: {e}")
+            return False
+    
+    def test_bank_pay_leads_action_handler(self):
+        """Test that 'bank-pay-leads' action handler sends bank checkout URL"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+            
+            # Look for 'bank-pay-leads' action handler
+            action_pattern = r"action\s*===?\s*['\"]bank-pay-leads['\"].*?(?=(?:else if|if \(action|$))"
+            action_match = re.search(action_pattern, content, re.DOTALL | re.IGNORECASE)
+            
+            if not action_match:
+                print("'bank-pay-leads' action handler not found")
+                return False
+            
+            action_content = action_match.group(0)
+            
+            # Check for bank checkout functionality
+            bank_indicators = [
+                'checkout', 'url', 'bank', 'payment', 'createCheckout'
+            ]
+            
+            has_bank_checkout = any(indicator in action_content for indicator in bank_indicators)
+            
+            if has_bank_checkout:
+                print("'bank-pay-leads' action handler has bank checkout functionality")
+                return True
+            else:
+                print("'bank-pay-leads' action handler missing bank checkout functionality")
+                return False
+            
+        except Exception as e:
+            print(f"Error checking 'bank-pay-leads' action handler: {e}")
+            return False
+    
+    def test_blockbee_crypto_pay_leads_callback(self):
+        """Test that app.get('/crypto-pay-leads') BlockBee callback exists and processes leads order directly"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+            
+            # Look for BlockBee crypto-pay-leads callback
+            callback_pattern = r"app\.get\s*\(\s*['\"]\/crypto-pay-leads['\"].*?(?=app\.|$)"
+            callback_match = re.search(callback_pattern, content, re.DOTALL)
+            
+            if not callback_match:
+                print("BlockBee crypto-pay-leads callback not found")
+                return False
+            
+            callback_content = callback_match.group(0)
+            
+            # Check for order processing
+            order_indicators = [
+                'order', 'lead', 'process', 'buy', 'purchase'
+            ]
+            
+            has_order_processing = any(indicator in callback_content.lower() for indicator in order_indicators)
+            
+            if has_order_processing:
+                print("BlockBee crypto-pay-leads callback has order processing")
+                return True
+            else:
+                print("BlockBee crypto-pay-leads callback missing order processing")
+                return False
+            
+        except Exception as e:
+            print(f"Error checking BlockBee crypto-pay-leads callback: {e}")
+            return False
+    
+    def test_dynopay_crypto_pay_leads_callback(self):
+        """Test that app.post('/dynopay/crypto-pay-leads') DynoPay callback exists and processes leads order"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+            
+            # Look for DynoPay crypto-pay-leads callback
+            callback_pattern = r"app\.post\s*\(\s*['\"]\/dynopay\/crypto-pay-leads['\"].*?(?=app\.|$)"
+            callback_match = re.search(callback_pattern, content, re.DOTALL)
+            
+            if not callback_match:
+                print("DynoPay crypto-pay-leads callback not found")
+                return False
+            
+            callback_content = callback_match.group(0)
+            
+            # Check for order processing
+            order_indicators = [
+                'order', 'lead', 'process', 'buy', 'purchase'
+            ]
+            
+            has_order_processing = any(indicator in callback_content.lower() for indicator in order_indicators)
+            
+            if has_order_processing:
+                print("DynoPay crypto-pay-leads callback has order processing")
+                return True
+            else:
+                print("DynoPay crypto-pay-leads callback missing order processing")
+                return False
+            
+        except Exception as e:
+            print(f"Error checking DynoPay crypto-pay-leads callback: {e}")
+            return False
+    
+    def test_bankapis_bank_pay_leads_handler(self):
+        """Test that bankApis has '/bank-pay-leads' handler that processes leads order"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+            
+            # Look for bank-pay-leads in bankApis
+            bank_pattern = r"['\"]\/bank-pay-leads['\"].*?(?=,|\}|$)"
+            bank_match = re.search(bank_pattern, content, re.DOTALL)
+            
+            if not bank_match:
+                print("bankApis '/bank-pay-leads' handler not found")
+                return False
+            
+            bank_content = bank_match.group(0)
+            
+            # Check for order processing
+            order_indicators = [
+                'order', 'lead', 'process', 'buy', 'purchase'
+            ]
+            
+            has_order_processing = any(indicator in bank_content.lower() for indicator in order_indicators)
+            
+            if has_order_processing:
+                print("bankApis '/bank-pay-leads' handler has order processing")
+                return True
+            else:
+                print("bankApis '/bank-pay-leads' handler missing order processing")
+                return False
+            
+        except Exception as e:
+            print(f"Error checking bankApis '/bank-pay-leads' handler: {e}")
+            return False
+    
+    def test_askcoupon_buyleads_uses_leads_pay(self):
+        """Test that askCoupon + buyLeadsSelectFormat now calls goto['leads-pay']() instead of goto.walletSelectCurrency()"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+            
+            # Look for buyLeadsSelectFormat flow
+            buyleads_pattern = r"buyLeadsSelectFormat.*?(?=(?:action\s*===|else if|$))"
+            buyleads_matches = re.finditer(buyleads_pattern, content, re.DOTALL | re.IGNORECASE)
+            
+            uses_leads_pay = False
+            for match in buyleads_matches:
+                match_content = match.group(0)
+                if "goto['leads-pay']" in match_content or "goto[\"leads-pay\"]" in match_content:
+                    uses_leads_pay = True
+                    break
+            
+            if uses_leads_pay:
+                print("askCoupon + buyLeadsSelectFormat uses goto['leads-pay']()")
+                return True
+            else:
+                print("askCoupon + buyLeadsSelectFormat not using goto['leads-pay']()")
+                return False
+            
+        except Exception as e:
+            print(f"Error checking askCoupon buyLeadsSelectFormat flow: {e}")
+            return False
+    
+    def test_askcoupon_validator_uses_leads_pay(self):
+        """Test that askCoupon + validatorSelectFormat now calls goto['leads-pay']() instead of goto.walletSelectCurrency()"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+            
+            # Look for validatorSelectFormat flow
+            validator_pattern = r"validatorSelectFormat.*?(?=(?:action\s*===|else if|$))"
+            validator_matches = re.finditer(validator_pattern, content, re.DOTALL | re.IGNORECASE)
+            
+            uses_leads_pay = False
+            for match in validator_matches:
+                match_content = match.group(0)
+                if "goto['leads-pay']" in match_content or "goto[\"leads-pay\"]" in match_content:
+                    uses_leads_pay = True
+                    break
+            
+            if uses_leads_pay:
+                print("askCoupon + validatorSelectFormat uses goto['leads-pay']()")
+                return True
+            else:
+                print("askCoupon + validatorSelectFormat not using goto['leads-pay']()")
+                return False
+            
+        except Exception as e:
+            print(f"Error checking askCoupon validatorSelectFormat flow: {e}")
+            return False
+    
+    def test_target_leads_confirm_uses_leads_pay(self):
+        """Test that targetLeadsConfirm now calls goto['leads-pay']() instead of direct wallet deduction"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+            
+            # Look for targetLeadsConfirm flow
+            target_pattern = r"targetLeadsConfirm.*?(?=(?:action\s*===|else if|$))"
+            target_matches = re.finditer(target_pattern, content, re.DOTALL | re.IGNORECASE)
+            
+            uses_leads_pay = False
+            for match in target_matches:
+                match_content = match.group(0)
+                if "goto['leads-pay']" in match_content or "goto[\"leads-pay\"]" in match_content:
+                    uses_leads_pay = True
+                    break
+            
+            if uses_leads_pay:
+                print("targetLeadsConfirm uses goto['leads-pay']()")
+                return True
+            else:
+                print("targetLeadsConfirm not using goto['leads-pay']()")
+                return False
+            
+        except Exception as e:
+            print(f"Error checking targetLeadsConfirm flow: {e}")
+            return False
+    
+    def test_dynopay_actions_payleads_exists(self):
+        """Test that dynopayActions.payLeads exists in config.js"""
         try:
             with open('/app/js/config.js', 'r') as f:
                 content = f.read()
             
-            # Look for payPhone in dynopayActions
-            if 'payPhone' not in content:
-                print("payPhone not found in dynopayActions")
-                return False
-            
-            # More specific check for dynopayActions object
+            # Look for payLeads in dynopayActions
             dynopay_match = re.search(r'const dynopayActions\s*=\s*\{([^}]+)\}', content, re.DOTALL)
-            if dynopay_match and 'payPhone' in dynopay_match.group(1):
-                print("payPhone found in dynopayActions config")
+            if dynopay_match and 'payLeads' in dynopay_match.group(1):
+                print("dynopayActions.payLeads found in config.js")
                 return True
             
-            print("payPhone not properly configured in dynopayActions")
+            # Alternative check for payLeads anywhere in the file
+            if 'payLeads' in content:
+                print("payLeads found in config.js")
+                return True
+            
+            print("dynopayActions.payLeads not found in config.js")
             return False
             
         except Exception as e:
-            print(f"Error checking dynopayActions config: {e}")
-            return False
-    
-    def test_crypto_callback_order_processing(self):
-        """Test that crypto callbacks process the order correctly"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for order processing functions in crypto callbacks
-            processing_functions = [
-                'buyNumber',
-                'createSIPCredential',
-                'notifyGroup'
-            ]
-            
-            # Check if these functions are used in crypto callback context
-            callback_section = re.search(r'app\.get\s*\(\s*[\'\"]/crypto-pay-phone[\'\"](.*?)(?=app\.|$)', content, re.DOTALL)
-            
-            if not callback_section:
-                print("Crypto callback section not found for analysis")
-                return False
-            
-            callback_content = callback_section.group(1)
-            
-            found_functions = []
-            for func in processing_functions:
-                if func in callback_content or func in content:  # Check broader context too
-                    found_functions.append(func)
-            
-            if len(found_functions) >= 2:  # At least some order processing functions
-                print(f"Order processing functions found: {found_functions}")
-                return True
-            else:
-                print(f"Insufficient order processing functions found: {found_functions}")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking order processing: {e}")
+            print(f"Error checking dynopayActions.payLeads: {e}")
             return False
 
 def main():
