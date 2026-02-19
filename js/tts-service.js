@@ -63,16 +63,17 @@ const DEFAULT_VOICE = 'rachel'
  * @param {string} voiceKey - Voice key from VOICES
  * @returns {{ audioPath: string, audioUrl: string|null }} Local file path + remote URL
  */
-async function generateTTS(text, voiceKey = DEFAULT_VOICE) {
+async function generateTTS(text, voiceKey = DEFAULT_VOICE, langCode = null) {
   if (!EDENAI_API_KEY) throw new Error('EDENAI_API_KEY not configured')
   if (!text || text.trim().length === 0) throw new Error('Text cannot be empty')
 
-  const voice = VOICES[voiceKey] || VOICES[DEFAULT_VOICE]
+  const voice = VOICES[voiceKey] || GENERIC_VOICES[voiceKey] || VOICES[DEFAULT_VOICE]
+  const language = langCode || voice.lang || 'en'
 
   const res = await axios.post('https://api.edenai.run/v2/audio/text_to_speech', {
     providers: 'elevenlabs',
     text: text.trim(),
-    language: voice.lang,
+    language: language,
     option: voice.option,
   }, {
     headers: {
