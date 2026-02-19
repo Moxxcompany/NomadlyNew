@@ -728,8 +728,7 @@ const userKeyboard = {
       [user.cloudPhone],
       [user.phoneNumberLeads],
       HIDE_SMS_APP === 'true' ? [user.domainNames] : [user.freeTrialAvailable, user.domainNames],
-      [user.wallet, user.viewPlan],
-      [user.buyPlan],
+      [user.wallet, user.viewPlan, user.buyPlan],
       HIDE_BECOME_RESELLER === 'true'
         ? [user.changeSetting, user.getSupport, user.joinChannel]
         : [user.changeSetting, user.becomeReseller, user.getSupport],
