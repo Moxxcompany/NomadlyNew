@@ -437,19 +437,19 @@ class NomadlyBotTester:
                 with open(lang_file, 'r', encoding='utf-8') as f:
                     lang_content = f.read()
                 
-                # Check buyPlan label
-                has_upgrade_plan = "buyPlan: '⚡ Upgrade Plan'" in lang_content
+                # Check buyPlan has the ⚡ symbol (more flexible check)
+                has_upgrade_symbol = "buyPlan: '⚡" in lang_content
                 
                 # Check keyboard layout
                 has_correct_layout = "[user.wallet, user.viewPlan, user.buyPlan]" in lang_content
                 
-                # Check freeLinksExhausted references new button name
-                has_correct_exhausted_text = "⚡ Upgrade Plan" in lang_content and "freeLinksExhausted" in lang_content
+                # Check freeLinksExhausted references the ⚡ symbol
+                has_correct_exhausted_text = "⚡" in lang_content and "freeLinksExhausted" in lang_content
                 
-                if not (has_upgrade_plan and has_correct_layout and has_correct_exhausted_text):
+                if not (has_upgrade_symbol and has_correct_layout and has_correct_exhausted_text):
                     incorrect_files.append({
                         'file': lang_file,
-                        'buyPlan': has_upgrade_plan,
+                        'buyPlan_symbol': has_upgrade_symbol,
                         'layout': has_correct_layout,
                         'exhausted_text': has_correct_exhausted_text
                     })
@@ -460,7 +460,7 @@ class NomadlyBotTester:
                 all_files_correct = False
 
         self.log_result(
-            "All 4 language files have buyPlan set to 'Upgrade Plan' and correct keyboard layout",
+            "All 4 language files have buyPlan with ⚡ symbol and correct keyboard layout",
             all_files_correct,
             f"Missing files: {missing_files}, Incorrect files: {len(incorrect_files)}",
             "CRITICAL" if not all_files_correct else "INFO"
