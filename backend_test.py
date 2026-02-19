@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Testing for Nomadly Telegram Bot
-Tests greeting templates library and crypto payment integration
+Backend Testing for Nomadly Telegram Bot - Iteration 37
+Tests IVR option wizard handlers and leads payment system integration
 """
 
 import requests
