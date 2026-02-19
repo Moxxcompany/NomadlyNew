@@ -436,6 +436,36 @@ async function initializeTelnyxResources(selfUrl) {
   return { sipConnectionId, messagingProfileId, callControlAppId }
 }
 
+// ── Validate destination number is routable ──
+async function validateForwardingDestination(toNumber) {
+  try {
+    // Use Telnyx number lookup to validate the number
+    const res = await axios.get(`${BASE}/number_lookup/${encodeURIComponent(toNumber)}`, { 
+      headers: headers(),
+      params: { type: 'carrier' }
+    })
+    const data = res.data?.data
+    if (data) {
+      return { 
+        valid: true, 
+        country: data.country_code || 'unknown',
+        carrier: data.carrier?.name || 'unknown',
+        type: data.carrier?.type || 'unknown'
+      }
+    }
+    return { valid: true, country: 'unknown', carrier: 'unknown', type: 'unknown' }
+  } catch (e) {
+    // If lookup fails, try a lightweight validation — check if the outbound profile allows the destination
+    log(`[Telnyx] Number lookup failed for ${toNumber}: ${e.response?.status || e.message}`)
+    // Fall back: consider it valid if lookup just isn't available (402 = billing, 404 = not found)
+    if (e.response?.status === 404) {
+      return { valid: false, reason: 'Number not found or invalid format' }
+    }
+    // For other errors (e.g. 402 no balance for lookup), assume valid
+    return { valid: true, country: 'unknown', carrier: 'unknown', type: 'unknown' }
+  }
+}
+
 module.exports = {
   searchNumbers,
   buyNumber,
