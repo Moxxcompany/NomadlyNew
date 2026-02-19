@@ -1090,7 +1090,7 @@ URL: ${response.url}
 Your ${info.hostingType} credentials has been successfully sent to your email ${info.email} as well`,
 
   support: (plan, statusCode) => `Something went wrong while setting up your ${plan}|${statusCode}. 
-                                                Please contact support ${SUPPORT_USERNAME}.
+                                                Please tap 💬 Get Support for assistance.
                                                 Discover more ${TG_HANDLE}.`,
 
   bankPayDomain: (
@@ -1241,7 +1241,7 @@ ${list.map(item => `${name == 'whm' ? `<strong>• ${item.name} - </strong>` : '
 
   errorPurchasingVPS: plan => `Something went wrong while setting up your ${plan} VPS Plan.
 
-  Please contact support ${SUPPORT_USERNAME}.
+  Please tap 💬 Get Support for assistance.
   Discover more ${TG_HANDLE}.`,
 
   generateBillSummary: vpsDetails => `<strong>📋 Final Cost Breakdown:</strong>
@@ -1618,7 +1618,7 @@ ${
 
   errorUpgradingVPS: vpsName => `Something went wrong while upgrading your VPS Plan ${vpsName}.
 
-  Please contact support ${SUPPORT_USERNAME}.
+  Please tap 💬 Get Support for assistance.
   Discover more ${TG_HANDLE}.`,
 
   vpsUpgradePlanTypeSuccess: vpsDetails => `
