@@ -49,9 +49,11 @@ class IvrVoicemailTester:
                 self.log(f"✅ {name} - PASSED")
             else:
                 self.log(f"❌ {name} - FAILED")
+                self.failed_tests.append(name)
             return success
         except Exception as e:
             self.log(f"❌ {name} - ERROR: {str(e)}")
+            self.failed_tests.append(name)
             return False
 
     def test_backend_health(self):
