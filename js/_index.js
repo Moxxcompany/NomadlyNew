@@ -6240,54 +6240,7 @@ bot?.on('message', async msg => {
     return send(chatId, `Choose an option:`, k.of([['✅ Save Greeting'], ['🔄 Try Different Voice'], ['📝 Re-type Text']]))
   }
 
-  // IVR Add Option input
-  if (action === a.cpIvrAddOption) {
-    const pc = phoneConfig.btn
-    const num = info?.cpActiveNumber
-    if (!num) return goto.submenu5()
-    if (message === t.back || message === pc.back) {
-      set(state, chatId, 'action', a.cpIvr)
-      const ivrConf = num.features?.ivr || {}
-      return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
-        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
-      ]))
-    }
-    if (message === t.cancel) return goto.submenu5()
-    // Reject IVR button text as input
-    const ivrButtons = [pc.ivrGreeting, pc.ivrAddOption, pc.ivrRemoveOption, pc.ivrViewOptions, pc.ivrAnalytics, pc.disableIvr, pc.enableIvr]
-    if (ivrButtons.includes(message)) {
-      return send(chatId, phoneConfig.txt.ivrAddOption, k.of([]))
-    }
-    // Parse: KEY ACTION DESTINATION
-    const parts = message.trim().split(/\s+/)
-    if (parts.length < 2) return send(chatId, phoneConfig.txt.ivrInvalidFormat)
-    const key = parts[0]
-    const action2 = parts[1].toLowerCase()
-    const destination = parts.slice(2).join(' ')
-
-    if (!['forward', 'voicemail', 'message'].includes(action2)) {
-      return send(chatId, phoneConfig.txt.ivrInvalidFormat)
-    }
-    if (action2 === 'forward' && (!destination || destination.replace(/[^+\d]/g, '').length < 7)) {
-      return send(chatId, phoneConfig.getMsg(info?.userLanguage).enterValidForwardTo, { parse_mode: 'HTML' })
-    }
-
-    const ivrConf = num.features?.ivr || { enabled: true, greeting: '', options: {} }
-    ivrConf.options = ivrConf.options || {}
-    ivrConf.options[key] = {
-      action: action2,
-      forwardTo: action2 === 'forward' ? destination.replace(/[^+\d]/g, '') : null,
-      message: action2 === 'message' ? destination : null,
-    }
-    await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'ivr', ivrConf)
-    num.features.ivr = ivrConf
-    await saveInfo('cpActiveNumber', num)
-    send(chatId, phoneConfig.txt.ivrOptionAdded(key, action2, destination))
-    set(state, chatId, 'action', a.cpIvr)
-    return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
-      [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
-    ]))
-  }
+  // (IVR Add Option — replaced by step-by-step wizard: cpIvrOptionKey → cpIvrOptionAction → cpIvrOptionMsg → cpIvrOptionVoice → cpIvrOptionPreview)
 
   // IVR Remove Option
   if (action === a.cpIvrRemoveOption) {
