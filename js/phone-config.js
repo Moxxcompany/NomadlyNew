@@ -94,7 +94,7 @@ const btn = {
   // SIP
   revealPassword: '👁️ Reveal Password',
   resetPassword: '🔄 Reset Password',
-  softphoneGuide: '📋 Softphone Setup Guide',
+  softphoneGuide: '📖 SIP Setup Guide',
 
   // Renew
   renewNow: '🔄 Renew Now',
