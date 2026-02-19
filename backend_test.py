@@ -25,11 +25,12 @@ BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://setup-wizard-101.
 if BACKEND_URL.endswith('/api'):
     BACKEND_URL = BACKEND_URL[:-4]  # Remove /api suffix for testing
 
-class NomadlyBotTester:
+class IvrVoicemailTester:
     def __init__(self, backend_url=BACKEND_URL):
         self.backend_url = backend_url
         self.tests_run = 0
         self.tests_passed = 0
+        self.failed_tests = []
         
     def log(self, message):
         """Log messages with timestamp"""
