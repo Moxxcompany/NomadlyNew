@@ -88,20 +88,20 @@ class CloudPhonePlanChangeTester:
             )
 
     def test_nodejs_bot_loads_without_errors(self):
-        """Test Node.js bot loads without any syntax errors"""
+        """Test Node.js bot loads without syntax errors after plan change flow rewrite"""
         try:
             # Check if bot is responding at all
             response = requests.get(f"{self.base_url}/", timeout=10)
             
             if response.status_code in [200, 404]:  # Either response is fine - just needs to respond
                 self.log_result(
-                    "Node.js bot loads without any syntax errors",
+                    "Node.js bot loads without syntax errors after plan change flow rewrite",
                     True,
                     f"Node.js is responding (status: {response.status_code})"
                 )
             else:
                 self.log_result(
-                    "Node.js bot loads without any syntax errors",
+                    "Node.js bot loads without syntax errors after plan change flow rewrite",
                     False,
                     f"Node.js returned unexpected status: {response.status_code}",
                     "CRITICAL"
@@ -109,7 +109,7 @@ class CloudPhonePlanChangeTester:
                 
         except Exception as e:
             self.log_result(
-                "Node.js bot loads without any syntax errors",
+                "Node.js bot loads without syntax errors after plan change flow rewrite",
                 False,
                 f"Node.js appears to have issues: {str(e)}",
                 "CRITICAL"
