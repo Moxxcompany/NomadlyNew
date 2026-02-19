@@ -518,7 +518,7 @@ ${CHAT_BOT_NAME}`,
   redIssueUrlBitly: `Le raccourcissement a échoué. Votre portefeuille n'a pas été débité. Réessayez ou appuyez sur 💬 Obtenir de l'aide.`,
   redIssueSlugCuttly: `Le nom de lien préféré est déjà pris, essayez un autre.`,
   redIssueUrlCuttly: `Le raccourcissement a échoué. Réessayez ou appuyez sur 💬 Obtenir de l'aide.`,
-  freeLinksExhausted: `Vous avez utilisé vos ${FREE_LINKS} liens Shortit d'essai ! Abonnez-vous pour obtenir des liens Shortit illimités, des domaines ".sbs/.xyz" gratuits et plus encore. Appuyez sur "🔔 S'abonner" pour choisir un plan.`,
+  freeLinksExhausted: `Vous avez utilisé vos ${FREE_LINKS} liens d'essai ! Appuyez sur "⚡ Améliorer le plan" pour des liens illimités, domaines gratuits et plus.`,
   linksRemaining: (count, total) => `Il vous reste ${count} sur ${total || FREE_LINKS} lien${count !== 1 ? 's' : ''} Shortit d'essai.`,
   redNewPrice: (price, newPrice) =>
     `Le prix est maintenant de $${view(newPrice)} <s>($${price})</s>. Veuillez choisir la méthode de paiement.`,
