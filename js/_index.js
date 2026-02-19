@@ -5893,7 +5893,7 @@ bot?.on('message', async msg => {
     }
     if (message === pc.vmCustomGreeting) {
       set(state, chatId, 'action', a.cpVmAudioUpload)
-      return send(chatId, phoneConfig.txt.vmSendAudioPrompt)
+      return send(chatId, phoneConfig.txt.vmSendAudioPrompt, k.of([]))
     }
     if (message === pc.vmDefaultGreeting) {
       const vm = num.features?.voicemail || {}
