@@ -84,7 +84,7 @@ base_url=https://demobackend.emergentagent.com
 code_server_password=5c65c4c2
 integration_proxy_url=https://integrations.emergentagent.com
 monitor_polling_interval=1
-preview_endpoint=https://getting-started-64.preview.emergentagent.com
+preview_endpoint=https://quickstart-setup-1.preview.emergentagent.com
 run_id=multi-registrar-bot function saves data as top-level document fields (e.g., ), while the  function attempts to read it from a nested object (). This breaks any flow that relies on reading state after writing it, such as the new UX improvements.
     *   **Attempted fixes**: The agent tried modifying a specific  function to read the raw document from the database instead of using the broken  function. This approach was not fully implemented or verified.
     *   **Next debug checklist**:
@@ -149,7 +149,7 @@ base_url=https://demobackend.emergentagent.com
 code_server_password=5c65c4c2
 integration_proxy_url=https://integrations.emergentagent.com
 monitor_polling_interval=1
-preview_endpoint=https://getting-started-64.preview.emergentagent.com
+preview_endpoint=https://quickstart-setup-1.preview.emergentagent.com
 run_id=multi-registrar-bot and  functions.
         2.  Decide on a consistent state structure: either all data is top-level, or all data is nested under .
         3.  Modify either the BASH=/bin/bash
@@ -213,7 +213,7 @@ base_url=https://demobackend.emergentagent.com
 code_server_password=5c65c4c2
 integration_proxy_url=https://integrations.emergentagent.com
 monitor_polling_interval=1
-preview_endpoint=https://getting-started-64.preview.emergentagent.com
+preview_endpoint=https://quickstart-setup-1.preview.emergentagent.com
 run_id=multi-registrar-bot or  function (or both) to enforce this consistent structure across the entire application. Modifying  to return  might be a less intrusive fix.
         4.  Verify the fix by re-running the test simulation for the UX improvement flow (domain check -> shortener question with price).
         5.  Once fixed, perform a full regression test on all bot flows to ensure the state change didn't break existing functionality.
@@ -358,7 +358,7 @@ base_url=https://demobackend.emergentagent.com
 code_server_password=5c65c4c2
 integration_proxy_url=https://integrations.emergentagent.com
 monitor_polling_interval=1
-preview_endpoint=https://getting-started-64.preview.emergentagent.com
+preview_endpoint=https://quickstart-setup-1.preview.emergentagent.com
 run_id=multi-registrar-bot function doesn't always create.
 *   After fixing the state bug, you must complete and verify the five UX improvements that were in progress.
 *   The core functionality (fallback registrar, NS selection) is implemented and has been tested, but a full regression test is required after the state bug is fixed.
