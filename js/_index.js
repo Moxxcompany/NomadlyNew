@@ -5392,7 +5392,7 @@ bot?.on('message', async msg => {
       .toArray()
 
     if (!messages.length && page === 1) {
-      return send(chatId, phoneConfig.txt.smsInboxEmpty, k.of([[pc.inboxRefresh], [pc.back]]))
+      return send(chatId, phoneConfig.txt.smsInboxEmpty, k.of([[pc.inboxRefresh]]))
     }
 
     // Batch CNAM lookup for sender numbers
