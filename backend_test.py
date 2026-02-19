@@ -70,16 +70,8 @@ class NomadlyTelegramBotTester:
             with open('/app/js/tts-service.js', 'r') as f:
                 content = f.read()
             
-            # Extract VOICES object - look for const VOICES = { ... }
-            voices_match = re.search(r'const VOICES = \{(.*?)\}', content, re.DOTALL)
-            if not voices_match:
-                self.log_result("15 voices with ElevenLabs IDs", False, "VOICES object not found")
-                return False
-            
-            voices_content = voices_match.group(1)
-            
-            # Count voice entries
-            voice_entries = re.findall(r'(\w+):\s*\{[^}]*voiceId:\s*[\'"]([^\'\"]+)[\'"]', voices_content)
+            # Find all voice entries with voiceId - look for pattern: name: { ... voiceId: 'id' ... }
+            voice_entries = re.findall(r'(\w+):\s*\{[^}]*voiceId:\s*[\'"]([^\'\"]+)[\'"]', content)
             voice_count = len(voice_entries)
             
             if voice_count == 15:
