@@ -317,7 +317,7 @@ ${CHAT_BOT_NAME}`,
   greet: `${CHAT_BOT_BRAND} — shorten URLs, register domains, buy phone leads, and grow your business. All from Telegram.
 
 Get started with ${FREE_LINKS} trial Shortit links — /start
-Support: ${SUPPORT_USERNAME}`,
+Support: Tap 💬 Get Support`,
 
   linkExpired: `This short link has expired and is no longer active. Please contact us for any queries.
 Best,
@@ -329,9 +329,9 @@ Discover more: ${TG_CHANNEL}`,
   welcome: `Thank you for choosing ${CHAT_BOT_NAME}! Please choose an option below:`,
   welcomeFreeTrial: `Welcome to ${CHAT_BOT_BRAND}! You have ${FREE_LINKS} trial Shortit links to shorten URLs. Subscribe for unlimited Shortit links, free ".sbs/.xyz" domains and free USA phone validations. Experience the ${CHAT_BOT_BRAND} difference!`,
 
-  unknownCommand: `Command not found. Press /start or Please contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
+  unknownCommand: `Command not found. Press /start or tap 💬 Get Support. Discover more ${TG_HANDLE}.`,
 
-  support: `Please contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
+  support: `Need help? Tap 💬 Get Support to chat with us. Discover more ${TG_HANDLE}.`,
 
   joinChannel: `Please Join Channel ${TG_CHANNEL}`,
 
@@ -349,7 +349,7 @@ ${CHAT_BOT_NAME}`,
   domainLinking: domain =>
     `Linking domain with your account. Please note that DNS updates can take up to 30 minutes. You can check your DNS update status here: https://www.whatsmydns.net/#A/${domain}`,
 
-  errorSavingDomain: `Error saving domain in server, contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
+  errorSavingDomain: `Error saving domain in server, tap 💬 Get Support. Discover more ${TG_HANDLE}.`,
 
   chooseDomainToManage: `Please select a domain if you wish to manage its DNS settings.`,
 
@@ -425,7 +425,7 @@ ${
 
   provideLink: 'Please provide a valid URL. e.g https://google.com',
 
-  comingSoonWithdraw: `Withdrawals are not available yet. Need help? Contact ${SUPPORT_USERNAME}.`,
+  comingSoonWithdraw: `Withdrawals are not available yet. Need help? Tap 💬 Get Support.`,
   promoOptOut: `You have been unsubscribed from promotional messages. Type /start_promos to re-subscribe anytime.`,
   promoOptIn: `You have been re-subscribed to promotional messages. You will receive our latest offers and deals!`,
 
@@ -556,9 +556,9 @@ ${bal(usd, ngn)}`,
 
   redValidUrl: 'Please provide a valid URL. e.g https://google.com',
   redTakeUrl: url => `Your shortened URL is: ${url}`,
-  redIssueUrlBitly: `Link shortening failed. Your wallet was not charged. Please try again or contact ${SUPPORT_USERNAME}.`,
+  redIssueUrlBitly: `Link shortening failed. Your wallet was not charged. Please try again or tap 💬 Get Support.`,
   redIssueSlugCuttly: `The preferred link name is already taken, try another.`,
-  redIssueUrlCuttly: `Link shortening failed. Please try again or contact ${SUPPORT_USERNAME}.`,
+  redIssueUrlCuttly: `Link shortening failed. Please try again or tap 💬 Get Support.`,
   freeLinksExhausted: `You've used all ${FREE_LINKS} trial Shortit links! Subscribe to get unlimited Shortit links, free ".sbs/.xyz" domains, and more. Tap "🔔 Subscribe Here" to choose a plan.`,
   linksRemaining: (count, total) => `You have ${count} of ${total || FREE_LINKS} trial Shortit link${count !== 1 ? 's' : ''} remaining.`,
   redNewPrice: (price, newPrice) => `Price is now $${view(newPrice)} <s>($${price})</s> Please choose payment method.`,
@@ -582,7 +582,7 @@ ${bal(usd, ngn)}`,
   partialFreeValidation: (freeAmount, totalAmount, paidAmount, paidPrice) => `You have ${freeAmount.toLocaleString()} free validations remaining. Your request is for ${totalAmount.toLocaleString()} numbers.\n\n${freeAmount.toLocaleString()} will be covered free, and the remaining ${paidAmount.toLocaleString()} will cost $${paidPrice}. Please proceed with payment below.`,
   notValidHalf: `Enter a valid back half`,
   linkAlreadyExist: `Link already exists. Please try another.`,
-  issueGettingPrice: `We couldn't fetch the price right now. Please try again or contact ${SUPPORT_USERNAME}.`,
+  issueGettingPrice: `We couldn't fetch the price right now. Please try again or tap 💬 Get Support.`,
   domainInvalid: 'Domain name is invalid. Please try another domain name. Use format abcpay.com',
   chooseValidPlan: 'Please choose a valid plan',
   noDomainFound: 'No domain names found',
