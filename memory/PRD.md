@@ -2,13 +2,15 @@
 
 ## Original Problem Statement
 1. Update backend .env with provided API keys and credentials, using current pod URL for webhooks with /api prefix.
-2. Fix crypto payment messages — ensure each service shows contextually correct text, not "domain" for non-domain services.
+2. Fix crypto payment messages — ensure each service shows contextually correct text.
+3. Configure `sip.speechcue.com` as custom SIP domain with Telnyx via Cloudflare DNS SRV records.
 
 ## Architecture
 - **Backend**: FastAPI (server.py) acts as reverse proxy to Node.js Express app
 - **Node.js**: Telegram Bot (Nomadly) with Express server on port 5000
-- **Frontend**: React app (basic shell)
 - **Database**: MongoDB (Railway-hosted)
+- **Telnyx**: Cloud Phone (SIP, SMS, Voice, IVR, Voicemail)
+- **Cloudflare**: DNS management for speechcue.com
 
 ## What's Been Implemented
 
@@ -17,23 +19,41 @@
 - Set SELF_URL/SELF_URL_PROD to pod URL with /api
 - Installed Node.js deps, verified all services running
 
-### Session 2: Crypto Payment Message Fix (End-to-End Audit)
-**Bug**: Leads and Cloud Phone crypto payment flows both reused `showDepositCryptoInfoDomain`, producing incorrect "domain" wording.
+### Session 2: Crypto Payment Message Fix
+- Added `showDepositCryptoInfoLeads` and `showDepositCryptoInfoPhone` templates across 5 files
+- Updated 4 call sites in _index.js
+- All 8 crypto payment flows now have correct contextual messages
 
-**Fix — Full audit of all 8 crypto payment flows:**
-| Service | Template | Status |
-|---------|----------|--------|
-| Wallet Deposit | `showDepositCryptoInfo` | ✅ Already correct |
-| Domain | `showDepositCryptoInfoDomain` | ✅ Already correct |
-| Subscription Plan | `showDepositCryptoInfoPlan` | ✅ Already correct |
-| VPS | `showDepositCryptoInfoVps` | ✅ Already correct |
-| VPS Upgrade | `showDepositCryptoInfoVpsUpgrade` | ✅ Already correct |
-| Hosting | `showCryptoPaymentInfo` | ✅ Already correct |
-| **Leads** | `showDepositCryptoInfoLeads` | ✅ **Fixed** — "will be delivered" |
-| **Cloud Phone** | `showDepositCryptoInfoPhone` | ✅ **Fixed** — "number will be activated" |
+### Session 3: SIP Domain Configuration (sip.speechcue.com)
+**DNS SRV Records created on Cloudflare (speechcue.com zone):**
+| Record | Target | Port | Purpose |
+|--------|--------|------|---------|
+| `_sip._udp.sip.speechcue.com` | `sip.telnyx.com` | 5060 | SIP over UDP |
+| `_sip._tcp.sip.speechcue.com` | `sip.telnyx.com` | 5060 | SIP over TCP |
+| `_sips._tcp.sip.speechcue.com` | `sip.telnyx.com` | 5061 | SIP over TLS |
 
-**Files changed:** config.js, lang/en.js, lang/fr.js, lang/hi.js, lang/zh.js, _index.js (4 call sites updated)
+**Additional changes:**
+- Updated `SIP_DOMAIN=sip.speechcue.com` in backend .env
+- Verified all 3 SRV records resolve correctly via DNS
+- Railway CNAME for `sip.speechcue.com` remains for HTTP (web app) — SIP traffic routes via SRV to Telnyx
+
+**How it works:**
+1. SIP client configured with server `sip.speechcue.com`
+2. Client performs DNS SRV lookup → finds `sip.telnyx.com:5060`
+3. Client registers to Telnyx using SIP credentials (username/password)
+4. Telnyx authenticates via credential connection → routes calls/SMS via webhooks to SELF_URL
+
+## Current DNS Records (speechcue.com)
+```
+CNAME  sip.speechcue.com          → 3uhsq1yi.up.railway.app (HTTP)
+SRV    _sip._udp.sip.speechcue.com → 10 10 5060 sip.telnyx.com
+SRV    _sip._tcp.sip.speechcue.com → 10 10 5060 sip.telnyx.com
+SRV    _sips._tcp.sip.speechcue.com → 10 10 5061 sip.telnyx.com
+TXT    _railway-verify.sip...      → railway verification
+```
 
 ## Status
 - All services: RUNNING
-- All 8 crypto payment flows: CORRECT contextual messages
+- SRV DNS records: LIVE & RESOLVING ✅
+- Telnyx webhooks: AUTO-UPDATING on startup ✅
+- SIP_DOMAIN: sip.speechcue.com ✅
