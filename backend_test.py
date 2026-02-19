@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 """
-Nomadly Telegram Bot Backend Testing Suite
+Backend Testing Suite for IVR/Voicemail Overhaul
 Tests the Node.js Telegram bot backend functionality including:
-- Health checks
-- IVR/Voicemail handlers
-- Multilingual support
-- Plan upgrade/downgrade
-- Translation keys
+- Health checks (/api/health returns ok)
+- Node.js bot loads without syntax errors after major IVR/VM rewrite
+- tts-service.js loads correctly with EDENAI_API_KEY from .env
+- tts-service.js exports: generateTTS, downloadTelegramAudio, getVoiceButtons, getVoiceKeyByButton, VOICES
+- tts-service.js VOICES has 6 voices (rachel, sarah, laura, drew, charlie, clyde)
+- IVR Greeting flow: entry shows 'Type Text (AI Voice)' and 'Upload Audio' options
+- IVR Add Option flow: step-by-step wizard with key selection (0-9), action (Forward/Voicemail), message config
+- VM Greeting flow: Custom Greeting shows TTS and Upload options
+- New action states registered
+- EDENAI_API_KEY is properly set in backend/.env on its own line
 """
 import requests
 import subprocess
@@ -16,7 +21,9 @@ import json
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://setup-wizard-101.preview.emergentagent.com"
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://setup-wizard-101.preview.emergentagent.com')
+if BACKEND_URL.endswith('/api'):
+    BACKEND_URL = BACKEND_URL[:-4]  # Remove /api suffix for testing
 
 class NomadlyBotTester:
     def __init__(self, backend_url=BACKEND_URL):
