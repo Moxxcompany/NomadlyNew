@@ -5103,6 +5103,7 @@ bot?.on('message', async msg => {
       for (let i = 0; i < countryBtns.length; i += 2) {
         rows.push(countryBtns.slice(i, i + 2))
       }
+      if (phoneConfig.moreCountries.length > 0) rows.push([pc.moreCountries])
       return send(chatId, phoneConfig.txt.selectCountry, k.of(rows))
     }
     if (message === pc.myNumbers) {
