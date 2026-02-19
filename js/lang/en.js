@@ -78,7 +78,7 @@ const user = {
   wallet: '👛 My Wallet',
   urlShortenerMain: `🔗✂️ URL Shortener - ${FREE_LINKS} Trial Links`,
   vpsPlans: 'Buy Bulletproof VPS🛡️ - Hourly/Monthly',
-  buyPlan: '🔔 Subscribe Here',
+  buyPlan: '⚡ Upgrade Plan',
   domainNames: '🌐 Register Bulletproof Domain ¹⁰⁰⁰⁺ ᵀᴸᴰ',
   viewPlan: '📋 My Subscriptions',
   becomeReseller: '💼 Become A Reseller',
@@ -261,20 +261,30 @@ ${CHAT_BOT_NAME}`,
   askValidPayOption: 'Please choose a valid payment option',
   chooseSubscription:
     HIDE_SMS_APP === 'true'
-      ? `<b>Elevate Your Brand with Our Subscription Plans!</b>
+      ? `<b>Choose Your Plan</b>
 
-- <b>Daily:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domain + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited Shortit links.
-- <b>Weekly:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited Shortit links.
-- <b>Monthly:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited Shortit links.
+<b>Daily</b> — $${PRICE_DAILY}
+${DAILY_PLAN_FREE_DOMAINS} domain · ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Unlimited links
 
-(Free domains exclusive to ".sbs" and ".xyz" extensions.)`
-      : `<b>Elevate Your Brand with Our Subscription Plans!</b>
+<b>Weekly</b> — $${PRICE_WEEKLY}
+${WEEKLY_PLAN_FREE_DOMAINS} domains · ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Unlimited links
 
-- <b>Daily:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domain + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited Shortit links + unlimited BulkSMS.
-- <b>Weekly:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited Shortit links + unlimited BulkSMS.
-- <b>Monthly:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited Shortit links + unlimited BulkSMS.
+<b>Monthly</b> — $${PRICE_MONTHLY}
+${MONTHLY_PLAN_FREE_DOMAINS} domains · ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Unlimited links
 
-(Free domains exclusive to ".sbs" and ".xyz" extensions.)`,
+<i>All plans include free .sbs/.xyz domains + unlimited URL shortening.</i>`
+      : `<b>Choose Your Plan</b>
+
+<b>Daily</b> — $${PRICE_DAILY}
+${DAILY_PLAN_FREE_DOMAINS} domain · ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Unlimited links + BulkSMS
+
+<b>Weekly</b> — $${PRICE_WEEKLY}
+${WEEKLY_PLAN_FREE_DOMAINS} domains · ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Unlimited links + BulkSMS
+
+<b>Monthly</b> — $${PRICE_MONTHLY}
+${MONTHLY_PLAN_FREE_DOMAINS} domains · ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Unlimited links + BulkSMS
+
+<i>All plans include free .sbs/.xyz domains + unlimited URL shortening.</i>`,
 
   askCoupon: usd =>
     `The price is $${usd}. Would you like to apply a coupon code? If you have one, please enter it now. Otherwise, you can press 'Skip'.`,
@@ -559,7 +569,7 @@ ${bal(usd, ngn)}`,
   redIssueUrlBitly: `Link shortening failed. Your wallet was not charged. Please try again or tap 💬 Get Support.`,
   redIssueSlugCuttly: `The preferred link name is already taken, try another.`,
   redIssueUrlCuttly: `Link shortening failed. Please try again or tap 💬 Get Support.`,
-  freeLinksExhausted: `You've used all ${FREE_LINKS} trial Shortit links! Subscribe to get unlimited Shortit links, free ".sbs/.xyz" domains, and more. Tap "🔔 Subscribe Here" to choose a plan.`,
+  freeLinksExhausted: `You've used all ${FREE_LINKS} trial links! Tap "⚡ Upgrade Plan" for unlimited links, free domains, and more.`,
   linksRemaining: (count, total) => `You have ${count} of ${total || FREE_LINKS} trial Shortit link${count !== 1 ? 's' : ''} remaining.`,
   redNewPrice: (price, newPrice) => `Price is now $${view(newPrice)} <s>($${price})</s> Please choose payment method.`,
   customLink: 'Custom Link',
@@ -782,8 +792,7 @@ const userKeyboard = {
       [user.cloudPhone],
       [user.phoneNumberLeads],
       HIDE_SMS_APP === 'true' ? [user.domainNames] : [user.freeTrialAvailable, user.domainNames],
-      [user.wallet, user.viewPlan],
-      [user.buyPlan],
+      [user.wallet, user.viewPlan, user.buyPlan],
       HIDE_BECOME_RESELLER === 'true'
         ? [user.changeSetting, user.getSupport, user.joinChannel]
         : [user.changeSetting, user.becomeReseller, user.getSupport],
