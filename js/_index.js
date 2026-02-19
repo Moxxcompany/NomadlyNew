@@ -1179,6 +1179,8 @@ bot?.on('message', async msg => {
     cpReleaseDigits: 'cpReleaseDigits',
     cpIvr: 'cpIvr',
     cpIvrGreeting: 'cpIvrGreeting',
+    cpIvrTemplate: 'cpIvrTemplate',
+    cpIvrTemplateEdit: 'cpIvrTemplateEdit',
     cpIvrGreetingVoice: 'cpIvrGreetingVoice',
     cpIvrGreetingPreview: 'cpIvrGreetingPreview',
     cpIvrAddOption: 'cpIvrAddOption',
