@@ -548,15 +548,15 @@ ${CHAT_BOT_NAME}`,
   paymentSuccessFul: '✅ 付款成功！您的订单正在处理。详细信息将很快提供。',
 
   // 呼叫转移 (Cloud Phone)
-  fwdInsufficientBalance: (walletBal, rate) => `🚫 <b>无法激活呼叫转移</b>\n\n💳 钱包余额: <b>$${(walletBal || 0).toFixed(2)}</b>\n💰 所需: <b>$${rate}/分钟</b> 每次转发通话\n\n⚠️ 呼叫转移需要足够的钱包余额。没有资金，来电将不会被转发。\n\n👉 请在激活前通过 👛 我的钱包 充值至少 <b>$25</b>（约${Math.floor(25 / rate)}分钟转发）。`,
-  fwdBlocked: (number) => `🚫 <b>转发被阻止</b>\n\n号码 ${number} 是高费率或高成本目的地。无法转发到此号码。\n\n请点击 💬 <b>获取支持</b> 申请激活此目的地。`,
-  fwdNotRoutable: (number) => `⚠️ <b>目的地不可达</b>\n\n号码 ${number} 无法验证为可路由的目的地。\n\n请检查号码后重试，或点击 💬 <b>获取支持</b> 寻求帮助。`,
-  fwdValidating: '⏳ 正在验证转发目的地...',
+  fwdInsufficientBalance: (walletBal, rate) => `🚫 <b>余额不足</b>\n\n💳 $${(walletBal || 0).toFixed(2)} · 需要 $${rate}/分钟\n👉 通过 👛 钱包 充值 <b>$25</b>。`,
+  fwdBlocked: (number) => `🚫 <b>已阻止</b> — ${number} 是高费率目的地。\n点击 💬 <b>获取支持</b> 申请激活。`,
+  fwdNotRoutable: (number) => `⚠️ ${number} 不可达。请检查号码或点击 💬 <b>获取支持</b>。`,
+  fwdValidating: '⏳ 验证中...',
   fwdEnterNumber: (rate, walletBal) => {
-    let text = `请输入要转接的电话号码。\n包含国家代码（例如：+14155551234）：\n\n💰 <b>费率：$${rate}/分钟</b>，从钱包扣除。`
+    let text = `输入含国家代码的号码（例：+14155551234）\n💰 <b>$${rate}/分钟</b>`
     if (walletBal !== undefined) {
-      text += `\n💳 钱包: <b>$${walletBal.toFixed(2)}</b>`
-      if (walletBal < rate) text += `\n\n⚠️ <b>余额不足！</b> 请在激活转发前充值钱包（建议：<b>$25</b>）。`
+      text += ` · 💳 $${walletBal.toFixed(2)}`
+      if (walletBal < rate) text += `\n⚠️ 请先通过 👛 钱包 充值 <b>$25</b>。`
     }
     return text
   },
