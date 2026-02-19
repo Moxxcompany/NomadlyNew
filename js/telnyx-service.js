@@ -202,20 +202,53 @@ async function updateCallControlApp(appId, webhookUrl) {
     const body = { webhook_event_url: webhookUrl, webhook_api_version: '2' }
     // Ensure outbound voice profile is assigned (required for call forwarding/transfer)
     const appRes = await axios.get(`${BASE}/call_control_applications/${appId}`, { headers: headers() })
-    if (!appRes.data?.data?.outbound?.outbound_voice_profile_id) {
+    const currentProfileId = appRes.data?.data?.outbound?.outbound_voice_profile_id
+    if (!currentProfileId) {
       // Find an active outbound voice profile
       const profiles = await axios.get(`${BASE}/outbound_voice_profiles`, { headers: headers() })
       const active = (profiles.data?.data || []).find(p => p.enabled)
       if (active) {
         body.outbound = { outbound_voice_profile_id: active.id }
         log('Assigning outbound voice profile:', active.id, active.name)
+        await ensureProfileWhitelist(active.id)
       }
+    } else {
+      // Profile already assigned — ensure its whitelist is comprehensive
+      await ensureProfileWhitelist(currentProfileId)
     }
     const res = await axios.patch(`${BASE}/call_control_applications/${appId}`, body, { headers: headers() })
     return res.data?.data || null
   } catch (e) {
     log('Telnyx updateCallControlApp error:', e.response?.data || e.message)
     return null
+  }
+}
+
+// ── Ensure outbound voice profile has comprehensive international whitelist ──
+async function ensureProfileWhitelist(profileId) {
+  try {
+    const res = await axios.get(`${BASE}/outbound_voice_profiles/${profileId}`, { headers: headers() })
+    const current = res.data?.data?.whitelisted_destinations || []
+    // Check if PT (Portugal) is missing as a canary — if so, the whitelist needs updating
+    if (!current.includes('PT') || current.length < 50) {
+      const fullWhitelist = [
+        'US','CA','AL','AD','AT','BE','BA','BG','HR','CY','CZ','DK','EE','FO','FI','FR','DE','GI','GR','GL','GG','HU','IS','IE','IM','IT','JE','LV','LI','LT','LU','MK','MT','MC','ME','NL','NO','PL','PT','XK','RO','RU','SM','RS','SK','SI','ES','SJ','SE','CH','UA','GB','VA',
+        'AI','AG','AW','BS','BB','BM','BQ','KY','CU','CW','DM','DO','GD','GP','HT','JM','MQ','MS','PR','BL','KN','LC','MF','VC','SX','TT','TC','VG','VI','MX','PM','BZ','CR','SV','GT','HN','NI','PA','AR','BO','BR','CL','CO','EC','FK','GF','GY','PY','PE','SR','UY','VE',
+        'AS','AU','CX','CC','CK','FJ','PF','GU','KI','MH','FM','NR','NC','NZ','NU','NF','MP','PW','PG','PN','WS','SB','TK','TO','TV','UM','VU','WF','CN','HK','JP','KP','KR','MO','MN','TW',
+        'BD','BT','IO','BN','KH','IN','ID','LA','MY','MV','MM','NP','PH','SG','LK','TH','TL','VN',
+        'AF','AM','AZ','BH','GE','IR','IQ','IL','JO','KZ','KW','KG','LB','OM','PK','PS','QA','SA','SY','TJ','TR','TM','AE','UZ','YE',
+        'DZ','EG','LY','MA','TN','EH','AO','BJ','BW','BF','BI','CM','CV','CF','TD','KM','CG','CD','CI','DJ','GQ','ER','ET','GA','GM','GH','GN','GW','KE','LS','LR','MG','MW','ML','MR','MU','YT','MZ','NA','NE','NG','RE','RW','SH','ST','SN','SC','SL','SO','ZA','SS','SD','SZ','TZ','TG','UG','ZM','ZW',
+        'BY','MD','AX','AQ','BV','TF','HM','GS'
+      ]
+      await axios.patch(`${BASE}/outbound_voice_profiles/${profileId}`, {
+        whitelisted_destinations: fullWhitelist
+      }, { headers: headers() })
+      log(`[Telnyx] Updated outbound voice profile ${profileId} whitelist to ${fullWhitelist.length} countries`)
+    } else {
+      log(`[Telnyx] Outbound voice profile ${profileId} whitelist OK (${current.length} countries)`)
+    }
+  } catch (e) {
+    log(`[Telnyx] ensureProfileWhitelist error: ${e.response?.data?.errors?.[0]?.detail || e.message}`)
   }
 }
 
