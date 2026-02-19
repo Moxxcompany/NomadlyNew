@@ -73,7 +73,7 @@ const user = {
   cPanelWebHostingPlans: 'रूस cPanel होस्टिंग प्लान 🔒',
   pleskWebHostingPlans: 'रूस Plesk होस्टिंग प्लान ',
   joinChannel: '📢 चैनल जॉइन करें',
-  phoneNumberLeads: '📲 फोन लीड्स और वैलिडेशन',
+  phoneNumberLeads: '🎯 लीड्स खरीदें | अपने सत्यापित करें',
   hostingDomainsRedirect: '🌐 ऑफ़शोर होस्टिंग',
   cloudPhone: '📞 CloudPhone ˢᵖᵉᵉᶜʰᶜᵘᵉ',
   wallet: '👛 मेरा वॉलेट',

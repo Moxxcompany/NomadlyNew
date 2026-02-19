@@ -73,7 +73,7 @@ const user = {
   cPanelWebHostingPlans: '俄罗斯 cPanel 托管计划 🔒',
   pleskWebHostingPlans: '俄罗斯 Plesk 托管计划 🔒',
   joinChannel: '📢 加入频道',
-  phoneNumberLeads: '📲 电话线索与验证',
+  phoneNumberLeads: '🎯 购买线索 | 验证您的号码',
   hostingDomainsRedirect: '🌐 离岸托管',
   cloudPhone: '📞 CloudPhone ˢᵖᵉᵉᶜʰᶜᵘᵉ',
   wallet: '👛 我的钱包',

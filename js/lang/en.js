@@ -73,7 +73,7 @@ const user = {
   cPanelWebHostingPlans: 'Russia cPanel Hosting Plans 🔒',
   pleskWebHostingPlans: 'Russia Plesk Hosting Plans 🔒',
   joinChannel: '📢 Join Channel',
-  phoneNumberLeads: '🎯 Targeted Leads & Validation',
+  phoneNumberLeads: '🎯 Buy Valid Leads | Verify Yours',
   hostingDomainsRedirect: '🌐 Offshore Hosting',
   wallet: '👛 My Wallet',
   urlShortenerMain: `🔗✂️ URL Shortener - ${FREE_LINKS} Trial Links`,

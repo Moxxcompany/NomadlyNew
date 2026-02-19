@@ -74,7 +74,7 @@ const user = {
   cPanelWebHostingPlans: "Plans d'hébergement cPanel en Russie 🔒",
   pleskWebHostingPlans: "Plans d'hébergement Plesk en Russie 🔒",
   joinChannel: '📢 Rejoindre le canal',
-  phoneNumberLeads: '🎯 Leads Ciblés & Validation',
+  phoneNumberLeads: '🎯 Acheter des Leads | Vérifier les Vôtres',
   hostingDomainsRedirect: '🌐 Hébergement Offshore',
   cloudPhone: '📞 CloudPhone ˢᵖᵉᵉᶜʰᶜᵘᵉ',
   wallet: '👛 Mon portefeuille',
