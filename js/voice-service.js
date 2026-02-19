@@ -564,6 +564,10 @@ async function handleCallHangup(payload) {
   const session = activeCalls[callControlId]
   if (!session) return
 
+  // Prevent duplicate hangup processing (Telnyx can fire multiple hangup events for transferred calls)
+  if (session._hangupProcessed) return
+  session._hangupProcessed = true
+
   const duration = payload.duration_secs || 0
   const { chatId, num, from, to } = session
   const time = new Date().toLocaleString()
