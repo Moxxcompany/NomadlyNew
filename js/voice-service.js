@@ -273,7 +273,7 @@ async function handleCallAnswered(payload) {
   const session = activeCalls[callControlId]
   if (!session) return
 
-  const { num, chatId } = session
+  const { num, chatId, to, from } = session
 
   // Start recording if Business plan + recording enabled
   if (session.recordingEnabled) {
