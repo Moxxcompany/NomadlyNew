@@ -6377,9 +6377,20 @@ bot?.on('message', async msg => {
     if (draft.text && !draft.lang) {
       const langCode = ttsService.getLanguageByButton(message)
       if (langCode) {
+        // Translate if non-English
+        if (langCode !== 'en') {
+          send(chatId, `🌐 Translating to ${message}...`)
+          const translated = await ttsService.translateText(draft.text, langCode)
+          draft.translatedText = translated
+          draft.originalText = draft.text
+          draft.text = translated
+        }
         draft.lang = langCode
         await saveInfo('cpTtsDraft', draft)
         const voiceBtns = ttsService.getVoiceButtons(langCode).map(v => [v])
+        if (langCode !== 'en' && draft.translatedText) {
+          return send(chatId, `🌐 <b>Translated greeting:</b>\n\n<i>${draft.translatedText.length > 300 ? draft.translatedText.slice(0, 300) + '...' : draft.translatedText}</i>\n\n🎙️ Choose a voice:`, k.of(voiceBtns))
+        }
         return send(chatId, `🎙️ Choose a voice for your greeting:`, k.of(voiceBtns))
       }
       // Show language buttons again if invalid selection
