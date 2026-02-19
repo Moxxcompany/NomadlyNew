@@ -389,10 +389,15 @@ Plan: ${n.plan.charAt(0).toUpperCase() + n.plan.slice(1)} ($${n.planPrice}/mo)
     }
     const tg = config.forwardToTelegram ? '✅ ON' : '❌ OFF'
     const em = config.forwardToEmail ? '✅ ' + config.forwardToEmail : '❌ OFF'
-    const greetType = config.greetingType === 'custom'
-      ? (config.customAudioGreetingUrl ? '🎤 Custom Audio' : config.customGreetingText ? '📝 Custom Text' : '🔊 Default')
-      : '🔊 Default (TTS)'
-    return `🎙️ Voicemail for <b>${formatPhone(number)}</b>\n\nStatus: ✅ Enabled\n🎤 Greeting: ${greetType}\n\n📲 Send to Telegram: ${tg}\n📧 Send to Email: ${em}\n⏰ Ring Time: ${config.ringTimeout || 25}s`
+    let greetInfo = ''
+    if (config.greetingType === 'custom' && config.customAudioGreetingUrl) {
+      greetInfo = '🎤 Custom Audio'
+    } else if (config.greetingType === 'custom' && config.customGreetingText) {
+      greetInfo = `📝 Custom: "${config.customGreetingText}"`
+    } else {
+      greetInfo = '🔊 Default: "You have reached ' + formatPhone(number) + '. Please leave a message after the tone."'
+    }
+    return `🎙️ Voicemail for <b>${formatPhone(number)}</b>\n\nStatus: ✅ Enabled\n🎤 Greeting: ${greetInfo}\n\n📲 Send to Telegram: ${tg}\n📧 Send to Email: ${em}\n⏰ Ring Time: ${config.ringTimeout || 25}s`
   },
   voicemailEnabled: (number) => `✅ Voicemail enabled for ${formatPhone(number)}!\nRecordings will be sent to this Telegram chat.`,
   voicemailDisabled: (number) => `✅ Voicemail disabled for ${formatPhone(number)}.`,
