@@ -1,68 +1,54 @@
 # Nomadly Bot - PRD
 
 ## Original Problem Statement
-Telegram bot (Nomadly) setup, call forwarding fix, forwarding billing with wallet enforcement, premium prefix blocking, multi-language support, and support routing.
-
-## Architecture
-- **FastAPI Proxy** (server.py on port 8001) -> Node.js Express (port 5000)
-- **Node.js Telegram Bot** with webhook mode
-- **MongoDB** on Railway
-- **Telnyx** for Cloud Phone (SIP, SMS, Voice, IVR, Voicemail, Call Recording)
+Telegram bot (Nomadly) — setup, call forwarding fix, forwarding billing, premium prefix blocking, multi-language, support routing, UI cleanup, subscriptions aggregation.
 
 ## What's Been Implemented
 
-### Session 1 - Setup (2026-02-19)
-- Updated backend .env with all API keys
-- Set SELF_URL/SELF_URL_PROD to pod webhook URL
+### Session 5 — UI Cleanup, Dedup, Subscriptions, Branding (2026-02-19)
 
-### Session 2 - Call Forwarding Fix (2026-02-19)
-- Fixed Telnyx outbound voice profile whitelist (2 -> 250 countries)
-- Fixed `to is not defined` error in `handleCallAnswered`
+**1. Hub Welcome Text — Concise with forwarding cost:**
+- Trimmed from 6 lines to 3 lines
+- Shows: SMS inbound only · Calls plan minutes · Forwarding $0.50/min · Overage rates
 
-### Session 3 - Forwarding Billing + Premium Blocking + Support Routing (2026-02-19)
-- Added CALL_FORWARDING_RATE_MIN=0.50 to .env
-- Premium prefix blocking (satellite, premium rate numbers)
-- Telnyx Number Lookup validation on forwarding setup
-- Replaced all @onarrival1 references with live chat support
+**2. Duplicate Message Fix:**
+- Root cause: Telnyx fires multiple `call.hangup` events for transferred calls
+- Fix: Added `_hangupProcessed` guard flag on session to prevent double-processing
 
-### Session 4 - Wallet Enforcement + Multi-Language + $25 Top-up (2026-02-19)
+**3. "My Plan" → "My Subscriptions":**
+- Renamed across all 4 lang files (EN/FR/HI/ZH)
+- Rewrote handler to aggregate ALL subscriptions:
+  - Bot Plan (daily/weekly/monthly) with expiry + days left
+  - CloudPhone numbers with plan tier + expiry
+  - VPS servers with status + expiry
+  - Hosting plans with type + expiry
+- Single clean message showing all active subscriptions
 
-**Wallet Enforcement (6 checkpoints):**
-1. Menu entry: Shows wallet balance + warnings when opening Call Forwarding
-2. Mode selection: Blocks activation if wallet < $0.50, recommends $25 top-up
-3. Number entry: Re-checks wallet before saving forwarding config
-4. Live call pre-check: Rejects forwarding if wallet insufficient (TTS + Telegram msg)
-5. Mid-call billing: $0.50/min charged every 60s; auto-disconnects when wallet empty with $25 top-up recommendation
-6. Hangup billing: Final charge with itemized forwarding cost
+**4. "Cloud Phone" → "CloudPhone ˢᵖᵉᵉᶜʰᶜᵘᵉ":**
+- Updated keyboard text in all 4 lang files
+- Uses Unicode superscript for "Speechcue" to keep it smaller
 
-**$25 Top-up Recommendations shown at:**
-- Forwarding menu (when balance < $5)
-- Mode selection (when balance < CALL_FORWARDING_RATE_MIN - blocks activation)
-- After activation (estimated minutes + top-up suggestion)
-- During live call (low balance warning)
-- After forced disconnect (wallet empty)
-
-**Multi-Language Translations:**
-- Added `fwdInsufficientBalance`, `fwdBlocked`, `fwdNotRoutable`, `fwdValidating`, `fwdEnterNumber` to all 4 lang files:
-  - en.js: English
-  - fr.js: French (proper French telecom terminology)
-  - hi.js: Hindi (Devanagari script)
-  - zh.js: Chinese (Simplified)
-- All forwarding setup messages now use `trans()` system for user's preferred language
-- phone-config.js texts (English) used for non-translatable technical displays
+**5. Verbose Text Cleanup (end-to-end):**
+- Hub welcome: 6 lines → 3 lines
+- Plan selection: Removed redundant footnotes
+- Order summary: Condensed to single-line per field
+- Forwarding status/setup/updated: All trimmed 40-60%
+- Call forwarded hangup notification: Single line layout
+- Mid-call billing alerts: One-liner style
+- Overage notifications: Compact format
+- Wallet insufficient messages: Concise with $25 top-up
+- All lang translations (FR/HI/ZH) trimmed to match
 
 ## Files Modified
-- `/app/backend/.env` + `/app/.env` - CALL_FORWARDING_RATE_MIN=0.50
-- `/app/js/phone-config.js` - forwardingStatus/enterForwardNumber/forwardingUpdated now accept walletBal, forwardingInsufficientBalance text
-- `/app/js/voice-service.js` - Pre-call wallet check with low balance warning, mid-call $25 recommendation on disconnect
-- `/app/js/_index.js` - Wallet checks at every forwarding step, uses trans() for translations
-- `/app/js/lang/en.js` - fwd* translation keys added
-- `/app/js/lang/fr.js` - French fwd* translations
-- `/app/js/lang/hi.js` - Hindi fwd* translations
-- `/app/js/lang/zh.js` - Chinese fwd* translations
-- `/app/js/telnyx-service.js` - validateForwardingDestination, ensureProfileWhitelist
+- `/app/js/voice-service.js` — Duplicate fix (_hangupProcessed), trimmed all notifications
+- `/app/js/phone-config.js` — Concise hub welcome, plan text, forwarding texts, order summary
+- `/app/js/_index.js` — My Subscriptions aggregation handler, forwarding flow
+- `/app/js/lang/en.js` — CloudPhone branding, My Subscriptions, concise fwd translations
+- `/app/js/lang/fr.js` — Same updates in French
+- `/app/js/lang/hi.js` — Same updates in Hindi
+- `/app/js/lang/zh.js` — Same updates in Chinese
 
 ## Next Tasks / Backlog
-- P0: Test full forwarding flow with wallet deduction
-- P1: Add forwarding usage to Usage & Billing report
-- P2: Forwarding analytics dashboard
+- P0: Test My Subscriptions with user who has multiple active services
+- P1: Test call forwarding deduplication (should be single notification now)
+- P2: Add subscription renewal reminders (3 days before expiry)
