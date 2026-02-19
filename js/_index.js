@@ -5162,7 +5162,7 @@ bot?.on('message', async msg => {
     set(state, chatId, 'action', a.cpSelectNumber)
     send(chatId, phoneConfig.txt.searching)
     const results = await telnyxApi.searchNumbers(cc, numberType, null, 5)
-    if (!results.length) return send(chatId, phoneConfig.txt.noSearchResults, k.of([[pc.back]]))
+    if (!results.length) return send(chatId, phoneConfig.txt.noSearchResults, k.of([]))
     await saveInfo('cpSearchResults', results)
     const location = info?.cpCountryName || cc
     const numBtns = results.map((_, i) => String(i + 1))
@@ -5188,7 +5188,7 @@ bot?.on('message', async msg => {
     set(state, chatId, 'action', a.cpSelectNumber)
     send(chatId, phoneConfig.txt.searching)
     const results = await telnyxApi.searchNumbers(info?.cpCountryCode || 'US', info?.cpNumberType || 'local', areaCode, 5)
-    if (!results.length) return send(chatId, phoneConfig.txt.noSearchResults, k.of([[pc.back]]))
+    if (!results.length) return send(chatId, phoneConfig.txt.noSearchResults, k.of([]))
     await saveInfo('cpSearchResults', results)
     const numBtns = results.map((_, i) => String(i + 1))
     return send(chatId, phoneConfig.txt.showNumbers(message, results), k.of([numBtns, [pc.showMore]]))
@@ -5213,7 +5213,7 @@ bot?.on('message', async msg => {
     set(state, chatId, 'action', a.cpSelectNumber)
     send(chatId, phoneConfig.txt.searching)
     const results = await telnyxApi.searchNumbers(info?.cpCountryCode || 'US', info?.cpNumberType || 'local', areaCode, 5)
-    if (!results.length) return send(chatId, phoneConfig.txt.noSearchResults + '\nTry a different area code.', k.of([[pc.back]]))
+    if (!results.length) return send(chatId, phoneConfig.txt.noSearchResults + '\nTry a different area code.', k.of([]))
     await saveInfo('cpSearchResults', results)
     const numBtns = results.map((_, i) => String(i + 1))
     return send(chatId, phoneConfig.txt.showNumbers(`Area ${areaCode}`, results), k.of([numBtns, [pc.showMore]]))
@@ -5238,7 +5238,7 @@ bot?.on('message', async msg => {
     if (message === pc.showMore) {
       send(chatId, phoneConfig.txt.searching)
       const results = await telnyxApi.searchNumbers(info?.cpCountryCode || 'US', info?.cpNumberType || 'local', info?.cpAreaCode, 5)
-      if (!results.length) return send(chatId, phoneConfig.txt.noSearchResults, k.of([[pc.back]]))
+      if (!results.length) return send(chatId, phoneConfig.txt.noSearchResults, k.of([]))
       await saveInfo('cpSearchResults', results)
       const location = info?.cpAreaName || info?.cpCountryName || ''
       const numBtns = results.map((_, i) => String(i + 1))
@@ -5573,7 +5573,7 @@ bot?.on('message', async msg => {
           }
         })
       }
-      return send(chatId, text, k.of([[pc.back]]))
+      return send(chatId, text, k.of([]))
     }
 
     // Renew / Change Plan
