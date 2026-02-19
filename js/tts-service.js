@@ -185,6 +185,124 @@ function cleanOldAudio() {
 }
 setInterval(cleanOldAudio, 6 * 60 * 60 * 1000)
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// IVR Greeting Templates — Financial Institutions
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const TEMPLATE_CATEGORIES = [
+  { key: 'financial', name: 'Financial Services', icon: '🏦' },
+]
+
+const GREETING_TEMPLATES = {
+  financial: [
+    {
+      key: 'fin_welcome',
+      name: 'General Welcome',
+      icon: '🏦',
+      text: 'Thank you for calling [Company Name]. For account inquiries, press 1. For customer support, press 2. For fraud reporting, press 3. To repeat this menu, press 9. To speak with a representative, press 0.',
+    },
+    {
+      key: 'fin_fraud',
+      name: 'Fraud Hotline',
+      icon: '🚨',
+      text: 'Thank you for calling our Fraud Prevention Hotline. If you suspect unauthorized activity on your account, press 1. To report a lost or stolen card, press 2. For identity theft concerns, press 3. For all other inquiries, press 0. Your security is our top priority.',
+    },
+    {
+      key: 'fin_support',
+      name: 'Customer Support',
+      icon: '🎧',
+      text: 'Welcome to Customer Support. For balance inquiries and recent transactions, press 1. For transaction disputes, press 2. For loan or credit services, press 3. For online and mobile banking assistance, press 4. To return to the main menu, press 9.',
+    },
+    {
+      key: 'fin_afterhours',
+      name: 'After Hours',
+      icon: '🌙',
+      text: 'Thank you for calling [Company Name]. Our offices are currently closed. Our business hours are Monday through Friday, 9 AM to 5 PM. For urgent fraud concerns, press 1 to reach our 24-hour fraud team. Otherwise, please leave a message after the tone and we will return your call on the next business day.',
+    },
+    {
+      key: 'fin_loans',
+      name: 'Loan Services',
+      icon: '💰',
+      text: 'Thank you for calling our Loan Services Department. For mortgage inquiries, press 1. For personal loan applications, press 2. For auto loan services, press 3. To check your existing loan status, press 4. To speak with a loan officer, press 0.',
+    },
+    {
+      key: 'fin_collections',
+      name: 'Collections',
+      icon: '📋',
+      text: 'You have reached the Collections Department. For payment arrangements, press 1. To make a payment now, press 2. To dispute an account balance, press 3. To speak with a representative, press 0. Please note this call may be recorded for quality and compliance purposes.',
+    },
+    {
+      key: 'fin_wire',
+      name: 'Wire & Transfers',
+      icon: '🔄',
+      text: 'Thank you for calling Wire Transfer Services. For domestic wire transfers, press 1. For international wire transfers, press 2. To check the status of an existing transfer, press 3. For ACH and direct deposit inquiries, press 4. To speak with a specialist, press 0.',
+    },
+    {
+      key: 'fin_invest',
+      name: 'Investment Services',
+      icon: '📈',
+      text: 'Welcome to Investment Services. For portfolio inquiries, press 1. For trading and brokerage, press 2. For retirement and IRA accounts, press 3. For wealth management, press 4. To speak with a financial advisor, press 0.',
+    },
+  ],
+}
+
+/**
+ * Get template category buttons for Telegram keyboard
+ */
+function getTemplateCategoryButtons() {
+  return TEMPLATE_CATEGORIES.map(c => `${c.icon} ${c.name}`)
+}
+
+function getCategoryByButton(buttonText) {
+  for (const c of TEMPLATE_CATEGORIES) {
+    if (buttonText === `${c.icon} ${c.name}`) return c.key
+  }
+  return null
+}
+
+/**
+ * Get template buttons for a specific category
+ */
+function getTemplateButtons(categoryKey) {
+  const templates = GREETING_TEMPLATES[categoryKey] || []
+  return templates.map(t => `${t.icon} ${t.name}`)
+}
+
+function getTemplateByButton(categoryKey, buttonText) {
+  const templates = GREETING_TEMPLATES[categoryKey] || []
+  for (const t of templates) {
+    if (buttonText === `${t.icon} ${t.name}`) return t
+  }
+  return null
+}
+
+/**
+ * Translate text to target language using OpenAI
+ */
+async function translateText(text, targetLangCode) {
+  if (targetLangCode === 'en') return text
+  const langName = TTS_LANGUAGES.find(l => l.code === targetLangCode)?.name || targetLangCode
+  let OpenAI = null
+  try { OpenAI = require('openai') } catch { return text }
+  if (!OpenAI || !process.env.APP_OPEN_API_KEY) return text
+  try {
+    const ai = new OpenAI({ apiKey: process.env.APP_OPEN_API_KEY })
+    const res = await ai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: `Translate the following IVR phone greeting to ${langName}. Keep the same structure, tone, and press-key references. Replace [Company Name] as-is in the translation. Return ONLY the translated text, nothing else.` },
+        { role: 'user', content: text },
+      ],
+      max_tokens: 500,
+      temperature: 0.3,
+    })
+    return res.choices?.[0]?.message?.content?.trim() || text
+  } catch (e) {
+    log(`[TTS] Translation error: ${e.message}`)
+    return text
+  }
+}
+
 module.exports = {
   generateTTS,
   downloadTelegramAudio,
@@ -192,9 +310,16 @@ module.exports = {
   getVoiceKeyByButton,
   getLanguageButtons,
   getLanguageByButton,
+  getTemplateCategoryButtons,
+  getCategoryByButton,
+  getTemplateButtons,
+  getTemplateByButton,
+  translateText,
   VOICES,
   GENERIC_VOICES,
   TTS_LANGUAGES,
+  GREETING_TEMPLATES,
+  TEMPLATE_CATEGORIES,
   DEFAULT_VOICE,
   AUDIO_DIR,
 }
