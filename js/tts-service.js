@@ -15,6 +15,30 @@ if (!fs.existsSync(AUDIO_DIR)) {
   fs.mkdirSync(AUDIO_DIR, { recursive: true })
 }
 
+// Supported TTS languages — EdenAI + ElevenLabs support 74 languages
+const TTS_LANGUAGES = [
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+  { code: 'pt', name: 'Português', flag: '🇧🇷' },
+  { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
+  { code: 'pl', name: 'Polski', flag: '🇵🇱' },
+  { code: 'ja', name: '日本語', flag: '🇯🇵' },
+  { code: 'ko', name: '한국어', flag: '🇰🇷' },
+  { code: 'zh', name: '中文', flag: '🇨🇳' },
+  { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
+  { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+  { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+  { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
+  { code: 'sv', name: 'Svenska', flag: '🇸🇪' },
+  { code: 'da', name: 'Dansk', flag: '🇩🇰' },
+  { code: 'no', name: 'Norsk', flag: '🇳🇴' },
+  { code: 'fi', name: 'Suomi', flag: '🇫🇮' },
+  { code: 'el', name: 'Ελληνικά', flag: '🇬🇷' },
+]
+
 // Curated voice presets — mapped to EdenAI option/language params
 const VOICES = {
   rachel: { name: 'Rachel', desc: 'Calm, professional female', option: 'FEMALE', lang: 'en' },
@@ -23,6 +47,12 @@ const VOICES = {
   drew: { name: 'Drew', desc: 'Confident, warm male', option: 'MALE', lang: 'en' },
   charlie: { name: 'Charlie', desc: 'Casual, natural male', option: 'MALE', lang: 'en' },
   clyde: { name: 'Clyde', desc: 'Deep, authoritative male', option: 'MALE', lang: 'en' },
+}
+
+// Generic voices for non-English languages
+const GENERIC_VOICES = {
+  female: { name: 'Female', desc: 'Professional female voice', option: 'FEMALE' },
+  male: { name: 'Male', desc: 'Professional male voice', option: 'MALE' },
 }
 
 const DEFAULT_VOICE = 'rachel'
