@@ -403,10 +403,15 @@ Plan: ${n.plan.charAt(0).toUpperCase() + n.plan.slice(1)} ($${n.planPrice}/mo)
   voicemailDisabled: (number) => `✅ Voicemail disabled for ${formatPhone(number)}.`,
 
   vmGreetingMenu: (number, vm) => {
-    const type = vm?.greetingType === 'custom' ? '🎤 Custom Audio' : '🔊 Default (text-to-speech)'
-    const customText = vm?.customGreetingText ? `\n\nCustom text: "${vm.customGreetingText}"` : ''
-    const audioUrl = vm?.customAudioGreetingUrl ? '\n📎 Custom audio file uploaded' : ''
-    return `🔊 <b>Voicemail Greeting</b> for <b>${formatPhone(number)}</b>\n\nCurrent: ${type}${customText}${audioUrl}\n\nChoose an option below.`
+    let current = ''
+    if (vm?.greetingType === 'custom' && vm?.customAudioGreetingUrl) {
+      current = '🎤 Custom Audio\n📎 Audio file uploaded'
+    } else if (vm?.greetingType === 'custom' && vm?.customGreetingText) {
+      current = `📝 Custom Text: "${vm.customGreetingText}"`
+    } else {
+      current = `🔊 Default: "You have reached ${formatPhone(number)}. Please leave a message after the tone."`
+    }
+    return `🔊 <b>Voicemail Greeting</b> for <b>${formatPhone(number)}</b>\n\nCurrent: ${current}\n\nChoose an option below:`
   },
   vmSendAudioPrompt: '🎤 <b>Custom Audio Greeting</b>\n\nSend a voice message or audio file to use as your voicemail greeting.\n\nCallers will hear this audio when they reach your voicemail.\n\n<i>Tip: Record a professional greeting like "Hi, you\'ve reached [name]. I can\'t answer right now. Please leave a message after the tone."</i>',
   vmAudioSaved: '✅ Custom audio greeting saved! Callers will now hear your uploaded greeting.',
