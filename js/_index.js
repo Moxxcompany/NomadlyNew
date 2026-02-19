@@ -4014,7 +4014,7 @@ bot?.on('message', async msg => {
 
     // Check if user has free links or is subscribed
     if (!(await isSubscribed(chatId)) && !(await freeLinksAvailable(chatId))) {
-      return send(chatId, t.freeLinksExhausted, trans('o'))
+      return send(chatId, t.freeLinksExhausted, k.of([user.buyPlan]))
     }
 
     if (!isValidUrl(`https://abc.com/${message}`)) return send(chatId, t.notValidHalf)
