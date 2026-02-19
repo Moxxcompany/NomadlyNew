@@ -420,23 +420,19 @@ Plan: ${n.plan.charAt(0).toUpperCase() + n.plan.slice(1)} ($${n.planPrice}/mo)
 
   sipRevealed: (password) => `🔑 Password: <code>${password}</code>\n\n⚠️ Save this now — this message will be deleted in 30 seconds.`,
   sipReset: (password) => `✅ SIP password has been reset!\n\n🔑 New Password: <code>${password}</code>\n\n⚠️ Save this now. Update this password on all your SIP devices.`,
-  softphoneGuide: (domain) => `📋 <b>Softphone Setup Guide</b>
+  softphoneGuide: (domain) => `📖 <b>SIP Setup Guide</b>
 
-━━━ Zoiper (iOS/Android/Desktop) ━━━
-1. Download Zoiper from App Store/Google Play
-2. Open → Add Account → SIP
-3. Enter:
-   • Username: (from SIP Credentials)
-   • Password: (from Reveal Password)
-   • Domain: ${domain}
-4. Save → Make a test call
+<b>Zoiper</b> (iOS / Android / Desktop)
+1. Download from App Store or Google Play
+2. Add Account → SIP
+3. Enter your SIP credentials (from 🔑 SIP Credentials)
+4. Domain: <code>${domain}</code>
+5. Save and make a test call
 
-━━━ Any SIP Client ━━━
-• SIP Proxy: ${domain}
-• Transport: UDP, TCP, or TLS
-• Port: 5060 (UDP/TCP) or 5061 (TLS)
-• DTMF: RFC 2833
-• Codecs: G.711μ preferred`,
+<b>Any SIP Client</b>
+Server: <code>${domain}</code>
+Port: 5060 (UDP/TCP) or 5061 (TLS)
+DTMF: RFC 2833 · Codec: G.711μ`,
 
   // Renew
   renewMenu: (number, plan, price, expiry, autoRenewOn) => `🔄 Plan for <b>${formatPhone(number)}</b>
