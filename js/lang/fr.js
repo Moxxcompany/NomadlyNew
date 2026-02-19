@@ -566,15 +566,15 @@ ${CHAT_BOT_NAME}`,
     '✅ Paiement réussi ! Votre commande est en cours de traitement. Les détails seront disponibles sous peu.',
 
   // Renvoi d'appels (Cloud Phone)
-  fwdInsufficientBalance: (walletBal, rate) => `🚫 <b>Impossible d'activer le renvoi d'appels</b>\n\n💳 Solde du portefeuille : <b>$${(walletBal || 0).toFixed(2)}</b>\n💰 Requis : <b>$${rate}/min</b> par appel transféré\n\n⚠️ Vous avez besoin d'un solde suffisant pour le renvoi d'appels. Sans fonds, les appels entrants NE seront PAS transférés.\n\n👉 Veuillez recharger votre portefeuille d'au moins <b>$25</b> (~${Math.floor(25 / rate)} min de renvoi) via 👛 Mon Portefeuille avant d'activer.`,
-  fwdBlocked: (number) => `🚫 <b>Renvoi bloqué</b>\n\nLe numéro ${number} est une destination premium ou à coût élevé. Le renvoi d'appels vers ce numéro n'est pas disponible.\n\nVeuillez appuyer sur 💬 <b>Obtenir de l'aide</b> pour demander l'activation de cette destination.`,
-  fwdNotRoutable: (number) => `⚠️ <b>Destination non joignable</b>\n\nLe numéro ${number} n'a pas pu être validé comme destination joignable.\n\nVeuillez vérifier le numéro et réessayer, ou appuyez sur 💬 <b>Obtenir de l'aide</b>.`,
-  fwdValidating: '⏳ Validation de la destination de renvoi...',
+  fwdInsufficientBalance: (walletBal, rate) => `🚫 <b>Solde insuffisant</b>\n\n💳 $${(walletBal || 0).toFixed(2)} · Requis $${rate}/min\n👉 Rechargez <b>$25</b> via 👛 Portefeuille.`,
+  fwdBlocked: (number) => `🚫 <b>Bloqué</b> — ${number} est une destination premium.\nAppuyez 💬 <b>Obtenir de l'aide</b>.`,
+  fwdNotRoutable: (number) => `⚠️ ${number} non joignable. Vérifiez ou appuyez 💬 <b>Obtenir de l'aide</b>.`,
+  fwdValidating: '⏳ Validation en cours...',
   fwdEnterNumber: (rate, walletBal) => {
-    let text = `Entrez le numéro de téléphone vers lequel transférer les appels.\nIncluez l'indicatif pays (ex: +14155551234) :\n\n💰 <b>Tarif : $${rate}/min</b> depuis le portefeuille.`
+    let text = `Entrez le numéro avec indicatif pays (ex: +14155551234)\n💰 <b>$${rate}/min</b>`
     if (walletBal !== undefined) {
-      text += `\n💳 Portefeuille : <b>$${walletBal.toFixed(2)}</b>`
-      if (walletBal < rate) text += `\n\n⚠️ <b>Solde insuffisant !</b> Veuillez recharger votre portefeuille (recommandé : <b>$25</b>) avant d'activer le renvoi.`
+      text += ` · 💳 $${walletBal.toFixed(2)}`
+      if (walletBal < rate) text += `\n⚠️ Rechargez <b>$25</b> via 👛 Portefeuille d'abord.`
     }
     return text
   },
