@@ -350,7 +350,7 @@ async function handleCallAnswered(payload) {
           log(`[Voice] Forwarding wallet check: $${usdBal} < $${CALL_FORWARDING_RATE_MIN} required — blocking forward`)
           await _telnyxApi.speakOnCall(callControlId, 'Your wallet balance is insufficient for call forwarding. Please top up your wallet.')
           setTimeout(() => _telnyxApi.hangupCall(callControlId), 5000)
-          _bot?.sendMessage(chatId, `🚫 <b>Call Forwarding Blocked — Insufficient Wallet</b>\n\n📞 ${formatPhone(to)}\n👤 Caller: ${formatPhone(from)}\n\n💳 Wallet: <b>$${usdBal.toFixed(2)}</b>\n💰 Required: <b>$${CALL_FORWARDING_RATE_MIN}/min</b>\n\nPlease top up your wallet (recommended: <b>$25</b>) via 👛 My Wallet to enable call forwarding.`, { parse_mode: 'HTML' }).catch(() => {})
+          _bot?.sendMessage(chatId, `🚫 <b>Forwarding Blocked</b> — Wallet $${usdBal.toFixed(2)} (need $${CALL_FORWARDING_RATE_MIN}/min).\nTop up <b>$25</b> via 👛 Wallet.`, { parse_mode: 'HTML' }).catch(() => {})
           return
         }
       } catch (e) { log(`[Voice] Forwarding wallet check error: ${e.message}`) }
