@@ -177,27 +177,31 @@ class CloudPhonePlanChangeTester:
             with open('/app/js/_index.js', 'r') as f:
                 index_content = f.read()
             
-            # Check for SIP disabling on downgrade
-            sip_disable_on_downgrade = "sipDisabled" in index_content and "sipDisabled.*true" in index_content
+            # Check for specific SIP disabling pattern
+            sip_disable_pattern = "updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'sipDisabled', true)" in index_content
             
-            # Check for other feature disabling
-            ivr_disable = "ivr.*enabled.*false" in index_content or "ivr.*{.*enabled.*false" in index_content
-            recording_disable = "recording.*false" in index_content
-            voicemail_disable = "voicemail.*enabled.*false" in index_content
+            # Check for IVR disabling pattern
+            ivr_disable_pattern = "ivr', { enabled: false }" in index_content
             
-            # Look for feature disabling logic in confirm change section
-            confirm_section = re.search(r'Confirm Change.*?cpPendingPlan(.*?)(?=if|return)', index_content, re.DOTALL)
-            feature_disabling_in_confirm = False
-            if confirm_section:
-                confirm_content = confirm_section.group(1)
-                feature_disabling_in_confirm = "sipDisabled" in confirm_content and ("ivr" in confirm_content or "recording" in confirm_content)
+            # Check for recording disabling pattern  
+            recording_disable_pattern = "recording', false" in index_content
             
-            downgrade_disables_features = sip_disable_on_downgrade and feature_disabling_in_confirm
+            # Check for voicemail disabling pattern
+            voicemail_disable_pattern = "voicemail', { enabled: false }" in index_content
+            
+            # Check if these happen in the confirm change section
+            confirm_change_section = re.search(r'Confirm Change.*?cpPendingPlan(.*?)return send.*manageNumber', index_content, re.DOTALL)
+            features_disabled_in_confirm = False
+            if confirm_change_section:
+                confirm_content = confirm_change_section.group(1)
+                features_disabled_in_confirm = "sipDisabled" in confirm_content and "ivr" in confirm_content
+            
+            downgrade_disables_features = sip_disable_pattern and ivr_disable_pattern and features_disabled_in_confirm
             
             self.log_result(
                 "Plan change flow: on confirmed downgrade, SIP is disabled (sipDisabled=true), IVR/Recording/Voicemail/Email also disabled",
                 downgrade_disables_features,
-                f"SIP disable: {sip_disable_on_downgrade}, Feature disabling in confirm: {feature_disabling_in_confirm}",
+                f"SIP disable pattern: {sip_disable_pattern}, IVR disable: {ivr_disable_pattern}, Features in confirm: {features_disabled_in_confirm}",
                 "CRITICAL" if not downgrade_disables_features else "INFO"
             )
             
