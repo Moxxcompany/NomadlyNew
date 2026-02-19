@@ -468,7 +468,7 @@ class IvrVoicemailTester:
 
 def main():
     """Main test runner"""
-    tester = NomadlyBotTester()
+    tester = IvrVoicemailTester()
     success = tester.run_all_tests()
     return 0 if success else 1
 
