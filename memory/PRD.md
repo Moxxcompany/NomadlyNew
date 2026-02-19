@@ -1,13 +1,16 @@
 # Nomadly Bot - PRD & Architecture
 
 ## Problem Statement
-Set up the Nomadly Telegram bot codebase on the Emergent platform, configure environment variables and webhook URLs to use the current pod URL with `/api` prefix.
+1. Set up Nomadly Telegram bot on Emergent platform with correct env vars and webhook URLs
+2. Complete greeting templates library for financial institutions (fraud, support, etc.) with modification and translation support
+3. Integrate crypto payment for Cloud Phone service (was wallet-only for crypto callbacks)
+4. Fix other gaps (missing bank-pay-phone handler)
 
 ## Architecture
 - **Python FastAPI** (port 8001): Proxy layer that starts Node.js bot and forwards all `/api/*` requests
-- **Node.js Express** (port 5000): Main business logic - Telegram bot, URL shortener, domain registration, phone leads, hosting, VPS, cloud phone
+- **Node.js Express** (port 5000): Main business logic — Telegram bot, URL shortener, domain registration, phone leads, hosting, VPS, cloud phone
 - **React Frontend** (port 3000): Web UI
-- **MongoDB**: Remote Railway-hosted MongoDB for data storage
+- **MongoDB**: Remote Railway-hosted MongoDB
 
 ## Webhook Flow
 1. External requests → `https://getting-started-64.preview.emergentagent.com/api/*`
@@ -15,28 +18,38 @@ Set up the Nomadly Telegram bot codebase on the Emergent platform, configure env
 3. FastAPI strips `/api` prefix → forwards to Node.js on port 5000
 4. Node.js Express handles the request
 
-## Key Webhooks Configured
-- Telegram: `https://getting-started-64.preview.emergentagent.com/api/telegram/webhook`
-- Telnyx Voice: `https://getting-started-64.preview.emergentagent.com/api/telnyx/voice-webhook`
-- Telnyx SMS: `https://getting-started-64.preview.emergentagent.com/api/telnyx/sms-webhook`
+## What's Been Implemented
 
-## What's Been Implemented (2026-02-19)
-- Updated `/app/backend/.env` with all provided API keys and credentials
-- Set `SELF_URL` and `SELF_URL_PROD` to pod URL + `/api`
-- Installed Node.js dependencies (`npm install`)
-- Restarted backend service
-- Verified: MongoDB connected, Telegram webhook set & verified, Telnyx resources initialized, all services running
+### Session 1 (2026-02-19) — Setup
+- Updated `/app/backend/.env` with all API keys, set SELF_URL to pod URL + `/api`
+- Installed Node.js dependencies, verified all services running
 
-## Core Features (existing)
+### Session 2 (2026-02-19) — Templates + Crypto Payment
+**Greeting Templates Library (Complete)**
+- Expanded from 1 category (Financial) to 3 categories: Financial Services (8 templates), Customer Support (4 templates), Voicemail Greetings (6 templates) — 18 total
+- Added `📋 Use Template` button to both IVR greeting AND VM greeting menus
+- Added `cpVmTemplate` + `cpVmTemplateEdit` handlers for voicemail template flow
+- Added automatic translation for VM greeting voice (was missing — IVR had it)
+- Flow: Tap template → edit if wanted → pick language → auto-translate → pick voice → preview → save
+
+**Crypto Payment for Cloud Phone (Complete)**
+- Added `app.get('/crypto-pay-phone')` — BlockBee callback that processes phone purchase after crypto confirmation
+- Added `app.post('/dynopay/crypto-pay-phone')` — DynoPay callback for the same
+- Fixed `crypto-pay-phone` action to support BOTH BlockBee and DynoPay paths (was BlockBee-only)
+- Added `payPhone` to `dynopayActions` config
+- Added `/bank-pay-phone` to `bankApis` — was completely missing (bank payment endpoint stored but never handled)
+- All 3 callbacks (crypto BlockBee, crypto DynoPay, bank) now process the full order: buy number → generate SIP credentials → save to DB → notify admin
+
+## Core Features
 - Telegram bot (URL shortening, domain registration, phone leads, wallet, subscriptions)
-- Cloud Phone (Telnyx: SIP, SMS, Voice, IVR, Voicemail)
+- Cloud Phone (Telnyx: SIP, SMS, Voice, IVR, Voicemail with templates)
 - Domain management (Connect Reseller, Cloudflare, OpenProvider)
-- Payment processing (Fincra bank, BlockBee/DynoPay crypto)
+- Payment processing (Fincra bank, BlockBee crypto, DynoPay crypto, Wallet)
 - VPS/Hosting management
 - Auto-promo & daily coupons system
-- Multi-language support (EN, FR, HI, ZH)
+- Multi-language support (EN, FR, HI, ZH + 20 TTS languages)
 
 ## Backlog
-- P0: Connect Reseller IP whitelist (35.225.230.28 needs to be added)
-- P1: Frontend UI development (currently minimal)
-- P2: Production deployment optimization
+- P1: Frontend UI development
+- P2: Add more template categories (Healthcare, Legal, Real Estate)
+- P2: Template sharing/favorites system
