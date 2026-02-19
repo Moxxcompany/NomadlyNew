@@ -6090,7 +6090,7 @@ bot?.on('message', async msg => {
       return send(chatId, phoneConfig.txt.ivrInvalidFormat)
     }
     if (action2 === 'forward' && (!destination || destination.replace(/[^+\d]/g, '').length < 7)) {
-      return send(chatId, 'Please provide a valid forward-to number. E.g: <code>1 forward +14155551234</code>', { parse_mode: 'HTML' })
+      return send(chatId, phoneConfig.getMsg(info?.userLanguage).enterValidForwardTo, { parse_mode: 'HTML' })
     }
 
     const ivrConf = num.features?.ivr || { enabled: true, greeting: '', options: {} }
