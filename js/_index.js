@@ -9026,6 +9026,52 @@ app.get('/crypto-pay-phone', auth, async (req, res) => {
   res.send(html())
 })
 
+// Buy Leads / Validate Leads — BlockBee callback
+app.get('/crypto-pay-leads', auth, async (req, res) => {
+  const { ref, chatId, price, lastStep, leadsData } = req.pay
+  const coin = req?.query?.coin
+  const value = req?.query?.value_coin
+  if (!ref || !chatId || !price || !coin || !value || !lastStep) return log(translation('t.argsErr')) || res.send(html(translation('t.argsErr')))
+  const info = await state.findOne({ _id: parseFloat(chatId) })
+  const lang = info?.userLanguage ?? 'en'
+  del(chatIdOfPayment, ref)
+  const name = await get(nameOf, chatId)
+  const label = lastStep === 'validatorSelectFormat' ? 'Validation' : 'Leads'
+  set(payments, ref, `Crypto,${label},$${price},${chatId},${name},${new Date()},${value} ${coin}`)
+  const usdIn = await convert(value, coin, 'usd')
+  if (usdIn * 1.06 < price) {
+    sendMessage(chatId, translation('t.sentLessMoney', lang, `$${price}`, `$${usdIn}`))
+    addFundsTo(walletOf, chatId, 'usd', usdIn, lang)
+    return res.send(html(translation('t.lowPrice')))
+  }
+  if (usdIn > price) {
+    addFundsTo(walletOf, chatId, 'usd', usdIn - price, lang)
+    sendMessage(chatId, translation('t.sentMoreMoney', lang, `$${price}`, `$${usdIn}`))
+  }
+  // Restore info fields needed for walletOk processing
+  await state.updateOne({ _id: parseFloat(chatId) }, { $set: {
+    amount: leadsData?.amount, country: leadsData?.country, stateName: leadsData?.state,
+    areaCode: leadsData?.area, carrier: leadsData?.carrier, targetName: leadsData?.targetName,
+    couponApplied: leadsData?.couponApplied, format: leadsData?.format, cnamMode: leadsData?.cnamMode,
+    price: Number(price), lastStep, coin: 'USD'
+  }})
+  // Execute the leads/validation order using the walletOk handler
+  try {
+    const walletOkHandler = lastStep === 'validatorSelectFormat' ? 'validatorSelectFormat' : 'buyLeadsSelectFormat'
+    sendMessage(chatId, `✅ Crypto payment confirmed! Processing your ${label.toLowerCase()} order...`)
+    // Trigger the order by calling the internal endpoint
+    const axios = require('axios')
+    await axios.post(`http://localhost:${process.env.PORT || 5000}/trigger-leads-order`, {
+      chatId: String(chatId), lastStep: walletOkHandler, coin: 'USD'
+    }, { headers: { 'x-internal': 'true' } })
+  } catch (e) {
+    log(`[crypto-pay-leads] Error triggering order: ${e.message}`)
+    sendMessage(chatId, `✅ Payment received! Your wallet has been credited $${Number(price).toFixed(2)}. Please use wallet balance to complete your ${label.toLowerCase()} purchase.`)
+    addFundsTo(walletOf, chatId, 'usd', Number(price), lang)
+  }
+  res.send(html())
+})
+
 app.get('/crypto-pay-vps', auth, async (req, res) => {
   // Validate
   const { ref, chatId, price, vpsDetails } = req.pay
