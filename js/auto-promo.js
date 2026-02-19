@@ -23,6 +23,7 @@ const PROMO_BANNERS = {
   domains: 'https://static.prod-images.emergentagent.com/jobs/f44f3da8-af55-473d-8bbc-825abdd733f0/images/0d50cd0cdecf61aea40ebbfd3f1ab29b9f5bb0d16790f42800c73cd15f6347ff.png',
   shortener: 'https://static.prod-images.emergentagent.com/jobs/f44f3da8-af55-473d-8bbc-825abdd733f0/images/b827dbbd54971ca845894edd375b003e6d8218014282ec27a95e838c12cbd679.png',
   leads: 'https://static.prod-images.emergentagent.com/jobs/f44f3da8-af55-473d-8bbc-825abdd733f0/images/134e81dc1f0118d89cd0d3ba0d9d25fc840a6b27709a0dcb31278bf1649f35da.png',
+  cloudphone: 'https://static.prod-images.emergentagent.com/jobs/f44f3da8-af55-473d-8bbc-825abdd733f0/images/0d50cd0cdecf61aea40ebbfd3f1ab29b9f5bb0d16790f42800c73cd15f6347ff.png',
 }
 
 // Language names for AI prompt
