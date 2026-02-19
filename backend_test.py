@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Testing for Nomadly Telegram Bot Application
-Tests health endpoint, Node.js bot status, database connection, and webhook configuration.
+Backend Testing for Nomadly Telegram Cloud Phone Bot - UX Improvements
+Tests health endpoint, Node.js bot loads without syntax errors, and specific UX fixes.
 """
 
 import requests
@@ -11,7 +11,7 @@ import os
 import sys
 from datetime import datetime
 
-class NomadlyBotTester:
+class NomadlyCloudPhoneTester:
     def __init__(self):
         # Read backend URL from frontend .env file
         try:
