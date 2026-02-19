@@ -357,8 +357,8 @@ class NomadlyBackendTester:
                 content = f.read()
             
             # Look for 'leads-pay' action handler
-            action_pattern = r"action\s*===?\s*['\"]leads-pay['\"].*?(?=(?:else if|if \(action|$))"
-            action_match = re.search(action_pattern, content, re.DOTALL | re.IGNORECASE)
+            action_pattern = r"if\s*\(\s*action\s*===\s*['\"]leads-pay['\"].*?(?=if\s*\(\s*action\s*===|$)"
+            action_match = re.search(action_pattern, content, re.DOTALL)
             
             if not action_match:
                 print("'leads-pay' action handler not found")
