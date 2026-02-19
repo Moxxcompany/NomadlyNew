@@ -172,24 +172,17 @@ const t = {
   back: 'Back',
   cancel: 'Cancel',
   skip: 'Skip',
-  becomeReseller: `Hi,
+  becomeReseller: (() => {
+    const services = ['URL Shortening', 'Domain Registration']
+    if (process.env.PHONE_SERVICE_ON === 'true') services.push('Cloud Phone')
+    if (HIDE_SMS_APP !== 'true') services.push('BulkSMS')
+    if (process.env.OFFSHORE_HOSTING_ON !== 'false') services.push('Offshore Hosting')
+    return `<b>Become a ${CHAT_BOT_BRAND} Reseller</b>
 
-I'm reaching out to offer you a fantastic opportunity to become a reseller for ${CHAT_BOT_BRAND}Bot's powerful SMS marketing and hosting software.
+Resell our full suite — ${services.join(', ')} — under your brand.
 
-Key Details:
-
-Profit Share: Earn a competitive 65/35% split on each sale.
-
-Set-up Fee: Contact support for details
-
-Interested? Tap 💬 Get Support to learn more about this lucrative partnership.
-
-Looking forward to potentially collaborating with you!
-
-Best regards,
-
-${CHAT_BOT_BRAND} Team
-`,
+<b>65/35%</b> profit share on every sale. Tap 💬 <b>Get Support</b> to get started.`
+  })(),
   resetLoginAdmit: `${CHAT_BOT_BRAND} SMS: You have been successfully logged out of your previous device.Please login now`,
   resetLoginDeny: 'Ok sure. No further action required.',
   resetLogin: `${CHAT_BOT_BRAND}SMS: Are you trying to log out of your previous device?`,
@@ -569,7 +562,8 @@ ${bal(usd, ngn)}`,
   redIssueUrlBitly: `Link shortening failed. Your wallet was not charged. Please try again or tap 💬 Get Support.`,
   redIssueSlugCuttly: `The preferred link name is already taken, try another.`,
   redIssueUrlCuttly: `Link shortening failed. Please try again or tap 💬 Get Support.`,
-  freeLinksExhausted: `You've used all ${FREE_LINKS} trial links! Tap "⚡ Upgrade Plan" for unlimited links, free domains, and more.`,
+  freeLinksExhausted: `Your ${FREE_LINKS} trial links are used up! Subscribe for unlimited links + free domains + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+ validations.`,
+  subscriptionLeadsHint: `💡 Subscribers get ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+ free validations per plan. Plans from $${PRICE_DAILY}/day.`,
   linksRemaining: (count, total) => `You have ${count} of ${total || FREE_LINKS} trial Shortit link${count !== 1 ? 's' : ''} remaining.`,
   redNewPrice: (price, newPrice) => `Price is now $${view(newPrice)} <s>($${price})</s> Please choose payment method.`,
   customLink: 'Custom Link',
@@ -798,7 +792,7 @@ const userKeyboard = {
       [user.cloudPhone],
       [user.phoneNumberLeads],
       HIDE_SMS_APP === 'true' ? [user.domainNames] : [user.freeTrialAvailable, user.domainNames],
-      [user.wallet, user.viewPlan, user.buyPlan],
+      [user.wallet, user.viewPlan],
       HIDE_BECOME_RESELLER === 'true'
         ? [user.changeSetting, user.getSupport, user.joinChannel]
         : [user.changeSetting, user.becomeReseller, user.getSupport],
