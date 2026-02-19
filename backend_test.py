@@ -15,7 +15,7 @@ from datetime import datetime
 import json
 
 # Get the public backend URL from environment
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://setup-wizard-102.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://getting-started-64.preview.emergentagent.com')
 BASE_URL = f"{BACKEND_URL}/api"
 
 class NomadlyBotTester:
