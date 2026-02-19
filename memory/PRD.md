@@ -28,8 +28,10 @@ User requested setup of the Nomadly Telegram Bot application. Tasks: update .env
 - Verified webhook URLs use pod URL with /api prefix
 - Installed Node.js dependencies (npm install)
 - Verified all services: backend proxy, Node.js bot, MongoDB, Telegram webhook, Telnyx resources
-- **CNAM Priority Change**: Switched from Multitel (primary) → SignalWire (fallback) to **Telnyx (primary) → Multitel (fallback) → SignalWire (last resort)**. Telnyx uses Number Lookup API (`/v2/number_lookup/{phone}?type=caller-name`). All errors (insufficient balance, network, etc.) cascade to Multitel, then SignalWire.
-- Testing passed: 94% overall
+- **CNAM Priority Change**: Switched from Multitel (primary) → SignalWire (fallback) to **Telnyx (primary) → Multitel (fallback) → SignalWire (last resort)**. Telnyx uses Number Lookup API (`/v2/number_lookup/{phone}?type=caller-name`).
+- **Subscribe Button UX Overhaul**: Renamed "🔔 Subscribe Here" → "⚡ Upgrade Plan" across all 4 languages (EN/FR/ZH/HI). Moved from standalone row to shared row with [Wallet | My Plan | Upgrade Plan]. Trimmed verbose subscription text to clean, scannable format.
+- **Double Back Button Fix**: Updated `kOf` function in config.js to recognize plain 'Back' and 'Cancel' buttons from Cloud Phone flows, preventing `_bc` from appending duplicate [Back, Cancel] row.
+- Testing passed: 100% all iterations
 
 ## Prioritized Backlog
 - P0: None - system fully operational
