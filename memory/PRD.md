@@ -40,7 +40,10 @@ User requested setup of the Nomadly Telegram Bot application. Tasks: update .env
   - On upgrade back to SIP-eligible plan: auto re-enabled (`sipDisabled=false`).
   - Pre-downgrade warning shows ALL features that will be lost (SIP, IVR, Recording, Voicemail, Email) with limit changes (minutes/SMS) before user confirms.
   - SIP Credentials handler checks both `sipDisabled` flag AND `canAccessFeature()`.
-- Testing passed: 100% (iterations 26-30)
+- Testing passed: 100% (iterations 26-31)
+- **Upgrade Plan Preview**: Upgrade flow now shows feature gain preview (what user will unlock) + limit changes (minutes/SMS increase) with Confirm/Back buttons, matching the downgrade flow.
+- **SIP Username Branding**: `generateSipUsername()` prefix changed from `user_` to `sc_` (speechcue branding). New numbers will get `sc_XXXXXX` usernames.
+- **Cloud Phone Multilingual**: Added `phoneConfig.msg` object with 25+ message keys in 4 languages (EN/FR/ZH/HI) + `getMsg(lang)` helper. Replaced 34+ hardcoded English strings in `_index.js` with multilingual calls. Covers: validation messages, toggle confirmations, plan change headers, error messages, IVR prompts.
 
 ## Prioritized Backlog
 - P0: None - system fully operational
