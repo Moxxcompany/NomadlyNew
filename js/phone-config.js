@@ -300,7 +300,7 @@ ${plans.business.minutes} min · ${plans.business.sms} SMS · ${plans.business.f
   myNumbersList: (numbers) => {
     let text = '📱 <b>Your Cloud Phone Numbers:</b>\n\n'
     numbers.forEach((n, i) => {
-      const status = n.status === 'active' ? '✅ Active' : n.status === 'suspended' ? '⚠️ Suspended' : '❌ Released'
+      const status = n.status === 'active' ? '✅ Active' : n.status === 'suspended' ? '⚠️ Suspended' : '🗑️ Deleted'
       text += `${i + 1}️⃣  ${formatPhone(n.phoneNumber)}  ${status}\n`
       text += `    ${n.plan.charAt(0).toUpperCase() + n.plan.slice(1)} Plan · Renews ${shortDate(n.expiresAt)}\n\n`
     })
