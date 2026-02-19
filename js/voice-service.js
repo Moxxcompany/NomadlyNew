@@ -284,7 +284,7 @@ async function handleCallInitiated(payload) {
           } catch (e) {
             await _telnyxApi.hangupCall(callControlId).catch(() => {})
           }
-          _bot?.sendMessage(chatId, `🚫 <b>Call Disconnected — Wallet Empty</b>\n\n📞 ${formatPhone(to)}\n👤 Caller: ${formatPhone(from)}\n⏱️ ~${elapsedMin} min\n\nPlan minutes (${minuteLimit}) exhausted and wallet balance ran out during the call. Top up your wallet ($${OVERAGE_RATE_MIN}/min overage) or upgrade your plan.`, { parse_mode: 'HTML' }).catch(() => {})
+          _bot?.sendMessage(chatId, `🚫 <b>Call Ended</b> — Plan minutes + wallet exhausted.\n⏱️ ~${elapsedMin} min. Top up wallet or upgrade plan.`, { parse_mode: 'HTML' }).catch(() => {})
         }
       }
     }
