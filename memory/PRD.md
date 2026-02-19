@@ -1,47 +1,45 @@
 # Nomadly Bot - PRD & Architecture
 
 ## Problem Statement
-1. Set up Nomadly Telegram bot on Emergent platform with correct env vars and webhook URLs
-2. Complete greeting templates library for financial institutions (fraud, support, etc.) with modification and translation support
-3. Integrate crypto payment for Cloud Phone service (was wallet-only for crypto callbacks)
-4. Fix IVR menu option wizard — pressing a key (0-9) said "not available" because handlers were never implemented
-5. Add crypto/bank payment for Leads (buy/validate) — was wallet-only
+1. Set up Nomadly Telegram bot on Emergent platform with env vars and webhook URLs
+2. Complete greeting templates library (fraud, support, voicemail) with modification + translation
+3. Integrate crypto payment for Cloud Phone and Leads services
+4. Fix IVR menu option wizard (was unimplemented)
+5. Fix "Try Different Voice" crash (rawMsg not defined)
+6. Upgrade to 15 distinct ElevenLabs voices via EdenAI (was 6 generic MALE/FEMALE)
 
 ## Architecture
-- **Python FastAPI** (port 8001): Proxy layer that starts Node.js bot and forwards all `/api/*` requests
-- **Node.js Express** (port 5000): Main business logic — Telegram bot, URL shortener, domain registration, phone leads, hosting, VPS, cloud phone
+- **Python FastAPI** (port 8001): Proxy → Node.js
+- **Node.js Express** (port 5000): Telegram bot, URL shortener, domains, leads, phone, hosting, VPS
 - **React Frontend** (port 3000): Web UI
-- **MongoDB**: Remote Railway-hosted MongoDB
+- **MongoDB**: Remote Railway-hosted
 
 ## What's Been Implemented
 
-### Session 1 (2026-02-19) — Setup
-- Updated `/app/backend/.env` with all API keys, set SELF_URL to pod URL + `/api`
-- Installed Node.js dependencies, verified all services running
+### Session 1 — Setup
+- Updated .env with all API keys, SELF_URL = pod URL + /api, npm install, services running
 
-### Session 2 (2026-02-19) — Templates + Cloud Phone Crypto
-- Expanded template categories to 3 (Financial, Support, Voicemail) with 18 total templates
-- Added `📋 Use Template` to both IVR and VM greeting menus
-- Added `cpVmTemplate` + `cpVmTemplateEdit` handlers + VM translation
-- Added crypto/bank/DynoPay callbacks for Cloud Phone (`crypto-pay-phone`, `dynopay/crypto-pay-phone`, `bank-pay-phone`)
+### Session 2 — Templates + Cloud Phone Crypto
+- 3 template categories (Financial 8, Support 4, Voicemail 6 = 18 templates)
+- Template button added to IVR + VM greeting menus
+- cpVmTemplate + cpVmTemplateEdit handlers + VM translation
+- Crypto/bank/DynoPay callbacks for Cloud Phone
 
-### Session 3 (2026-02-19) — IVR Wizard + Leads Crypto Payment
-**IVR Menu Option Wizard (Complete)**
-- Implemented 5-step wizard: cpIvrOptionKey → cpIvrOptionAction → cpIvrOptionMsg → cpIvrOptionVoice → cpIvrOptionPreview
-- Supports 3 action types: Forward Call (enter phone number), Play Message (Template/TTS/Upload with translation), Send to Voicemail
-- Each step has proper back navigation, template selection with translation, voice preview, and save
-- Options saved to ivrConf.options[key] with proper structure for voice-service.js
+### Session 3 — IVR Wizard + Leads Crypto
+- 5-step IVR option wizard: Key → Action → Configure → Preview → Save
+- 3 action types: Forward Call, Play Message (Template/TTS/Upload), Send to Voicemail
+- leads-pay action with Crypto/Bank/Wallet for Buy Leads + Validate Leads
+- BlockBee + DynoPay + bankApis callbacks that directly process leads orders
 
-**Leads Crypto/Bank Payment (Complete)**
-- Added `leads-pay` action with Crypto/Bank/Wallet options for both buy leads AND validate leads
-- Added `crypto-pay-leads` + `bank-pay-leads` action handlers
-- Added 3 callback endpoints: `app.get('/crypto-pay-leads')` (BlockBee), `app.post('/dynopay/crypto-pay-leads')` (DynoPay), `bankApis['/bank-pay-leads']`
-- All callbacks directly process leads orders (no wallet intermediate step)
-- Changed `askCoupon` flows and `targetLeadsConfirm` to use `leads-pay` instead of wallet-only
-- Added `payLeads` to `dynopayActions`
+### Session 4 — Voice Bug Fix + ElevenLabs Upgrade
+- Fixed ReferenceError: rawMsg → msg (12 occurrences in _index.js)
+- Upgraded from 6 generic voices (MALE/FEMALE) to 15 distinct ElevenLabs voices with real voice IDs
+- Voices: Rachel, Sarah, Laura, Emily, Domi, Dorothy, Glinda (female) + Drew, Charlie, Clyde, Adam, Josh, Arnold, Sam, Thomas (male)
+- All 15 voices available for all 20 languages (ElevenLabs multilingual v2)
+- EdenAI API now passes voiceId as option parameter for distinct voice selection
 
 ## Backlog
 - P1: Frontend UI development
-- P2: Add more template categories (Healthcare, Legal, Real Estate)
-- P2: Template favorites/recently used system
-- P2: Leads order history and reorder feature
+- P2: More template categories (Healthcare, Legal, Real Estate)
+- P2: Template favorites/recently used
+- P2: Leads reorder feature
