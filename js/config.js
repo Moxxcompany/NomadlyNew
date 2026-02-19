@@ -244,20 +244,30 @@ ${CHAT_BOT_NAME}`,
   askValidPayOption: 'Please choose a valid payment option',
   chooseSubscription:
     HIDE_SMS_APP === 'true'
-      ? `<b>Elevate Your Brand with Our Subscription Plans!</b>
+      ? `<b>Choose Your Plan</b>
 
-- <b>Daily:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domain + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations.
-- <b>Weekly:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations.
-- <b>Monthly:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations.
+<b>Daily</b> — $${PRICE_DAILY}
+${DAILY_PLAN_FREE_DOMAINS} domain · ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Unlimited links
 
-(Free domains exclusive to ".sbs" and ".xyz" extensions.)`
-      : `<b>Elevate Your Brand with Our Subscription Plans!</b>
+<b>Weekly</b> — $${PRICE_WEEKLY}
+${WEEKLY_PLAN_FREE_DOMAINS} domains · ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Unlimited links
 
-- <b>Daily:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domain + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited BulkSMS.
-- <b>Weekly:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited BulkSMS.
-- <b>Monthly:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} free ".sbs/.xyz" domains + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} free USA phone validations + unlimited BulkSMS.
+<b>Monthly</b> — $${PRICE_MONTHLY}
+${MONTHLY_PLAN_FREE_DOMAINS} domains · ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Unlimited links
 
-(Free domains exclusive to ".sbs" and ".xyz" extensions.)`,
+<i>All plans include free .sbs/.xyz domains + unlimited URL shortening.</i>`
+      : `<b>Choose Your Plan</b>
+
+<b>Daily</b> — $${PRICE_DAILY}
+${DAILY_PLAN_FREE_DOMAINS} domain · ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Unlimited links + BulkSMS
+
+<b>Weekly</b> — $${PRICE_WEEKLY}
+${WEEKLY_PLAN_FREE_DOMAINS} domains · ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Unlimited links + BulkSMS
+
+<b>Monthly</b> — $${PRICE_MONTHLY}
+${MONTHLY_PLAN_FREE_DOMAINS} domains · ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Unlimited links + BulkSMS
+
+<i>All plans include free .sbs/.xyz domains + unlimited URL shortening.</i>`,
 
   askCoupon: usd =>
     `The price is $${usd}. Would you like to apply a coupon code? If you have one, please enter it now. Otherwise, you can press 'Skip'.`,
