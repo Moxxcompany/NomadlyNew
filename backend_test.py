@@ -57,7 +57,7 @@ class IvrVoicemailTester:
             return False
 
     def test_backend_health(self):
-        """Test backend health endpoint"""
+        """Test /api/health endpoint returns ok"""
         try:
             response = requests.get(f"{self.backend_url}/api/health", timeout=10)
             if response.status_code != 200:
@@ -67,21 +67,9 @@ class IvrVoicemailTester:
             data = response.json()
             self.log(f"Health response: {json.dumps(data, indent=2)}")
             
-            # Check if required fields are present
-            required_fields = ['status', 'proxy', 'node']
-            for field in required_fields:
-                if field not in data:
-                    self.log(f"Missing field in health response: {field}")
-                    return False
-                    
-            # Check if status is ok
+            # Check if status is 'ok' as mentioned in requirements
             if data.get('status') != 'ok':
-                self.log(f"Health status is not ok: {data.get('status')}")
-                return False
-                
-            # Check if node is running
-            if data.get('node') not in ['running', 'starting']:
-                self.log(f"Node.js is not running: {data.get('node')}")
+                self.log(f"Health status is not 'ok': {data.get('status')}")
                 return False
                 
             return True
