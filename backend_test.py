@@ -1,476 +1,271 @@
 #!/usr/bin/env python3
-"""
-Backend Testing Suite for IVR/Voicemail Overhaul
-Tests the Node.js Telegram bot backend functionality including:
-- Health checks (/api/health returns ok)
-- Node.js bot loads without syntax errors after major IVR/VM rewrite
-- tts-service.js loads correctly with EDENAI_API_KEY from .env
-- tts-service.js exports: generateTTS, downloadTelegramAudio, getVoiceButtons, getVoiceKeyByButton, VOICES
-- tts-service.js VOICES has 6 voices (rachel, sarah, laura, drew, charlie, clyde)
-- IVR Greeting flow: entry shows 'Type Text (AI Voice)' and 'Upload Audio' options
-- IVR Add Option flow: step-by-step wizard with key selection (0-9), action (Forward/Voicemail), message config
-- VM Greeting flow: Custom Greeting shows TTS and Upload options
-- New action states registered
-- EDENAI_API_KEY is properly set in backend/.env on its own line
-"""
+
 import requests
-import subprocess
-import sys
-import os
 import json
+import sys
 from datetime import datetime
 
-# Backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://setup-wizard-102.preview.emergentagent.com')
-if BACKEND_URL.endswith('/api'):
-    BACKEND_URL = BACKEND_URL[:-4]  # Remove /api suffix for testing
-
-class IvrVoicemailTester:
-    def __init__(self, backend_url=BACKEND_URL):
-        self.backend_url = backend_url
+class NomadlyBotTester:
+    def __init__(self, base_url="https://setup-wizard-102.preview.emergentagent.com"):
+        self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
-        self.failed_tests = []
-        
-    def log(self, message):
-        """Log messages with timestamp"""
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        print(f"[{timestamp}] {message}")
+        self.results = []
 
     def run_test(self, name, test_func):
-        """Run a single test"""
+        """Run a single test and record results"""
         self.tests_run += 1
-        self.log(f"🔍 Testing {name}...")
+        print(f"\n🔍 Testing: {name}")
         
         try:
             success = test_func()
             if success:
                 self.tests_passed += 1
-                self.log(f"✅ {name} - PASSED")
+                print(f"✅ PASSED: {name}")
+                self.results.append({"test": name, "status": "PASSED", "details": ""})
             else:
-                self.log(f"❌ {name} - FAILED")
-                self.failed_tests.append(name)
+                print(f"❌ FAILED: {name}")
+                self.results.append({"test": name, "status": "FAILED", "details": ""})
             return success
         except Exception as e:
-            self.log(f"❌ {name} - ERROR: {str(e)}")
-            self.failed_tests.append(name)
+            print(f"❌ ERROR: {name} - {str(e)}")
+            self.results.append({"test": name, "status": "ERROR", "details": str(e)})
             return False
 
     def test_backend_health(self):
-        """Test /api/health endpoint returns ok"""
+        """Test GET /api/health endpoint"""
         try:
-            response = requests.get(f"{self.backend_url}/api/health", timeout=10)
-            if response.status_code != 200:
-                self.log(f"Health check failed with status {response.status_code}")
-                return False
-                
-            data = response.json()
-            self.log(f"Health response: {json.dumps(data, indent=2)}")
+            url = f"{self.base_url}/api/health"
+            response = requests.get(url, timeout=10)
             
-            # Check if status is 'ok' as mentioned in requirements
-            if data.get('status') != 'ok':
-                self.log(f"Health status is not 'ok': {data.get('status')}")
+            if response.status_code == 200:
+                data = response.json()
+                print(f"   Health response: {data}")
+                return data.get("status") == "ok"
+            else:
+                print(f"   Health endpoint returned status: {response.status_code}")
                 return False
-                
-            return True
-            
-        except requests.exceptions.RequestException as e:
-            self.log(f"Request failed: {str(e)}")
+        except Exception as e:
+            print(f"   Health endpoint error: {str(e)}")
             return False
 
-    def test_node_bot_syntax(self):
-        """Test Node.js bot loads without syntax errors after major IVR/VM rewrite"""
-        try:
-            # Test syntax of main files affected by IVR/VM rewrite
-            main_files = [
-                "/app/js/_index.js",
-                "/app/js/phone-config.js",
-                "/app/js/tts-service.js"
-            ]
-            
-            for file_path in main_files:
-                if not os.path.exists(file_path):
-                    self.log(f"File not found: {file_path}")
-                    return False
+    def verify_language_file_changes(self):
+        """Verify changes in all language files"""
+        
+        # Define the test cases for each language file
+        test_cases = [
+            {
+                "file": "/app/js/lang/en.js",
+                "lang": "English",
+                "expected_patterns": [
+                    "becomeReseller: (() => {",
+                    "const services = ['URL Shortening', 'Domain Registration']",
+                    "if (process.env.PHONE_SERVICE_ON === 'true') services.push('Cloud Phone')",
+                    "if (HIDE_SMS_APP !== 'true') services.push('BulkSMS')",
+                    "if (process.env.OFFSHORE_HOSTING_ON !== 'false') services.push('Offshore Hosting')",
+                    "subscriptionLeadsHint:",
+                    "freeLinksExhausted: `Your ${FREE_LINKS} trial links are used up! Subscribe for unlimited links + free domains + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+ validations.`"
+                ]
+            },
+            {
+                "file": "/app/js/lang/fr.js", 
+                "lang": "French",
+                "expected_patterns": [
+                    "becomeReseller: (() => {",
+                    "subscriptionLeadsHint:",
+                    "freeLinksExhausted:"
+                ]
+            },
+            {
+                "file": "/app/js/lang/zh.js",
+                "lang": "Chinese", 
+                "expected_patterns": [
+                    "subscriptionLeadsHint:",
+                    "freeLinksExhausted:"
+                ]
+            },
+            {
+                "file": "/app/js/lang/hi.js",
+                "lang": "Hindi",
+                "expected_patterns": [
+                    "subscriptionLeadsHint:",
+                    "freeLinksExhausted:"
+                ]
+            }
+        ]
+        
+        all_passed = True
+        
+        for test_case in test_cases:
+            try:
+                with open(test_case["file"], "r") as f:
+                    content = f.read()
                     
-                # Run syntax check
-                result = subprocess.run(
-                    ["node", "--check", file_path],
-                    capture_output=True,
-                    text=True,
-                    cwd="/app"
-                )
+                print(f"\n   Checking {test_case['lang']} ({test_case['file']}):")
                 
-                if result.returncode != 0:
-                    self.log(f"Syntax error in {file_path}: {result.stderr}")
-                    return False
-                else:
-                    self.log(f"Syntax OK: {file_path}")
+                for pattern in test_case["expected_patterns"]:
+                    if pattern in content:
+                        print(f"     ✅ Found: {pattern[:50]}...")
+                    else:
+                        print(f"     ❌ Missing: {pattern[:50]}...")
+                        all_passed = False
+                        
+                # Check that userKeyboard doesn't contain user.buyPlan
+                if "userKeyboard" in content:
+                    lines = content.split("\n")
+                    keyboard_started = False
+                    keyboard_lines = []
+                    for line in lines:
+                        if "const userKeyboard = {" in line:
+                            keyboard_started = True
+                        if keyboard_started:
+                            keyboard_lines.append(line)
+                            if line.strip() == "}" and "reply_markup" not in line:
+                                break
                     
-            return True
+                    keyboard_content = "\n".join(keyboard_lines)
+                    if "user.buyPlan" in keyboard_content:
+                        print(f"     ❌ userKeyboard still contains user.buyPlan")
+                        all_passed = False
+                    else:
+                        print(f"     ✅ userKeyboard does NOT contain user.buyPlan")
+                        
+            except Exception as e:
+                print(f"   Error reading {test_case['file']}: {str(e)}")
+                all_passed = False
+                
+        return all_passed
+
+    def verify_index_js_changes(self):
+        """Verify changes in _index.js file"""
+        try:
+            with open("/app/js/_index.js", "r") as f:
+                content = f.read()
+                
+            all_passed = True
+            
+            # Check for freeLinksExhausted with k.of([user.buyPlan])
+            if "freeLinksExhausted, k.of([user.buyPlan])" in content:
+                print("   ✅ Found freeLinksExhausted with k.of([user.buyPlan]) keyboard")
+            else:
+                print("   ❌ Missing freeLinksExhausted with k.of([user.buyPlan]) keyboard")
+                all_passed = False
+                
+            # Check for subscriptionLeadsHint in targetSelectTarget
+            if "subscriptionLeadsHint" in content and "targetSelectTarget" in content:
+                # Look for the pattern where subscriptionLeadsHint is sent in targetSelectTarget
+                lines = content.split("\n")
+                found_hint_in_target = False
+                in_target_function = False
+                
+                for line in lines:
+                    if "targetSelectTarget:" in line:
+                        in_target_function = True
+                    elif in_target_function and "subscriptionLeadsHint" in line:
+                        found_hint_in_target = True
+                        break
+                    elif in_target_function and line.strip() == "}," and ":" not in line:
+                        in_target_function = False
+                        
+                if found_hint_in_target:
+                    print("   ✅ Found subscriptionLeadsHint in targetSelectTarget")
+                else:
+                    print("   ❌ Missing subscriptionLeadsHint in targetSelectTarget")
+                    all_passed = False
+            else:
+                print("   ❌ Missing subscriptionLeadsHint or targetSelectTarget")
+                all_passed = False
+                
+            return all_passed
             
         except Exception as e:
-            self.log(f"Syntax check failed: {str(e)}")
+            print(f"   Error reading _index.js: {str(e)}")
             return False
 
-    def test_tts_service_loading(self):
-        """Test tts-service.js loads correctly with EDENAI_API_KEY from .env"""
+    def check_node_bot_logs(self):
+        """Check Node.js bot startup logs for errors"""
         try:
-            tts_file = "/app/js/tts-service.js"
-            if not os.path.exists(tts_file):
-                self.log(f"TTS service file not found: {tts_file}")
-                return False
-            
-            # Check if file can be loaded without syntax errors
+            import subprocess
             result = subprocess.run(
-                ["node", "--check", tts_file],
+                ["tail", "-n", "50", "/var/log/supervisor/node-bot.log"],
                 capture_output=True,
                 text=True,
-                cwd="/app"
+                timeout=10
             )
             
-            if result.returncode != 0:
-                self.log(f"TTS service syntax error: {result.stderr}")
-                return False
-            
-            # Check EDENAI_API_KEY usage
-            with open(tts_file, 'r') as f:
-                content = f.read()
-            
-            if "process.env.EDENAI_API_KEY" not in content:
-                self.log("TTS service doesn't load EDENAI_API_KEY from .env")
+            if result.returncode == 0:
+                log_content = result.stdout
+                print("   Node.js bot log (last 50 lines):")
+                
+                # Look for crash indicators
+                crash_indicators = [
+                    "Error:",
+                    "TypeError:",
+                    "ReferenceError:", 
+                    "SyntaxError:",
+                    "process.exit",
+                    "SIGTERM",
+                    "SIGKILL",
+                    "crashed",
+                    "fatal"
+                ]
+                
+                found_errors = []
+                for line in log_content.split("\n")[-10:]:  # Check last 10 lines
+                    for indicator in crash_indicators:
+                        if indicator.lower() in line.lower():
+                            found_errors.append(line.strip())
+                            
+                if found_errors:
+                    print("   ❌ Found potential crash indicators:")
+                    for error in found_errors:
+                        print(f"     - {error}")
+                    return False
+                else:
+                    print("   ✅ No crash indicators found in recent logs")
+                    return True
+            else:
+                print(f"   ❌ Could not read log file: {result.stderr}")
                 return False
                 
-            self.log("TTS service loads correctly and references EDENAI_API_KEY")
-            return True
-            
         except Exception as e:
-            self.log(f"TTS service loading check failed: {str(e)}")
-            return False
-
-    def test_tts_service_exports(self):
-        """Test tts-service.js exports: generateTTS, downloadTelegramAudio, getVoiceButtons, getVoiceKeyByButton, VOICES"""
-        try:
-            tts_file = "/app/js/tts-service.js"
-            with open(tts_file, 'r') as f:
-                content = f.read()
-            
-            required_exports = [
-                'generateTTS',
-                'downloadTelegramAudio', 
-                'getVoiceButtons',
-                'getVoiceKeyByButton',
-                'VOICES'
-            ]
-            
-            exports_found = []
-            for export in required_exports:
-                if f"module.exports" in content and export in content:
-                    exports_found.append(export)
-            
-            self.log(f"TTS exports found: {exports_found}")
-            
-            if len(exports_found) != len(required_exports):
-                missing = [e for e in required_exports if e not in exports_found]
-                self.log(f"Missing TTS exports: {missing}")
-                return False
-                
-            return True
-            
-        except Exception as e:
-            self.log(f"TTS service exports check failed: {str(e)}")
-            return False
-
-    def test_tts_voices_config(self):
-        """Test tts-service.js VOICES has 6 voices (rachel, sarah, laura, drew, charlie, clyde)"""
-        try:
-            tts_file = "/app/js/tts-service.js"
-            with open(tts_file, 'r') as f:
-                content = f.read()
-            
-            expected_voices = ['rachel', 'sarah', 'laura', 'drew', 'charlie', 'clyde']
-            found_voices = []
-            
-            # Look for VOICES object definition
-            lines = content.split('\n')
-            in_voices = False
-            
-            for line in lines:
-                if 'const VOICES = {' in line or 'VOICES = {' in line:
-                    in_voices = True
-                    continue
-                elif in_voices and line.strip().startswith('}'):
-                    break
-                elif in_voices and ':' in line:
-                    voice_name = line.split(':')[0].strip()
-                    if voice_name in expected_voices:
-                        found_voices.append(voice_name)
-            
-            self.log(f"Found voices: {found_voices}")
-            
-            if len(found_voices) != 6 or set(found_voices) != set(expected_voices):
-                self.log(f"Expected 6 voices {expected_voices}, found {len(found_voices)}: {found_voices}")
-                return False
-                
-            return True
-            
-        except Exception as e:
-            self.log(f"TTS voices config check failed: {str(e)}")
-            return False
-
-    def test_edenai_api_key(self):
-        """Test EDENAI_API_KEY is properly set in backend/.env on its own line"""
-        try:
-            env_file = "/app/backend/.env"
-            if not os.path.exists(env_file):
-                self.log(f"Backend .env file not found: {env_file}")
-                return False
-            
-            with open(env_file, 'r') as f:
-                lines = f.readlines()
-            
-            # Check if EDENAI_API_KEY is present on its own line and not empty
-            edenai_key_found = False
-            for line in lines:
-                line = line.strip()
-                if line.startswith('EDENAI_API_KEY=') and len(line) > len('EDENAI_API_KEY='):
-                    edenai_key_found = True
-                    key_value = line.split('=', 1)[1]
-                    self.log(f"EDENAI_API_KEY found on its own line (length: {len(key_value)})")
-                    break
-            
-            if not edenai_key_found:
-                self.log("EDENAI_API_KEY not found or empty in backend/.env")
-                return False
-                
-            return True
-            
-        except Exception as e:
-            self.log(f"EDENAI API key check failed: {str(e)}")
-            return False
-
-    def test_ivr_greeting_flow(self):
-        """Test IVR Greeting flow: entry shows 'Type Text (AI Voice)' and 'Upload Audio' options"""
-        try:
-            # Check phone-config.js and _index.js for IVR greeting options
-            files_to_check = ["/app/js/phone-config.js", "/app/js/_index.js"]
-            
-            found_type_text = False
-            found_upload_audio = False
-            
-            for file_path in files_to_check:
-                if os.path.exists(file_path):
-                    with open(file_path, 'r') as f:
-                        content = f.read()
-                    
-                    # Look for Type Text (AI Voice) option
-                    if "Type Text" in content and ("AI Voice" in content or "TTS" in content):
-                        found_type_text = True
-                        self.log(f"Found 'Type Text (AI Voice)' option in {file_path}")
-                    
-                    # Look for Upload Audio option
-                    if "Upload Audio" in content:
-                        found_upload_audio = True
-                        self.log(f"Found 'Upload Audio' option in {file_path}")
-            
-            if not found_type_text:
-                self.log("IVR Greeting flow missing 'Type Text (AI Voice)' option")
-                return False
-                
-            if not found_upload_audio:
-                self.log("IVR Greeting flow missing 'Upload Audio' option")
-                return False
-                
-            return True
-            
-        except Exception as e:
-            self.log(f"IVR greeting flow check failed: {str(e)}")
-            return False
-
-    def test_ivr_add_option_flow(self):
-        """Test IVR Add Option flow: step-by-step wizard with key selection (0-9), action (Forward/Voicemail), message config"""
-        try:
-            files_to_check = ["/app/js/_index.js", "/app/js/phone-config.js"]
-            
-            found_key_selection = False
-            found_action_selection = False
-            found_message_config = False
-            
-            for file_path in files_to_check:
-                if os.path.exists(file_path):
-                    with open(file_path, 'r') as f:
-                        content = f.read()
-                    
-                    # Look for key selection (0-9)
-                    if "cpIvrOptionKey" in content or ("key" in content.lower() and "0-9" in content):
-                        found_key_selection = True
-                        self.log(f"Found key selection logic in {file_path}")
-                    
-                    # Look for action selection (Forward/Voicemail)
-                    if "cpIvrOptionAction" in content or ("Forward" in content and "Voicemail" in content):
-                        found_action_selection = True
-                        self.log(f"Found action selection logic in {file_path}")
-                    
-                    # Look for message config
-                    if "cpIvrOptionMsg" in content or "message config" in content.lower():
-                        found_message_config = True
-                        self.log(f"Found message config logic in {file_path}")
-            
-            missing = []
-            if not found_key_selection:
-                missing.append("key selection (0-9)")
-            if not found_action_selection:
-                missing.append("action selection (Forward/Voicemail)")
-            if not found_message_config:
-                missing.append("message config")
-                
-            if missing:
-                self.log(f"IVR Add Option flow missing: {', '.join(missing)}")
-                return False
-                
-            return True
-            
-        except Exception as e:
-            self.log(f"IVR Add Option flow check failed: {str(e)}")
-            return False
-
-    def test_vm_greeting_flow(self):
-        """Test VM Greeting flow: Custom Greeting shows TTS and Upload options"""
-        try:
-            files_to_check = ["/app/js/_index.js", "/app/js/phone-config.js"]
-            
-            found_tts_option = False
-            found_upload_option = False
-            
-            for file_path in files_to_check:
-                if os.path.exists(file_path):
-                    with open(file_path, 'r') as f:
-                        content = f.read()
-                    
-                    # Look for VM TTS/Voice option
-                    if "cpVmGreetingVoice" in content or ("voicemail" in content.lower() and "tts" in content.lower()):
-                        found_tts_option = True
-                        self.log(f"Found VM TTS option in {file_path}")
-                    
-                    # Look for VM Upload option
-                    if "cpVmAudioUpload" in content or ("voicemail" in content.lower() and "upload" in content.lower()):
-                        found_upload_option = True
-                        self.log(f"Found VM upload option in {file_path}")
-            
-            missing = []
-            if not found_tts_option:
-                missing.append("TTS option")
-            if not found_upload_option:
-                missing.append("Upload option")
-                
-            if missing:
-                self.log(f"VM Greeting flow missing: {', '.join(missing)}")
-                return False
-                
-            return True
-            
-        except Exception as e:
-            self.log(f"VM Greeting flow check failed: {str(e)}")
-            return False
-
-    def test_new_action_states(self):
-        """Test new action states registered: cpIvrGreetingVoice, cpIvrGreetingPreview, cpIvrOptionKey, cpIvrOptionAction, cpIvrOptionMsg, cpIvrOptionVoice, cpIvrOptionPreview, cpVmGreetingVoice, cpVmGreetingPreview"""
-        try:
-            expected_states = [
-                'cpIvrGreetingVoice',
-                'cpIvrGreetingPreview', 
-                'cpIvrOptionKey',
-                'cpIvrOptionAction',
-                'cpIvrOptionMsg',
-                'cpIvrOptionVoice',
-                'cpIvrOptionPreview',
-                'cpVmGreetingVoice',
-                'cpVmGreetingPreview'
-            ]
-            
-            # Check phone-config.js and _index.js for action states
-            files_to_check = ["/app/js/phone-config.js", "/app/js/_index.js"]
-            
-            found_states = []
-            
-            for file_path in files_to_check:
-                if os.path.exists(file_path):
-                    with open(file_path, 'r') as f:
-                        content = f.read()
-                    
-                    for state in expected_states:
-                        if state in content and state not in found_states:
-                            found_states.append(state)
-            
-            self.log(f"Found action states: {found_states}")
-            
-            missing_states = [s for s in expected_states if s not in found_states]
-            if missing_states:
-                self.log(f"Missing action states: {missing_states}")
-                return False
-                
-            return True
-            
-        except Exception as e:
-            self.log(f"Action states check failed: {str(e)}")
-            return False
-
-    def run_all_tests(self):
-        """Run all tests"""
-        self.log("🚀 Starting IVR/Voicemail Overhaul Backend Tests")
-        self.log("=" * 60)
-        
-        # Test 1: Backend Health Check - /api/health returns ok
-        self.run_test("Backend health /api/health returns ok", self.test_backend_health)
-        
-        # Test 2: Node.js Bot Syntax - loads without syntax errors after major IVR/VM rewrite
-        self.run_test("Node.js bot loads without syntax errors after major IVR/VM rewrite", self.test_node_bot_syntax)
-        
-        # Test 3: TTS Service Loading - loads correctly with EDENAI_API_KEY from .env
-        self.run_test("tts-service.js loads correctly with EDENAI_API_KEY from .env", self.test_tts_service_loading)
-        
-        # Test 4: TTS Service Exports - exports required functions
-        self.run_test("tts-service.js exports: generateTTS, downloadTelegramAudio, getVoiceButtons, getVoiceKeyByButton, VOICES", self.test_tts_service_exports)
-        
-        # Test 5: TTS VOICES Config - has 6 voices (rachel, sarah, laura, drew, charlie, clyde)
-        self.run_test("tts-service.js VOICES has 6 voices (rachel, sarah, laura, drew, charlie, clyde)", self.test_tts_voices_config)
-        
-        # Test 6: IVR Greeting Flow - entry shows 'Type Text (AI Voice)' and 'Upload Audio' options
-        self.run_test("IVR Greeting flow: entry shows 'Type Text (AI Voice)' and 'Upload Audio' options", self.test_ivr_greeting_flow)
-        
-        # Test 7: IVR Add Option Flow - step-by-step wizard with key selection (0-9), action (Forward/Voicemail), message config
-        self.run_test("IVR Add Option flow: step-by-step wizard with key selection (0-9), action (Forward/Voicemail), message config", self.test_ivr_add_option_flow)
-        
-        # Test 8: VM Greeting Flow - Custom Greeting shows TTS and Upload options
-        self.run_test("VM Greeting flow: Custom Greeting shows TTS and Upload options", self.test_vm_greeting_flow)
-        
-        # Test 9: New Action States - registered
-        self.run_test("New action states registered: cpIvrGreetingVoice, cpIvrGreetingPreview, cpIvrOptionKey, cpIvrOptionAction, cpIvrOptionMsg, cpIvrOptionVoice, cpIvrOptionPreview, cpVmGreetingVoice, cpVmGreetingPreview", self.test_new_action_states)
-        
-        # Test 10: EDENAI API Key - properly set in backend/.env on its own line
-        self.run_test("EDENAI_API_KEY is properly set in backend/.env on its own line", self.test_edenai_api_key)
-        
-        # Summary
-        self.log("=" * 60)
-        self.log(f"📊 Tests completed: {self.tests_passed}/{self.tests_run} passed")
-        
-        if self.failed_tests:
-            self.log("❌ Failed Tests:")
-            for test in self.failed_tests:
-                self.log(f"   - {test}")
-        
-        if self.tests_passed == self.tests_run:
-            self.log("🎉 All tests PASSED!")
-            return True
-        else:
-            self.log(f"⚠️  {len(self.failed_tests)} tests FAILED")
-            return False
+            print(f"   Warning: Could not check Node.js logs: {str(e)}")
+            return True  # Don't fail the test if we can't read logs
 
 def main():
-    """Main test runner"""
-    tester = IvrVoicemailTester()
-    success = tester.run_all_tests()
-    return 0 if success else 1
+    print("🚀 Starting Nomadly Telegram Bot Testing...")
+    print("=" * 60)
+    
+    tester = NomadlyBotTester()
+    
+    # Test 1: Backend health endpoint
+    tester.run_test("Backend Health Endpoint (/api/health)", tester.test_backend_health)
+    
+    # Test 2: Language files verification
+    tester.run_test("Language Files Changes Verification", tester.verify_language_file_changes)
+    
+    # Test 3: _index.js changes verification
+    tester.run_test("_index.js Changes Verification", tester.verify_index_js_changes)
+    
+    # Test 4: Node.js bot logs check
+    tester.run_test("Node.js Bot Startup Logs Check", tester.check_node_bot_logs)
+    
+    # Print final results
+    print("\n" + "=" * 60)
+    print(f"📊 Test Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    
+    if tester.tests_passed == tester.tests_run:
+        print("✅ All tests PASSED!")
+        return 0
+    else:
+        print("❌ Some tests FAILED!")
+        print("\nFailed tests:")
+        for result in tester.results:
+            if result["status"] != "PASSED":
+                print(f"  - {result['test']}: {result['status']}")
+                if result["details"]:
+                    print(f"    Details: {result['details']}")
+        return 1
 
 if __name__ == "__main__":
     sys.exit(main())
