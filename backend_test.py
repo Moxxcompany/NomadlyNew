@@ -21,7 +21,7 @@ import json
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://setup-wizard-101.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://setup-wizard-102.preview.emergentagent.com')
 if BACKEND_URL.endswith('/api'):
     BACKEND_URL = BACKEND_URL[:-4]  # Remove /api suffix for testing
 
