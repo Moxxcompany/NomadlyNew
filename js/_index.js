@@ -8244,6 +8244,61 @@ const bankApis = {
 
     res.send(html())
   },
+  '/bank-pay-phone': async (req, res, ngnIn) => {
+    const { ref, chatId, price, cpData } = req.pay || {}
+    if (!ref || !chatId || !price || !cpData) return log(translation('t.argsErr')) || res.send(html(translation('t.argsErr')))
+    const info = await state.findOne({ _id: parseFloat(chatId) })
+    const lang = info?.userLanguage ?? 'en'
+    del(chatIdOfPayment, ref)
+    const usdIn = await ngnToUsd(ngnIn)
+    const name = await get(nameOf, chatId)
+    set(payments, ref, `Bank,CloudPhone,${cpData.selectedNumber},$${usdIn},${chatId},${name},${new Date()},₦${ngnIn}`)
+    const ngnPrice = await usdToNgn(price)
+    if (usdIn * 1.06 < price) {
+      sendMessage(chatId, translation('t.sentLessMoney', lang, `${ngnPrice} NGN`, `${ngnIn} NGN`))
+      addFundsTo(walletOf, chatId, 'ngn', ngnIn, lang)
+      return res.send(html(translation('t.lowPrice')))
+    }
+    if (ngnIn > ngnPrice) {
+      addFundsTo(walletOf, chatId, 'ngn', ngnIn - ngnPrice, lang)
+      sendMessage(chatId, translation('t.sentMoreMoney', lang, `${ngnPrice} NGN`, `${ngnIn} NGN`))
+    }
+    sendMessage(chatId, phoneConfig.getMsg(lang).purchasingNumber)
+    const selectedNumber = cpData.selectedNumber
+    const planKey = cpData.planKey
+    const plan = phoneConfig.plans[planKey]
+    const orderResult = await telnyxApi.buyNumber(selectedNumber, telnyxResources.sipConnectionId, telnyxResources.messagingProfileId)
+    if (!orderResult) {
+      addFundsTo(walletOf, chatId, 'ngn', ngnIn, lang)
+      return res.send(html(phoneConfig.getMsg(lang).purchaseFailed))
+    }
+    const sipUsername = phoneConfig.generateSipUsername()
+    const sipPassword = phoneConfig.generateSipPassword()
+    if (telnyxResources.sipConnectionId) {
+      await telnyxApi.createSIPCredential(telnyxResources.sipConnectionId, sipUsername, sipPassword)
+    }
+    const expiresAt = new Date()
+    expiresAt.setMonth(expiresAt.getMonth() + 1)
+    const numberDoc = {
+      phoneNumber: selectedNumber, telnyxOrderId: orderResult.id,
+      country: info?.cpCountryCode || 'US', countryName: info?.cpCountryName || 'US',
+      type: info?.cpNumberType || 'local', plan: planKey, planPrice: price,
+      purchaseDate: new Date().toISOString(), expiresAt: expiresAt.toISOString(),
+      autoRenew: true, status: 'active', sipUsername, sipPassword,
+      messagingProfileId: telnyxResources.messagingProfileId,
+      connectionId: telnyxResources.sipConnectionId, smsUsed: 0, minutesUsed: 0,
+      features: { sms: true, callForwarding: { enabled: false, mode: 'disabled', forwardTo: null, ringTimeout: 25 },
+        voicemail: { enabled: false, greetingType: 'default', customGreetingUrl: null, forwardToTelegram: true, forwardToEmail: null, ringTimeout: 25 },
+        smsForwarding: { toTelegram: true, toEmail: null, webhookUrl: null }, recording: false }
+    }
+    const existing = await get(phoneNumbersOf, chatId)
+    if (existing?.numbers) { existing.numbers.push(numberDoc); await set(phoneNumbersOf, chatId, { numbers: existing.numbers }) }
+    else { await set(phoneNumbersOf, chatId, { numbers: [numberDoc] }) }
+    await phoneTransactions.insertOne({ chatId, phoneNumber: selectedNumber, action: 'purchase', plan: planKey, amount: price, paymentMethod: 'bank_ngn', timestamp: new Date().toISOString() })
+    sendMessage(chatId, phoneConfig.txt.activated(selectedNumber, plan.name, price, sipUsername, phoneConfig.SIP_DOMAIN, phoneConfig.shortDate(expiresAt.toISOString())))
+    notifyGroup(phoneConfig.txt.adminPurchase(maskName(name), selectedNumber, plan.name, price, 'Bank NGN'))
+    res.send(html())
+  },
   '/bank-wallet': async (req, res, ngnIn) => {
     // Validate
     const { ref, chatId } = req.pay
