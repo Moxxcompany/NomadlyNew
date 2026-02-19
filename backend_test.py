@@ -232,6 +232,106 @@ class NomadlyBotTester:
                 "CRITICAL"
             )
 
+    def test_cnam_service_priority(self):
+        """Test CNAM service initializes with correct priority: Telnyx → Multitel → SignalWire"""
+        try:
+            # Read node-bot.log to check for CNAM service initialization
+            with open('/var/log/supervisor/node-bot.log', 'r') as f:
+                log_content = f.read()
+            
+            # Look for CNAM service initialization line
+            cnam_init_pattern = r'\[CnamService\] Initialized — priority: (.+?) \+ MongoDB cache'
+            cnam_match = re.search(cnam_init_pattern, log_content)
+            
+            if cnam_match:
+                priority_order = cnam_match.group(1).strip()
+                expected_order = "Telnyx → Multitel → SignalWire"
+                correct_priority = priority_order == expected_order
+                
+                self.log_result(
+                    "CNAM service initializes with correct priority: Telnyx → Multitel → SignalWire",
+                    correct_priority,
+                    f"Found priority: {priority_order}, Expected: {expected_order}",
+                    "CRITICAL" if not correct_priority else "INFO"
+                )
+            else:
+                self.log_result(
+                    "CNAM service initializes with correct priority: Telnyx → Multitel → SignalWire",
+                    False,
+                    "CNAM service initialization log not found in node-bot.log",
+                    "CRITICAL"
+                )
+                
+        except Exception as e:
+            self.log_result(
+                "CNAM service priority check",
+                False,
+                f"Error checking CNAM service logs: {str(e)}",
+                "CRITICAL"
+            )
+
+    def test_node_bot_loads_without_errors(self):
+        """Test Node.js bot loads without errors after cnam-service.js changes"""
+        try:
+            # Read node-bot.log to check for any error messages during startup
+            with open('/var/log/supervisor/node-bot.log', 'r') as f:
+                log_content = f.read()
+            
+            # Look for recent startup and check for errors
+            lines = log_content.strip().split('\n')
+            recent_lines = lines[-100:]  # Check last 100 lines
+            
+            # Check for error indicators
+            error_patterns = [
+                r'Error:',
+                r'TypeError:',
+                r'SyntaxError:',
+                r'ReferenceError:',
+                r'ModuleNotFoundError:', 
+                r'Cannot find module',
+                r'ECONNREFUSED',
+                r'ENOTFOUND',
+                r'failed to start'
+            ]
+            
+            errors_found = []
+            for line in recent_lines:
+                for pattern in error_patterns:
+                    if re.search(pattern, line, re.IGNORECASE):
+                        errors_found.append(line.strip())
+                        break
+            
+            # Look for successful initialization indicators
+            success_indicators = [
+                '[CnamService] Initialized — priority:',
+                '[CloudPhone] CNAM Service initialized',
+                'Exit code: 0'
+            ]
+            
+            success_found = []
+            for line in recent_lines:
+                for indicator in success_indicators:
+                    if indicator in line:
+                        success_found.append(indicator)
+                        break
+            
+            node_loaded_successfully = len(errors_found) == 0 and len(success_found) >= 2
+            
+            self.log_result(
+                "Node.js bot loads without errors after cnam-service.js changes",
+                node_loaded_successfully,
+                f"Errors found: {len(errors_found)}, Success indicators: {len(success_found)}. Errors: {errors_found[:3] if errors_found else 'None'}",
+                "CRITICAL" if not node_loaded_successfully else "INFO"
+            )
+            
+        except Exception as e:
+            self.log_result(
+                "Node.js bot startup error check",
+                False,
+                f"Error checking node-bot.log: {str(e)}",
+                "CRITICAL"
+            )
+
     def test_bot_configuration_loaded(self):
         """Test if bot configuration is properly loaded"""
         try:
@@ -241,8 +341,8 @@ class NomadlyBotTester:
             
             expected_files = [
                 '/app/js/start-bot.js',
-                '/app/js/config-setup.js',
-                '/app/js/_index.js'
+                '/app/js/cnam-service.js',
+                '/app/js/telnyx-service.js'
             ]
             
             for file_path in expected_files:
@@ -250,24 +350,25 @@ class NomadlyBotTester:
                     missing_files.append(file_path)
                     config_files_ok = False
             
-            # Check if config-setup.js is properly setting up environment
-            if os.path.exists('/app/js/config-setup.js'):
-                with open('/app/js/config-setup.js', 'r') as f:
-                    config_content = f.read()
+            # Check if cnam-service.js has the correct Telnyx priority
+            cnam_config_ok = False
+            if os.path.exists('/app/js/cnam-service.js'):
+                with open('/app/js/cnam-service.js', 'r') as f:
+                    cnam_content = f.read()
                 
-                has_bot_token_setup = 'TELEGRAM_BOT_TOKEN' in config_content
-                has_environment_detection = 'detectEnvironment' in config_content
+                has_telnyx_primary = 'Telnyx (primary)' in cnam_content
+                has_multitel_fallback = 'Multitel (fallback)' in cnam_content
+                has_signalwire_last = 'SignalWire (last resort)' in cnam_content
+                has_correct_order = 'Telnyx → Multitel → SignalWire' in cnam_content
                 
-                config_properly_loaded = has_bot_token_setup and has_environment_detection
-            else:
-                config_properly_loaded = False
+                cnam_config_ok = has_telnyx_primary and has_multitel_fallback and has_signalwire_last and has_correct_order
             
-            overall_config_ok = config_files_ok and config_properly_loaded
+            overall_config_ok = config_files_ok and cnam_config_ok
             
             self.log_result(
-                "Bot configuration files exist and are properly loaded",
+                "Bot configuration files exist and CNAM service has correct provider priority",
                 overall_config_ok,
-                f"Missing files: {missing_files}, Config loaded: {config_properly_loaded}",
+                f"Missing files: {missing_files}, CNAM config OK: {cnam_config_ok}",
                 "CRITICAL" if not overall_config_ok else "INFO"
             )
             
