@@ -6405,7 +6405,7 @@ bot?.on('message', async msg => {
       return send(chatId, phoneConfig.txt.releaseConfirm(num.phoneNumber), k.of([[pc.yesRelease, pc.noKeep]]))
     }
     const last4 = num.phoneNumber.replace(/\D/g, '').slice(-4)
-    if (message !== last4) return send(chatId, `Type the last 4 digits: ${last4}`)
+    if (message !== last4) return send(chatId, phoneConfig.getMsg(info?.userLanguage).typeLast4(last4))
 
     // Release on provider
     if (num.telnyxOrderId) {
