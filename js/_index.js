@@ -2529,7 +2529,7 @@ bot?.on('message', async msg => {
         // Refund
         if (coin === u.usd) await atomicIncrement(walletOf, chatId, 'usdIn', priceUsd)
         else await atomicIncrement(walletOf, chatId, 'ngnIn', priceNgn)
-        return send(chatId, '❌ Failed to purchase number. Your wallet has been refunded. Please try again or contact support.', trans('o'))
+        return send(chatId, phoneConfig.getMsg(info?.userLanguage).purchaseFailed, trans('o'))
       }
 
       // Generate SIP credentials
