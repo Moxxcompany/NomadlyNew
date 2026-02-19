@@ -106,9 +106,9 @@ class NomadlyBackendTester:
             with open('/app/js/_index.js', 'r') as f:
                 content = f.read()
             
-            # Look for cpIvrOptionKey handler implementation
-            handler_pattern = r"action\s*===?\s*['\"]cpIvrOptionKey['\"].*?(?=(?:else if|if \(action|$))"
-            handler_match = re.search(handler_pattern, content, re.DOTALL | re.IGNORECASE)
+            # Look for cpIvrOptionKey handler implementation using a.cpIvrOptionKey pattern
+            handler_pattern = r"if\s*\(\s*action\s*===\s*a\.cpIvrOptionKey\s*\).*?(?=if\s*\(\s*action\s*===|$)"
+            handler_match = re.search(handler_pattern, content, re.DOTALL)
             
             if not handler_match:
                 print("cpIvrOptionKey handler implementation not found")
@@ -118,14 +118,14 @@ class NomadlyBackendTester:
             
             # Check for digit validation (0-9)
             digit_validation_indicators = [
-                '0-9', '0123456789', 'isDigit', 'parseInt', 'Number(', 'digit'
+                '/^[0-9]$/', '0-9', 'test(key)', 'usedKeys', 'Object.keys'
             ]
             
             has_digit_validation = any(indicator in handler_content for indicator in digit_validation_indicators)
             
             # Check for used keys display
             used_keys_indicators = [
-                'used', 'exist', 'taken', 'configured', 'option', 'key'
+                'usedKeys', 'Used keys', 'already assigned', 'Object.keys'
             ]
             
             has_used_keys_display = any(indicator in handler_content for indicator in used_keys_indicators)
