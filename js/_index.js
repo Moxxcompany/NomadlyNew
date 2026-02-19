@@ -6015,18 +6015,20 @@ bot?.on('message', async msg => {
     }
     if (message === pc.ivrGreeting) {
       set(state, chatId, 'action', a.cpIvrGreeting)
-      return send(chatId, phoneConfig.txt.ivrSetGreeting)
+      return send(chatId, phoneConfig.txt.ivrSetGreeting, k.of([]))
     }
     if (message === pc.ivrAddOption) {
       set(state, chatId, 'action', a.cpIvrAddOption)
-      return send(chatId, phoneConfig.txt.ivrAddOption)
+      return send(chatId, phoneConfig.txt.ivrAddOption, k.of([]))
     }
     if (message === pc.ivrRemoveOption) {
       set(state, chatId, 'action', a.cpIvrRemoveOption)
       const ivrConf = num.features?.ivr || {}
       const keys = Object.keys(ivrConf.options || {})
-      if (!keys.length) return send(chatId, 'No IVR options to remove.')
-      return send(chatId, 'Which key do you want to remove?', k.of([keys.map(k2 => `Key ${k2}`)]))
+      if (!keys.length) return send(chatId, phoneConfig.getMsg(info?.userLanguage).noIvrOptions, k.of([
+        [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
+      ]))
+      return send(chatId, phoneConfig.getMsg(info?.userLanguage).whichKeyRemove, k.of([keys.map(k2 => `Key ${k2}`)]))
     }
     if (message === pc.ivrViewOptions) {
       const ivrConf = num.features?.ivr || {}
