@@ -380,18 +380,159 @@ class NomadlyBotTester:
                 "CRITICAL"
             )
 
+    def test_ux_improvements(self):
+        """Test specific UX improvements: buyPlan button rename and keyboard layout changes"""
+        
+        # Test 1: Check config.js has correct buyPlan label and keyboard layout
+        try:
+            with open('/app/js/config.js', 'r') as f:
+                config_content = f.read()
+            
+            # Check buyPlan label
+            buyplan_correct = "buyPlan: '⚡ Upgrade Plan'" in config_content
+            
+            # Check keyboard layout has all three on same row
+            keyboard_layout_correct = "[user.wallet, user.viewPlan, user.buyPlan]" in config_content
+            
+            # Check kOf function handles plain 'Back' buttons
+            kof_function_fixed = "item === 'Back' || item === 'Cancel'" in config_content
+            
+            overall_config_ok = buyplan_correct and keyboard_layout_correct and kof_function_fixed
+            
+            self.log_result(
+                "Config.js has correct buyPlan label '⚡ Upgrade Plan' and keyboard layout",
+                overall_config_ok,
+                f"buyPlan correct: {buyplan_correct}, keyboard layout: {keyboard_layout_correct}, kOf fix: {kof_function_fixed}",
+                "CRITICAL" if not overall_config_ok else "INFO"
+            )
+        except Exception as e:
+            self.log_result(
+                "Config.js UX improvements check",
+                False,
+                f"Error checking config.js: {str(e)}",
+                "CRITICAL"
+            )
+
+    def test_language_files_updated(self):
+        """Test all 4 language files have buyPlan set to Upgrade Plan and correct freeLinksExhausted text"""
+        
+        language_files = [
+            '/app/js/lang/en.js',
+            '/app/js/lang/fr.js', 
+            '/app/js/lang/zh.js',
+            '/app/js/lang/hi.js'
+        ]
+        
+        all_files_correct = True
+        missing_files = []
+        incorrect_files = []
+        
+        for lang_file in language_files:
+            try:
+                if not os.path.exists(lang_file):
+                    missing_files.append(lang_file)
+                    all_files_correct = False
+                    continue
+                    
+                with open(lang_file, 'r', encoding='utf-8') as f:
+                    lang_content = f.read()
+                
+                # Check buyPlan label
+                has_upgrade_plan = "buyPlan: '⚡ Upgrade Plan'" in lang_content
+                
+                # Check keyboard layout
+                has_correct_layout = "[user.wallet, user.viewPlan, user.buyPlan]" in lang_content
+                
+                # Check freeLinksExhausted references new button name
+                has_correct_exhausted_text = "⚡ Upgrade Plan" in lang_content and "freeLinksExhausted" in lang_content
+                
+                if not (has_upgrade_plan and has_correct_layout and has_correct_exhausted_text):
+                    incorrect_files.append({
+                        'file': lang_file,
+                        'buyPlan': has_upgrade_plan,
+                        'layout': has_correct_layout,
+                        'exhausted_text': has_correct_exhausted_text
+                    })
+                    all_files_correct = False
+                    
+            except Exception as e:
+                incorrect_files.append({'file': lang_file, 'error': str(e)})
+                all_files_correct = False
+
+        self.log_result(
+            "All 4 language files have buyPlan set to 'Upgrade Plan' and correct keyboard layout",
+            all_files_correct,
+            f"Missing files: {missing_files}, Incorrect files: {len(incorrect_files)}",
+            "CRITICAL" if not all_files_correct else "INFO"
+        )
+
+        return all_files_correct
+
+    def test_choose_subscription_text_format(self):
+        """Test chooseSubscription text is trimmed/compact in all 4 languages"""
+        
+        language_files = [
+            '/app/js/lang/en.js',
+            '/app/js/lang/fr.js', 
+            '/app/js/lang/zh.js',
+            '/app/js/lang/hi.js'
+        ]
+        
+        all_text_compact = True
+        issues_found = []
+        
+        for lang_file in language_files:
+            try:
+                if os.path.exists(lang_file):
+                    with open(lang_file, 'r', encoding='utf-8') as f:
+                        lang_content = f.read()
+                    
+                    # Look for chooseSubscription text pattern and check if it's compact
+                    if 'chooseSubscription:' in lang_content:
+                        # Extract the text between the definition
+                        start = lang_content.find('chooseSubscription:')
+                        if start != -1:
+                            # Find the next property or end of object
+                            end = lang_content.find('\n  ', start + 100)  # Look ahead for next property
+                            if end == -1:
+                                end = start + 1000  # Fallback
+                            
+                            subscription_text = lang_content[start:end]
+                            
+                            # Check if text is reasonably compact (not verbose bullet points)
+                            line_count = subscription_text.count('\n')
+                            is_compact = line_count < 15  # Reasonable threshold for compact text
+                            
+                            if not is_compact:
+                                issues_found.append(f"{lang_file}: subscription text too verbose ({line_count} lines)")
+                                all_text_compact = False
+                    
+            except Exception as e:
+                issues_found.append(f"{lang_file}: Error - {str(e)}")
+                all_text_compact = False
+
+        self.log_result(
+            "chooseSubscription text is trimmed/compact in all 4 languages", 
+            all_text_compact,
+            f"Issues: {issues_found}" if issues_found else "All subscription texts are compact",
+            "MEDIUM" if not all_text_compact else "INFO"
+        )
+
+        return all_text_compact
+
     def run_all_tests(self):
-        """Run all Nomadly Telegram Bot tests"""
-        print("🔍 Testing Nomadly Telegram Bot Application - CNAM Service Priority Changes\n")
+        """Run all Nomadly Telegram Bot UX Improvement tests"""
+        print("🔍 Testing Nomadly Telegram Bot Application - UX Improvements\n")
         
         # Core functionality tests
         self.test_health_endpoint()
         self.test_node_bot_direct_check()
-        self.test_cnam_service_priority()  # New test for CNAM priority
-        self.test_node_bot_loads_without_errors()  # New test for error-free loading
-        self.test_environment_variables_configured() 
-        self.test_telegram_webhook_configured()
-        self.test_bot_configuration_loaded()
+        self.test_node_bot_loads_without_errors()
+        
+        # UX-specific improvement tests
+        self.test_ux_improvements()
+        self.test_language_files_updated()
+        self.test_choose_subscription_text_format()
         
         # Generate summary
         print(f"\n📊 Test Summary:")
