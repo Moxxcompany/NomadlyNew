@@ -298,12 +298,12 @@ ${CHAT_BOT_NAME}`,
 
   planSubscribed:
     HIDE_SMS_APP === 'true'
-      ? `You have successfully subscribed to our {{plan}} plan! Enjoy free ".sbs/.xyz" domains, unlimited Shortit links, and free USA phone number validations. Need E-sim card? contact ${SUPPORT_HANDLE}`
-      : `You have successfully subscribed to our {{plan}} plan! Enjoy free ".sbs/.xyz" domains, unlimited Shortit links, free USA phone validations, and ${SMS_APP_NAME}. Please download the app here: ${SMS_APP_LINK}. Need E-sim card? contact ${SUPPORT_HANDLE}`,
+      ? `You have successfully subscribed to our {{plan}} plan! Enjoy free ".sbs/.xyz" domains, unlimited Shortit links, and free USA phone number validations. Need E-sim card? Tap 💬 Get Support`
+      : `You have successfully subscribed to our {{plan}} plan! Enjoy free ".sbs/.xyz" domains, unlimited Shortit links, free USA phone validations, and ${SMS_APP_NAME}. Please download the app here: ${SMS_APP_LINK}. Need E-sim card? Tap 💬 Get Support`,
 
   alreadySubscribedPlan: days => `Your subscription is active and expires in ${days}`,
 
-  payError: `Payment session not found, please try again or contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
+  payError: `Payment session not found, please try again or tap 💬 Get Support. Discover more ${TG_HANDLE}.`,
 
   chooseFreeDomainText: `<b>Great News!</b> This domain is available for free with your subscription. Would you like to claim it?`,
 
@@ -312,7 +312,7 @@ ${CHAT_BOT_NAME}`,
   askDomainToUseWithShortener: `Do you wish to use domain with the shortener?`,
   blockUser: `Please share the username of the user that needs to be blocked.`,
   unblockUser: `Please share the username of the user that needs to be unblocked.`,
-  blockedUser: `You are currently blocked from using the bot. Please contact support ${SUPPORT_USERNAME}. Discover more ${TG_HANDLE}.`,
+  blockedUser: `You are currently blocked from using the bot. Please tap 💬 Get Support. Discover more ${TG_HANDLE}.`,
 
   greet: `${CHAT_BOT_BRAND} — shorten URLs, register domains, buy phone leads, and grow your business. All from Telegram.
 
