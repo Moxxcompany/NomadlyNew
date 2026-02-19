@@ -489,4 +489,5 @@ module.exports = {
   gatherDTMF,
   playbackStop,
   initializeTelnyxResources,
+  validateForwardingDestination,
 }
