@@ -5928,8 +5928,13 @@ bot?.on('message', async msg => {
       return send(chatId, phoneConfig.txt.vmGreetingMenu(num.phoneNumber, vm), k.of([
         [pc.vmCustomGreeting],
         [pc.vmDefaultGreeting],
-        [pc.back]
       ]))
+    }
+    if (message === t.cancel) return goto.submenu5()
+    // Reject voicemail/greeting button text as greeting
+    const vmButtons = [pc.vmCustomGreeting, pc.vmDefaultGreeting, pc.enableVoicemail, pc.disableVoicemail]
+    if (vmButtons.includes(message) || message.startsWith('🔊 ') || message.startsWith('📲 ') || message.startsWith('📧 ') || message.startsWith('⏰ ')) {
+      return send(chatId, phoneConfig.txt.vmSendAudioPrompt, k.of([]))
     }
     // If user sends text instead of audio, treat as custom text greeting
     if (message && !rawMsg?.voice && !rawMsg?.audio) {
@@ -5951,7 +5956,7 @@ bot?.on('message', async msg => {
         : [[pc.enableVoicemail]]
       return send(chatId, phoneConfig.txt.voicemailMenu(num.phoneNumber, vm), k.of(btns))
     }
-    return send(chatId, 'Send a voice message, audio file, or type a custom greeting text.')
+    return send(chatId, phoneConfig.getMsg(info?.userLanguage).sendVoiceOrText, k.of([]))
   }
 
   // ━━━ CALL RECORDING (Business) ━━━
