@@ -5366,10 +5366,12 @@ bot?.on('message', async msg => {
     if (message === pc.callForwarding) {
       set(state, chatId, 'action', a.cpCallForwarding)
       const fwd = num.features?.callForwarding || {}
+      let walletBal = 0
+      try { const { usdBal } = await getBalance(walletOf, chatId); walletBal = usdBal } catch (e) {}
       const btns = fwd.enabled
         ? [[pc.alwaysForward], [pc.forwardBusy], [pc.forwardNoAnswer], ['📲 Change Forward-To Number'], [pc.disableForwarding]]
         : [[pc.alwaysForward], [pc.forwardBusy], [pc.forwardNoAnswer]]
-      return send(chatId, phoneConfig.txt.forwardingStatus(num.phoneNumber, fwd), k.of(btns))
+      return send(chatId, phoneConfig.txt.forwardingStatus(num.phoneNumber, fwd, walletBal), k.of(btns))
     }
 
     // SMS Settings
