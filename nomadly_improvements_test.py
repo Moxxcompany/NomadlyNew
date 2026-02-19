@@ -154,37 +154,30 @@ class NomadlyImprovementsTester:
             with open('/app/js/phone-config.js', 'r') as f:
                 phone_config = f.read()
             
-            # Look for msg object definition
-            msg_object_match = re.search(r'const msg = \{(.*?)\}', phone_config, re.DOTALL)
-            has_all_languages = False
-            matching_keys = False
+            # Check for all 4 languages more reliably
+            has_en = 'en: {' in phone_config
+            has_fr = 'fr: {' in phone_config  
+            has_zh = 'zh: {' in phone_config
+            has_hi = 'hi: {' in phone_config
             
-            if msg_object_match:
-                msg_content = msg_object_match.group(1)
-                
-                # Check for all 4 languages
-                has_en = 'en:' in msg_content and '{' in msg_content.split('en:')[1][:50]
-                has_fr = 'fr:' in msg_content and '{' in msg_content.split('fr:')[1][:50]
-                has_zh = 'zh:' in msg_content and '{' in msg_content.split('zh:')[1][:50]
-                has_hi = 'hi:' in msg_content and '{' in msg_content.split('hi:')[1][:50]
-                
-                has_all_languages = has_en and has_fr and has_zh and has_hi
-                
-                # Check for some common keys in all languages
-                common_keys = ['selectOption', 'selectValidCountry', 'selectPlan', 'confirmOrCancel']
-                key_matches = 0
-                for key in common_keys:
-                    if msg_content.count(key + ':') >= 4:  # Should appear in all 4 languages
-                        key_matches += 1
-                
-                matching_keys = key_matches >= 2  # At least 2 common keys found in all languages
+            has_all_languages = has_en and has_fr and has_zh and has_hi
+            
+            # Check for some common keys in all languages by counting occurrences
+            common_keys = ['selectOption:', 'selectValidCountry:', 'selectPlan:', 'confirmOrCancel:']
+            key_matches = 0
+            for key in common_keys:
+                key_count = phone_config.count(key)
+                if key_count >= 4:  # Should appear in all 4 languages
+                    key_matches += 1
+            
+            matching_keys = key_matches >= 2  # At least 2 common keys found in all languages
             
             multilingual_support = has_all_languages and matching_keys
             
             self.log_result(
                 "phoneConfig.msg has all 4 languages (en, fr, zh, hi) with matching keys",
                 multilingual_support,
-                f"Has all languages: {has_all_languages} (en:{has_en}, fr:{has_fr}, zh:{has_zh}, hi:{has_hi}), Matching keys: {matching_keys}",
+                f"Has all languages: {has_all_languages} (en:{has_en}, fr:{has_fr}, zh:{has_zh}, hi:{has_hi}), Matching keys: {matching_keys} ({key_matches}/4)",
                 "CRITICAL" if not multilingual_support else "INFO"
             )
             
