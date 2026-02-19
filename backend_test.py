@@ -1,365 +1,386 @@
 #!/usr/bin/env python3
 """
-Backend Testing for Cloud Phone Plan Change Flow
-Tests health endpoint, Node.js bot loads without syntax errors, and plan change flow features.
+Nomadly Telegram Bot Backend Testing Suite
+Tests the Node.js Telegram bot backend functionality including:
+- Health checks
+- IVR/Voicemail handlers
+- Multilingual support
+- Plan upgrade/downgrade
+- Translation keys
 """
-
 import requests
-import json
-import re
-import os
+import subprocess
 import sys
+import os
+import json
 from datetime import datetime
 
-class CloudPhonePlanChangeTester:
-    def __init__(self):
-        # Read backend URL from frontend .env file
-        try:
-            with open('/app/frontend/.env', 'r') as f:
-                content = f.read()
-                backend_url_match = re.search(r'REACT_APP_BACKEND_URL=(.+)', content)
-                if backend_url_match:
-                    self.base_url = backend_url_match.group(1).strip()
-                else:
-                    self.base_url = "http://localhost:8001"
-        except:
-            self.base_url = "http://localhost:8001"
-        
+# Backend URL from environment
+BACKEND_URL = "https://setup-wizard-101.preview.emergentagent.com"
+
+class NomadlyBotTester:
+    def __init__(self, backend_url=BACKEND_URL):
+        self.backend_url = backend_url
         self.tests_run = 0
         self.tests_passed = 0
-        self.issues = []
-        self.passed_tests = []
+        
+    def log(self, message):
+        """Log messages with timestamp"""
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f"[{timestamp}] {message}")
 
-    def log_result(self, test_name, passed, details="", issue_level="INFO"):
-        """Log test results"""
+    def run_test(self, name, test_func):
+        """Run a single test"""
         self.tests_run += 1
-        if passed:
-            self.tests_passed += 1
-            self.passed_tests.append(f"{test_name}: {details}" if details else test_name)
-            print(f"✅ {test_name}")
-            if details:
-                print(f"   {details}")
-        else:
-            self.issues.append({
-                "test": test_name,
-                "issue": details,
-                "level": issue_level
-            })
-            print(f"❌ {test_name}")
-            print(f"   Issue: {details}")
-
-    def test_health_endpoint(self):
-        """Test backend health endpoint returns status ok with node running and db connected"""
+        self.log(f"🔍 Testing {name}...")
+        
         try:
-            response = requests.get(f"{self.base_url}/api/health", timeout=15)
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Check for basic health indicators
-                status_ok = data.get("status") in ["ok", "healthy", "starting"]
-                db_connected = data.get("database") == "connected" or data.get("db") == "connected"
-                
-                # More flexible check for node - might not be explicitly mentioned
-                node_indicator = "node" in str(data).lower() or "uptime" in data
-                
-                overall_health = status_ok and db_connected
-                
-                self.log_result(
-                    "Backend health endpoint /api/health returns ok with node running and db connected",
-                    overall_health,
-                    f"Response: {data}",
-                    "CRITICAL" if not overall_health else "INFO"
-                )
-                
+            success = test_func()
+            if success:
+                self.tests_passed += 1
+                self.log(f"✅ {name} - PASSED")
             else:
-                self.log_result(
-                    "Backend health endpoint /api/health returns ok with node running and db connected",
-                    False,
-                    f"HTTP {response.status_code}: {response.text}",
-                    "CRITICAL"
+                self.log(f"❌ {name} - FAILED")
+            return success
+        except Exception as e:
+            self.log(f"❌ {name} - ERROR: {str(e)}")
+            return False
+
+    def test_backend_health(self):
+        """Test backend health endpoint"""
+        try:
+            response = requests.get(f"{self.backend_url}/api/health", timeout=10)
+            if response.status_code != 200:
+                self.log(f"Health check failed with status {response.status_code}")
+                return False
+                
+            data = response.json()
+            self.log(f"Health response: {json.dumps(data, indent=2)}")
+            
+            # Check if required fields are present
+            required_fields = ['status', 'proxy', 'node']
+            for field in required_fields:
+                if field not in data:
+                    self.log(f"Missing field in health response: {field}")
+                    return False
+                    
+            # Check if status is ok
+            if data.get('status') != 'ok':
+                self.log(f"Health status is not ok: {data.get('status')}")
+                return False
+                
+            # Check if node is running
+            if data.get('node') not in ['running', 'starting']:
+                self.log(f"Node.js is not running: {data.get('node')}")
+                return False
+                
+            return True
+            
+        except requests.exceptions.RequestException as e:
+            self.log(f"Request failed: {str(e)}")
+            return False
+
+    def test_node_bot_syntax(self):
+        """Test Node.js bot loads without syntax errors"""
+        try:
+            # Test syntax of main files
+            main_files = [
+                "/app/js/_index.js",
+                "/app/js/phone-config.js",
+                "/app/js/start-bot.js"
+            ]
+            
+            for file_path in main_files:
+                if not os.path.exists(file_path):
+                    self.log(f"File not found: {file_path}")
+                    return False
+                    
+                # Run syntax check
+                result = subprocess.run(
+                    ["node", "--check", file_path],
+                    capture_output=True,
+                    text=True,
+                    cwd="/app"
                 )
                 
-        except Exception as e:
-            self.log_result(
-                "Backend health endpoint /api/health returns ok with node running and db connected",
-                False,
-                f"Connection error: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_nodejs_bot_loads_without_errors(self):
-        """Test Node.js bot loads without syntax errors after plan change flow rewrite"""
-        try:
-            # Check if bot is responding at all
-            response = requests.get(f"{self.base_url}/", timeout=10)
+                if result.returncode != 0:
+                    self.log(f"Syntax error in {file_path}: {result.stderr}")
+                    return False
+                else:
+                    self.log(f"Syntax OK: {file_path}")
+                    
+            return True
             
-            if response.status_code in [200, 404]:  # Either response is fine - just needs to respond
-                self.log_result(
-                    "Node.js bot loads without syntax errors after plan change flow rewrite",
-                    True,
-                    f"Node.js is responding (status: {response.status_code})"
-                )
-            else:
-                self.log_result(
-                    "Node.js bot loads without syntax errors after plan change flow rewrite",
-                    False,
-                    f"Node.js returned unexpected status: {response.status_code}",
-                    "CRITICAL"
-                )
+        except Exception as e:
+            self.log(f"Syntax check failed: {str(e)}")
+            return False
+
+    def test_ivr_voicemail_handlers(self):
+        """Test IVR and Voicemail handler code structure"""
+        try:
+            # Read main bot file
+            with open("/app/js/_index.js", "r") as f:
+                content = f.read()
+            
+            # Check for IVR Set Greeting handler with k.of([]) keyboard clearing
+            ivr_greeting_checks = [
+                "cpIvrGreeting",
+                "k.of([])",
+                "action === 'cpIvrGreeting'"
+            ]
+            
+            for check in ivr_greeting_checks:
+                if check not in content:
+                    self.log(f"Missing IVR greeting handler code: {check}")
+                    return False
+            
+            # Check for IVR Add Menu Option handler with k.of([]) keyboard clearing
+            ivr_add_option_checks = [
+                "cpIvrAddOption", 
+                "k.of([])",
+                "action === 'cpIvrAddOption'"
+            ]
+            
+            for check in ivr_add_option_checks:
+                if check not in content:
+                    self.log(f"Missing IVR add option handler code: {check}")
+                    return False
+            
+            # Check for Voicemail audio upload handler with k.of([]) keyboard clearing  
+            vm_audio_checks = [
+                "cpVmAudioUpload",
+                "k.of([])",
+                "action === 'cpVmAudioUpload'"
+            ]
+            
+            for check in vm_audio_checks:
+                if check not in content:
+                    self.log(f"Missing VM audio handler code: {check}")
+                    return False
+                    
+            self.log("IVR and Voicemail handler structure verified")
+            return True
+            
+        except Exception as e:
+            self.log(f"Handler check failed: {str(e)}")
+            return False
+
+    def test_phone_config_multilingual(self):
+        """Test phoneConfig.msg has required multilingual keys"""
+        try:
+            # Read phone-config.js
+            with open("/app/js/phone-config.js", "r") as f:
+                content = f.read()
+            
+            # Check for multilingual msg object
+            required_keys = [
+                'noIvrOptions',
+                'whichKeyRemove', 
+                'sendVoiceOrText',
+                'noActivity',
+                'insufficientBalUpgrade'
+            ]
+            
+            # Check all 4 languages
+            languages = ['en', 'fr', 'zh', 'hi']
+            
+            for lang in languages:
+                for key in required_keys:
+                    # Look for the key in each language section
+                    pattern = f"{lang}: {{" 
+                    if pattern in content:
+                        # Find the section for this language
+                        lang_start = content.find(pattern)
+                        if lang_start == -1:
+                            self.log(f"Language section not found: {lang}")
+                            return False
+                            
+                        # Look for the key within reasonable distance
+                        key_pattern = f"{key}:"
+                        search_area = content[lang_start:lang_start + 5000]  # Search next 5000 chars
+                        if key_pattern not in search_area:
+                            self.log(f"Missing key '{key}' in language '{lang}'")
+                            return False
+                            
+            self.log("Phone config multilingual keys verified")
+            return True
+            
+        except Exception as e:
+            self.log(f"Phone config multilingual check failed: {str(e)}")
+            return False
+
+    def test_translation_keys_wired(self):
+        """Test translation keys are wired in _index.js"""
+        try:
+            # Read main bot file
+            with open("/app/js/_index.js", "r") as f:
+                content = f.read()
+            
+            # Check for translation keys usage
+            required_translations = [
+                't.failedAudio',
+                't.enterBroadcastMessage'
+            ]
+            
+            for translation in required_translations:
+                if translation not in content:
+                    self.log(f"Missing translation usage: {translation}")
+                    return False
+                    
+            self.log("Translation keys wiring verified") 
+            return True
+            
+        except Exception as e:
+            self.log(f"Translation wiring check failed: {str(e)}")
+            return False
+
+    def test_plan_upgrade_logic(self):
+        """Test plan upgrade/downgrade logic exists"""
+        try:
+            # Read main bot file
+            with open("/app/js/_index.js", "r") as f:
+                content = f.read()
+            
+            # Check for plan change logic
+            plan_upgrade_checks = [
+                "cpChangePlan",
+                "walletBal",
+                "pro-rated",
+                "remaining days"
+            ]
+            
+            found_checks = 0
+            for check in plan_upgrade_checks:
+                if check.lower() in content.lower():
+                    found_checks += 1
+                    
+            # At least 2 of the 4 checks should be found for basic upgrade logic
+            if found_checks < 2:
+                self.log(f"Insufficient plan upgrade logic found ({found_checks}/4)")
+                return False
                 
+            self.log("Plan upgrade/downgrade logic structure verified")
+            return True
+            
         except Exception as e:
-            self.log_result(
-                "Node.js bot loads without syntax errors after plan change flow rewrite",
-                False,
-                f"Node.js appears to have issues: {str(e)}",
-                "CRITICAL"
-            )
+            self.log(f"Plan upgrade logic check failed: {str(e)}")
+            return False
 
-    def test_sip_credentials_created_during_purchase(self):
-        """Test SIP credentials created during purchase flow (sipUsername and sipPassword fields set in numberDoc)"""
+    def test_language_files_keys(self):
+        """Test all 4 language files have required new translation keys"""
         try:
-            with open('/app/js/_index.js', 'r') as f:
-                index_content = f.read()
+            required_keys = [
+                'failedAudio',
+                'enterBroadcastMessage', 
+                'provide2Nameservers',
+                'noDomainSelected',
+                'validInstitutionName',
+                'validCityName'
+            ]
             
-            # Look for SIP credential creation during purchase
-            sip_username_creation = "sipUsername" in index_content and "generateSipUsername" in index_content
-            sip_password_creation = "sipPassword" in index_content and "generateSipPassword" in index_content
+            language_files = [
+                '/app/js/lang/en.js',
+                '/app/js/lang/fr.js', 
+                '/app/js/lang/zh.js',
+                '/app/js/lang/hi.js'
+            ]
             
-            # Check that these are set during purchase process
-            purchase_sip_setup = sip_username_creation and sip_password_creation
-            
-            self.log_result(
-                "SIP credentials created during purchase flow (sipUsername and sipPassword fields set in numberDoc)",
-                purchase_sip_setup,
-                f"SIP username creation: {sip_username_creation}, SIP password creation: {sip_password_creation}",
-                "CRITICAL" if not purchase_sip_setup else "INFO"
-            )
+            for lang_file in language_files:
+                if not os.path.exists(lang_file):
+                    self.log(f"Language file not found: {lang_file}")
+                    return False
+                    
+                with open(lang_file, "r") as f:
+                    content = f.read()
+                
+                for key in required_keys:
+                    if f"{key}:" not in content and f"'{key}'" not in content and f'"{key}"' not in content:
+                        self.log(f"Missing key '{key}' in {lang_file}")
+                        return False
+                        
+            self.log("All language files have required keys")
+            return True
             
         except Exception as e:
-            self.log_result(
-                "SIP credentials created during purchase flow check",
-                False,
-                f"Error checking _index.js: {str(e)}",
-                "CRITICAL"
-            )
+            self.log(f"Language files check failed: {str(e)}")
+            return False
 
-    def test_plan_change_downgrade_pre_warning(self):
-        """Test plan change flow: downgrade shows pre-warning with lost features list and confirm/back buttons"""
+    def test_voicemail_default_greeting(self):
+        """Test voicemail shows default greeting text when no custom greeting"""
         try:
-            with open('/app/js/_index.js', 'r') as f:
-                index_content = f.read()
+            # Read phone-config.js
+            with open("/app/js/phone-config.js", "r") as f:
+                content = f.read()
             
-            # Check for pre-downgrade warning implementation
-            warning_features_check = "features will be lost" in index_content or "lostFeatures" in index_content
-            confirm_back_buttons = "✅ Confirm Change" in index_content and "pc.back" in index_content
-            pending_plan_storage = "cpPendingPlan" in index_content
+            # Check for default greeting text
+            default_greeting_patterns = [
+                "You have reached",
+                "Please leave a message after the tone",
+                "formatPhone(number)",
+                "default greeting"
+            ]
             
-            pre_warning_implemented = warning_features_check and confirm_back_buttons and pending_plan_storage
-            
-            self.log_result(
-                "Plan change flow: downgrade shows pre-warning with lost features list and confirm/back buttons",
-                pre_warning_implemented,
-                f"Warning features check: {warning_features_check}, Confirm/back buttons: {confirm_back_buttons}, Pending plan: {pending_plan_storage}",
-                "CRITICAL" if not pre_warning_implemented else "INFO"
-            )
+            found_patterns = 0
+            for pattern in default_greeting_patterns:
+                if pattern.lower() in content.lower():
+                    found_patterns += 1
+                    
+            if found_patterns < 2:
+                self.log(f"Insufficient default greeting patterns found ({found_patterns}/4)")
+                return False
+                
+            self.log("Voicemail default greeting text verified")
+            return True
             
         except Exception as e:
-            self.log_result(
-                "Plan change flow downgrade pre-warning check",
-                False,
-                f"Error checking _index.js: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_plan_change_downgrade_disables_features(self):
-        """Test plan change flow: on confirmed downgrade, SIP is disabled (sipDisabled=true), IVR/Recording/Voicemail/Email also disabled"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                index_content = f.read()
-            
-            # Check for specific SIP disabling pattern
-            sip_disable_pattern = "updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'sipDisabled', true)" in index_content
-            
-            # Check for IVR disabling pattern
-            ivr_disable_pattern = "ivr', { enabled: false }" in index_content
-            
-            # Check for recording disabling pattern  
-            recording_disable_pattern = "recording', false" in index_content
-            
-            # Check for voicemail disabling pattern
-            voicemail_disable_pattern = "voicemail', { enabled: false }" in index_content
-            
-            # Check if these happen in the confirm change section
-            confirm_change_section = re.search(r'Confirm Change.*?cpPendingPlan(.*?)return send.*manageNumber', index_content, re.DOTALL)
-            features_disabled_in_confirm = False
-            if confirm_change_section:
-                confirm_content = confirm_change_section.group(1)
-                features_disabled_in_confirm = "sipDisabled" in confirm_content and "ivr" in confirm_content
-            
-            downgrade_disables_features = sip_disable_pattern and ivr_disable_pattern and features_disabled_in_confirm
-            
-            self.log_result(
-                "Plan change flow: on confirmed downgrade, SIP is disabled (sipDisabled=true), IVR/Recording/Voicemail/Email also disabled",
-                downgrade_disables_features,
-                f"SIP disable pattern: {sip_disable_pattern}, IVR disable: {ivr_disable_pattern}, Features in confirm: {features_disabled_in_confirm}",
-                "CRITICAL" if not downgrade_disables_features else "INFO"
-            )
-            
-        except Exception as e:
-            self.log_result(
-                "Plan change flow downgrade disables features check",
-                False,
-                f"Error checking _index.js: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_plan_change_upgrade_re_enables_sip(self):
-        """Test plan change flow: upgrade path re-enables SIP (sipDisabled=false) and applies immediately without warning"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                index_content = f.read()
-            
-            # Check for specific SIP re-enabling pattern
-            sip_reenable_pattern = "updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'sipDisabled', false)" in index_content
-            
-            # Look for upgrade logic that applies immediately (no warning for upgrades)
-            upgrade_immediate_text = "No feature loss (upgrade or same-tier) — apply directly" in index_content
-            
-            # Check that there's logic to re-enable SIP on upgrade
-            upgrade_reenable_section = re.search(r'No feature loss.*apply directly(.*?)return send.*upgraded', index_content, re.DOTALL)
-            sip_reenabled_on_upgrade = False
-            if upgrade_reenable_section:
-                upgrade_content = upgrade_reenable_section.group(1)
-                sip_reenabled_on_upgrade = "sipDisabled" in upgrade_content and "false" in upgrade_content
-            
-            upgrade_re_enables_sip = sip_reenable_pattern and upgrade_immediate_text and sip_reenabled_on_upgrade
-            
-            self.log_result(
-                "Plan change flow: upgrade path re-enables SIP (sipDisabled=false) and applies immediately without warning",
-                upgrade_re_enables_sip,
-                f"SIP re-enable pattern: {sip_reenable_pattern}, Immediate text: {upgrade_immediate_text}, SIP re-enabled in upgrade: {sip_reenabled_on_upgrade}",
-                "CRITICAL" if not upgrade_re_enables_sip else "INFO"
-            )
-            
-        except Exception as e:
-            self.log_result(
-                "Plan change flow upgrade re-enables SIP check",
-                False,
-                f"Error checking _index.js: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_sip_credentials_handler_checks_flags(self):
-        """Test SIP Credentials handler checks both sipDisabled flag and canAccessFeature before allowing access"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                index_content = f.read()
-            
-            # Look for SIP credentials handler that checks both conditions
-            sip_handler_pattern = re.search(r'sipCredentials.*?(.*?)return send.*upgradeMessage', index_content, re.DOTALL)
-            
-            checks_sip_disabled = False
-            checks_can_access_feature = False
-            
-            if sip_handler_pattern:
-                handler_content = sip_handler_pattern.group(1)
-                checks_sip_disabled = "sipDisabled" in handler_content
-                checks_can_access_feature = "canAccessFeature" in handler_content and "sipCredentials" in handler_content
-            
-            # Also look for the specific pattern in the code
-            dual_check_pattern = "num.sipDisabled || !phoneConfig.canAccessFeature" in index_content
-            
-            sip_handler_checks_both = (checks_sip_disabled and checks_can_access_feature) or dual_check_pattern
-            
-            self.log_result(
-                "SIP Credentials handler checks both sipDisabled flag and canAccessFeature before allowing access",
-                sip_handler_checks_both,
-                f"Checks sipDisabled: {checks_sip_disabled}, Checks canAccessFeature: {checks_can_access_feature}, Dual check pattern: {dual_check_pattern}",
-                "CRITICAL" if not sip_handler_checks_both else "INFO"
-            )
-            
-        except Exception as e:
-            self.log_result(
-                "SIP Credentials handler checks flags",
-                False,
-                f"Error checking _index.js: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_sip_credentials_button_always_visible(self):
-        """Test SIP Credentials button always visible in buildManageMenu (shows upgrade prompt for ineligible users)"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                index_content = f.read()
-            
-            # Look for buildManageMenu function
-            build_manage_pattern = re.search(r'buildManageMenu.*?{(.*?)}', index_content, re.DOTALL)
-            
-            sip_always_visible = False
-            if build_manage_pattern:
-                manage_menu_content = build_manage_pattern.group(1)
-                # Check if sipCredentials is always added to rows (not conditionally gated)
-                sip_always_visible = "rows.push([pc.sipCredentials])" in manage_menu_content or "[pc.sipCredentials]" in manage_menu_content
-            
-            # Also check for the comment that explains it's always visible
-            sip_always_visible_comment = "SIP — always visible" in index_content and "upgrade prompt" in index_content
-            
-            sip_button_always_visible = sip_always_visible or sip_always_visible_comment
-            
-            self.log_result(
-                "SIP Credentials button always visible in buildManageMenu (shows upgrade prompt for ineligible users)",
-                sip_button_always_visible,
-                f"SIP always visible in menu: {sip_always_visible}, Has explanatory comment: {sip_always_visible_comment}",
-                "CRITICAL" if not sip_button_always_visible else "INFO"
-            )
-            
-        except Exception as e:
-            self.log_result(
-                "SIP Credentials button always visible check",
-                False,
-                f"Error checking _index.js: {str(e)}",
-                "CRITICAL"
-            )
+            self.log(f"Voicemail default greeting check failed: {str(e)}")
+            return False
 
     def run_all_tests(self):
-        """Run all Cloud Phone Plan Change Flow tests"""
-        print("🔍 Testing Cloud Phone Plan Change Flow\n")
+        """Run all tests"""
+        self.log("🚀 Starting Nomadly Telegram Bot Backend Tests")
+        self.log("=" * 60)
         
-        # Core functionality tests
-        self.test_health_endpoint()
-        self.test_nodejs_bot_loads_without_errors()
+        # Test 1: Backend Health Check
+        self.run_test("Backend Health /api/health", self.test_backend_health)
         
-        # Plan change flow specific tests
-        self.test_sip_credentials_created_during_purchase()
-        self.test_plan_change_downgrade_pre_warning()
-        self.test_plan_change_downgrade_disables_features()
-        self.test_plan_change_upgrade_re_enables_sip()
-        self.test_sip_credentials_handler_checks_flags()
-        self.test_sip_credentials_button_always_visible()
+        # Test 2: Node.js Bot Syntax
+        self.run_test("Node.js Bot Syntax Check", self.test_node_bot_syntax)
         
-        # Generate summary
-        print(f"\n📊 Test Summary:")
-        print(f"Tests Run: {self.tests_run}")
-        print(f"Tests Passed: {self.tests_passed}")
-        print(f"Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%")
+        # Test 3: IVR/Voicemail Handlers
+        self.run_test("IVR/Voicemail Handlers Structure", self.test_ivr_voicemail_handlers)
         
-        if self.issues:
-            print(f"\n⚠️ Issues Found ({len(self.issues)}):")
-            for issue in self.issues:
-                print(f"  {issue['level']}: {issue['test']}")
-                print(f"    {issue['issue']}")
+        # Test 4: Phone Config Multilingual
+        self.run_test("Phone Config Multilingual Keys", self.test_phone_config_multilingual)
         
-        return {
-            'tests_run': self.tests_run,
-            'tests_passed': self.tests_passed, 
-            'success_rate': round(self.tests_passed/self.tests_run*100, 1),
-            'issues': self.issues,
-            'passed_tests': self.passed_tests
-        }
+        # Test 5: Translation Keys Wired
+        self.run_test("Translation Keys Wired in _index.js", self.test_translation_keys_wired)
+        
+        # Test 6: Plan Upgrade Logic
+        self.run_test("Plan Upgrade/Downgrade Logic", self.test_plan_upgrade_logic)
+        
+        # Test 7: Language Files Keys
+        self.run_test("Language Files Translation Keys", self.test_language_files_keys)
+        
+        # Test 8: Voicemail Default Greeting
+        self.run_test("Voicemail Default Greeting Text", self.test_voicemail_default_greeting)
+        
+        # Summary
+        self.log("=" * 60)
+        self.log(f"📊 Tests completed: {self.tests_passed}/{self.tests_run} passed")
+        
+        if self.tests_passed == self.tests_run:
+            self.log("🎉 All tests PASSED!")
+            return True
+        else:
+            self.log(f"⚠️  {self.tests_run - self.tests_passed} tests FAILED")
+            return False
+
+def main():
+    """Main test runner"""
+    tester = NomadlyBotTester()
+    success = tester.run_all_tests()
+    return 0 if success else 1
 
 if __name__ == "__main__":
-    tester = CloudPhonePlanChangeTester()
-    results = tester.run_all_tests()
-    
-    # Exit with appropriate code
-    sys.exit(0 if results['success_rate'] > 70 else 1)
+    sys.exit(main())
