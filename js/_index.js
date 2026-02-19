@@ -5547,12 +5547,25 @@ bot?.on('message', async msg => {
     }
     const forwardTo = message.replace(/[^+\d]/g, '')
     if (!forwardTo || forwardTo.length < 7) return send(chatId, 'Enter a valid phone number with country code (e.g. +14155551234).')
+
+    // ── Block premium-rate prefixes ──
+    if (phoneConfig.isBlockedPrefix(forwardTo)) {
+      return send(chatId, phoneConfig.txt.forwardingBlocked(forwardTo), { parse_mode: 'HTML' })
+    }
+
+    // ── Validate destination is routable via Telnyx ──
+    send(chatId, '⏳ Validating forwarding destination...')
+    const validation = await telnyxApi.validateForwardingDestination(forwardTo)
+    if (!validation.valid) {
+      return send(chatId, phoneConfig.txt.forwardingNotRoutable(forwardTo), { parse_mode: 'HTML' })
+    }
+
     const mode = info?.cpForwardMode || 'always'
     await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'callForwarding', { enabled: true, mode, forwardTo, ringTimeout: 25 })
     num.features.callForwarding = { enabled: true, mode, forwardTo, ringTimeout: 25 }
     await saveInfo('cpActiveNumber', num)
     const modeLabel = mode === 'always' ? 'Always Forward' : mode === 'busy' ? 'Forward When Busy' : 'Forward If No Answer'
-    send(chatId, phoneConfig.txt.forwardingUpdated(num.phoneNumber, forwardTo, modeLabel))
+    send(chatId, phoneConfig.txt.forwardingUpdated(num.phoneNumber, forwardTo, modeLabel), { parse_mode: 'HTML' })
     set(state, chatId, 'action', a.cpManageNumber)
     return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
   }
