@@ -5138,6 +5138,13 @@ bot?.on('message', async msg => {
   if (action === a.cpSelectCountry) {
     const pc = phoneConfig.btn
     if (message === t.back || message === pc.back) return goto.submenu5()
+    // Handle "More Countries" button
+    if (message === pc.moreCountries) {
+      const allBtns = [...phoneConfig.countries, ...phoneConfig.moreCountries].map(c => c.name)
+      const rows = []
+      for (let i = 0; i < allBtns.length; i += 2) rows.push(allBtns.slice(i, i + 2))
+      return send(chatId, `🌍 <b>All Available Countries</b>\n\nSelect a country for your new number:\n\n<i>Note: Some countries may require basic compliance info for activation.</i>`, k.of(rows))
+    }
     const countryCode = phoneConfig.countryByName[message]
     if (!countryCode) return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectValidCountry)
     await saveInfo('cpCountryCode', countryCode)
@@ -5154,6 +5161,7 @@ bot?.on('message', async msg => {
       const countryBtns = phoneConfig.countries.map(c => c.name)
       const rows = []
       for (let i = 0; i < countryBtns.length; i += 2) rows.push(countryBtns.slice(i, i + 2))
+      if (phoneConfig.moreCountries.length > 0) rows.push([pc.moreCountries])
       return send(chatId, phoneConfig.txt.selectCountry, k.of(rows))
     }
     let numberType = null
