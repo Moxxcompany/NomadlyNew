@@ -7190,9 +7190,12 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpChangePlan)
       const currentPlan = num.plan
       const btns = []
-      if (currentPlan !== 'starter') btns.push([`💡 Downgrade to Starter — $${phoneConfig.PHONE_STARTER_PRICE}/mo`])
-      if (currentPlan !== 'pro') btns.push([`⭐ ${currentPlan === 'starter' ? 'Upgrade' : 'Change'} to Pro — $${phoneConfig.PHONE_PRO_PRICE}/mo`])
-      if (currentPlan !== 'business') btns.push([`👑 Upgrade to Business — $${phoneConfig.PHONE_BUSINESS_PRICE}/mo`])
+      if (currentPlan !== 'starter' && phoneConfig.isPlanAvailable('starter')) btns.push([`💡 Downgrade to Starter — $${phoneConfig.PHONE_STARTER_PRICE}/mo`])
+      if (currentPlan !== 'starter' && !phoneConfig.isPlanAvailable('starter')) btns.push([`💡 Starter — Coming Soon 🔜`])
+      if (currentPlan !== 'pro' && phoneConfig.isPlanAvailable('pro')) btns.push([`⭐ ${currentPlan === 'starter' ? 'Upgrade' : 'Change'} to Pro — $${phoneConfig.PHONE_PRO_PRICE}/mo`])
+      if (currentPlan !== 'pro' && !phoneConfig.isPlanAvailable('pro')) btns.push([`⭐ Pro — Coming Soon 🔜`])
+      if (currentPlan !== 'business' && phoneConfig.isPlanAvailable('business')) btns.push([`👑 Upgrade to Business — $${phoneConfig.PHONE_BUSINESS_PRICE}/mo`])
+      if (currentPlan !== 'business' && !phoneConfig.isPlanAvailable('business')) btns.push([`👑 Business — Coming Soon 🔜`])
       return send(chatId, phoneConfig.getMsg(info?.userLanguage).changePlanHeader(num.phoneNumber, num.plan, num.planPrice), k.of(btns))
     }
     return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectOption)
