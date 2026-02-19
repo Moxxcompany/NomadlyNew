@@ -7712,7 +7712,7 @@ bot?.on('message', async msg => {
   if (action === a.askCoupon + a.validatorSelectFormat) {
     if (message === t.back) return goto.validatorSelectFormat()
 
-    // Check for free USA validations before going to wallet
+    // Check for free USA validations before going to payment
     const _checkFreeValidation = async () => {
       if (info?.country === 'USA' && (await isSubscribed(chatId))) {
         const freeRemaining = (await get(freeValidationsAvailableFor, chatId)) || 0
@@ -7736,7 +7736,7 @@ bot?.on('message', async msg => {
       if (freeCheck === 'partial') {
         return goto.usePartialFreeValidation()
       }
-      return goto.walletSelectCurrency()
+      return goto['leads-pay']()
     }
 
     const { price } = info
@@ -7760,7 +7760,7 @@ bot?.on('message', async msg => {
     if (freeCheck2 === 'partial') {
       return goto.usePartialFreeValidation()
     }
-    return goto.walletSelectCurrency()
+    return goto['leads-pay']()
   }
 
   if (message === user.joinChannel) {
