@@ -46,7 +46,7 @@ const btn = {
   cloudPhone: '📞☁️ Cloud Phone — Speechcue',
   buyPhoneNumber: '🛒 Buy Phone Number',
   myNumbers: '📱 My Numbers',
-  sipSettings: '⚙️ SIP Settings',
+  sipSettings: '📖 SIP Setup Guide',
   usageBilling: '📊 Usage & Billing',
 
   // Number types
@@ -68,7 +68,7 @@ const btn = {
   ivrAutoAttendant: '🤖 IVR / Auto-attendant',
   callSmsLogs: '📊 Call & SMS Logs',
   renewChangePlan: '🔄 Renew / Change Plan',
-  releaseNumber: '❌ Release Number',
+  releaseNumber: '🗑️ Delete Number',
 
   // Forwarding modes
   alwaysForward: '📞 Always Forward',
@@ -109,8 +109,8 @@ const btn = {
   proceedPayment: '✅ Proceed to Payment',
   buyAnother: '🛒 Buy Another Number',
   confirm: '✅ Confirm',
-  yesRelease: 'Yes, Release Number',
-  noKeep: 'No, Keep It',
+  yesRelease: '⚠️ Yes, Permanently Delete',
+  noKeep: '↩️ No, Keep It',
   yesReset: 'Yes, Reset',
 
   // IVR
