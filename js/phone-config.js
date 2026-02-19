@@ -605,7 +605,7 @@ function shortDate(dateStr) {
 
 function generateSipUsername() {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
-  let result = 'user_'
+  let result = 'sc_'
   for (let i = 0; i < 6; i++) result += chars[Math.floor(Math.random() * chars.length)]
   return result
 }
