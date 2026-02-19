@@ -7592,7 +7592,7 @@ bot?.on('message', async msg => {
       saveInfo('lastStep', a.buyLeadsSelectFormat)
       await saveInfo('couponApplied', false)
       if (info?.targetName) return goto.targetLeadsConfirm()
-      return goto.walletSelectCurrency()
+      return goto['leads-pay']()
     }
 
     const { price } = info
@@ -7611,7 +7611,7 @@ bot?.on('message', async msg => {
     if (couponResult.type === 'daily') await dailyCouponSystem.markCouponUsed(couponResult.code, chatId)
 
     if (info?.targetName) return goto.targetLeadsConfirm()
-    return goto.walletSelectCurrency()
+    return goto['leads-pay']()
   }
 
   //phone number validator
