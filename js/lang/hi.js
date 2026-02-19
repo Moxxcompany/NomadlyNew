@@ -173,24 +173,17 @@ const t = {
   back: 'वापस',
   cancel: 'रद्द करें',
   skip: 'छोड़ें',
-  becomeReseller: `नमस्ते,
+  becomeReseller: (() => {
+    const services = ['URL शॉर्टनिंग', 'डोमेन पंजीकरण']
+    if (process.env.PHONE_SERVICE_ON === 'true') services.push('क्लाउड फ़ोन')
+    if (HIDE_SMS_APP !== 'true') services.push('बल्कSMS')
+    if (process.env.OFFSHORE_HOSTING_ON !== 'false') services.push('ऑफशोर होस्टिंग')
+    return `<b>${CHAT_BOT_BRAND} पुनर्विक्रेता बनें</b>
 
-मैं आपको ${CHAT_BOT_BRAND}Bot के शक्तिशाली एसएमएस मार्केटिंग और होस्टिंग सॉफ़्टवेयर का पुनर्विक्रेता बनने का एक शानदार अवसर प्रदान करने के लिए संपर्क कर रहा हूँ।
+हमारी पूरी सेवा — ${services.join(', ')} — अपने ब्रांड के तहत बेचें।
 
-मुख्य विवरण:
-
-लाभ साझेदारी: प्रत्येक बिक्री पर 65/35% का प्रतिस्पर्धी हिस्सा कमाएं।
-
-सेट-अप शुल्क: विवरण के लिए समर्थन से संपर्क करें।
-
-रुचि है? इस लाभदायक साझेदारी के बारे में अधिक जानने के लिए 💬 सहायता प्राप्त करें बटन दबाएं।
-
-आपके साथ संभावित सहयोग की प्रतीक्षा है!
-
-शुभकामनाएँ,
-
-${CHAT_BOT_BRAND} टीम
-`,
+हर बिक्री पर <b>65/35%</b> लाभ। शुरू करने के लिए 💬 <b>सहायता प्राप्त करें</b> दबाएं।`
+  })(),
   resetLoginAdmit: `${CHAT_BOT_BRAND} एसएमएस: आप अपने पिछले डिवाइस से सफलतापूर्वक लॉग आउट हो गए हैं। कृपया अब लॉग इन करें।`,
   resetLoginDeny: 'ठीक है, कोई और कार्रवाई की आवश्यकता नहीं है।',
   resetLogin: `${CHAT_BOT_BRAND} एसएमएस: क्या आप अपने पिछले डिवाइस से लॉग आउट करने की कोशिश कर रहे हैं?`,
@@ -513,7 +506,8 @@ ${
   redIssueUrlBitly: `लिंक शॉर्टनिंग विफल हुई। आपका वॉलेट चार्ज नहीं हुआ। कृपया पुनः प्रयास करें या 💬 सहायता प्राप्त करें बटन दबाएं।`,
   redIssueSlugCuttly: `वांछित लिंक नाम पहले से ही लिया गया है, कृपया दूसरा प्रयास करें।`,
   redIssueUrlCuttly: `लिंक शॉर्टनिंग विफल हुई। कृपया पुनः प्रयास करें या 💬 सहायता प्राप्त करें बटन दबाएं।`,
-  freeLinksExhausted: `आपके सभी ${FREE_LINKS} ट्रायल लिंक समाप्त हो गए हैं! "⚡ प्लान अपग्रेड करें" दबाएं — असीमित लिंक, मुफ्त डोमेन और अधिक।`,
+  freeLinksExhausted: `आपके सभी ${FREE_LINKS} ट्रायल लिंक समाप्त हो गए हैं! सब्सक्राइब करें — असीमित लिंक + मुफ्त डोमेन + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+ वैलिडेशन।`,
+  subscriptionLeadsHint: `💡 सब्सक्राइबर्स को प्रत्येक प्लान पर ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+ मुफ्त वैलिडेशन मिलते हैं। $${PRICE_DAILY}/दिन से शुरू।`,
   linksRemaining: (count, total) => `आपके पास ${count}/${total || FREE_LINKS} Shortit ट्रायल लिंक शेष हैं।`,
   redNewPrice: (price, newPrice) =>
     `कीमत अब $${view(newPrice)} <s>($${price})</s> है। कृपया भुगतान पद्धति का चयन करें।`,
@@ -743,7 +737,7 @@ const userKeyboard = {
       [user.cloudPhone],
       [user.phoneNumberLeads],
       HIDE_SMS_APP === 'true' ? [user.domainNames] : [user.freeTrialAvailable, user.domainNames],
-      [user.wallet, user.viewPlan, user.buyPlan],
+      [user.wallet, user.viewPlan],
       HIDE_BECOME_RESELLER === 'true'
         ? [user.changeSetting, user.getSupport, user.joinChannel]
         : [user.changeSetting, user.becomeReseller, user.getSupport],
