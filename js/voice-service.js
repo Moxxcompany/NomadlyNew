@@ -605,7 +605,7 @@ async function handleCallHangup(payload) {
             const ref = _nanoid?.() || `ov_${Date.now()}`
             if (_payments) set(_payments, ref, `Overage,CloudPhoneMin,$${overageCharge.toFixed(2)},${chatId},${num.phoneNumber},${new Date()}`)
             log(`[Voice] Overage charged: $${overageCharge.toFixed(2)} for ${overageMinutes} min on ${num.phoneNumber}`)
-            _bot?.sendMessage(chatId, `💰 <b>Overage Charge</b>\n\n📞 ${formatPhone(to)}\n⏱️ ${overageMinutes} overage min × $${OVERAGE_RATE_MIN} = <b>$${overageCharge.toFixed(2)}</b> charged from wallet.`, { parse_mode: 'HTML' }).catch(() => {})
+            _bot?.sendMessage(chatId, `💰 Overage: ${overageMinutes} min × $${OVERAGE_RATE_MIN} = <b>$${overageCharge.toFixed(2)}</b>`, { parse_mode: 'HTML' }).catch(() => {})
           } catch (e) { log(`[Voice] Overage charge error: ${e.message}`) }
         }
       }
