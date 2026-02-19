@@ -613,15 +613,15 @@ ${bal(usd, ngn)}`,
   paymentSuccessFul: '✅ Payment successful! Your order is being processed. Details will be available shortly.',
 
   // Call Forwarding (Cloud Phone)
-  fwdInsufficientBalance: (walletBal, rate) => `🚫 <b>Cannot Activate Call Forwarding</b>\n\n💳 Wallet balance: <b>$${(walletBal || 0).toFixed(2)}</b>\n💰 Required: <b>$${rate}/min</b> per forwarded call\n\n⚠️ You need sufficient wallet balance for call forwarding to work. Without funds, incoming calls will NOT be forwarded.\n\n👉 Please top up your wallet with at least <b>$25</b> (~${Math.floor(25 / rate)} min of forwarding) via 👛 My Wallet before activating.`,
-  fwdBlocked: (number) => `🚫 <b>Forwarding Blocked</b>\n\nThe number ${number} is a premium-rate or high-cost destination. Call forwarding to this number is not available.\n\nPlease tap 💬 <b>Get Support</b> to request activation for this destination.`,
-  fwdNotRoutable: (number) => `⚠️ <b>Destination Not Routable</b>\n\nThe number ${number} could not be validated as a routable destination.\n\nPlease check the number and try again, or tap 💬 <b>Get Support</b> for assistance.`,
-  fwdValidating: '⏳ Validating forwarding destination...',
+  fwdInsufficientBalance: (walletBal, rate) => `🚫 <b>Insufficient Balance</b>\n\n💳 $${(walletBal || 0).toFixed(2)} · Need $${rate}/min\n👉 Top up <b>$25</b> via 👛 Wallet to activate forwarding.`,
+  fwdBlocked: (number) => `🚫 <b>Blocked</b> — ${number} is a premium destination.\nTap 💬 <b>Get Support</b> to request activation.`,
+  fwdNotRoutable: (number) => `⚠️ ${number} is not routable. Check number or tap 💬 <b>Get Support</b>.`,
+  fwdValidating: '⏳ Validating destination...',
   fwdEnterNumber: (rate, walletBal) => {
-    let text = `Enter the phone number to forward calls to.\nInclude country code (e.g. +14155551234):\n\n💰 <b>Rate: $${rate}/min</b> from wallet.`
+    let text = `Enter forwarding number with country code (e.g. +14155551234)\n💰 <b>$${rate}/min</b>`
     if (walletBal !== undefined) {
-      text += `\n💳 Wallet: <b>$${walletBal.toFixed(2)}</b>`
-      if (walletBal < rate) text += `\n\n⚠️ <b>Insufficient balance!</b> Please top up your wallet (recommended: <b>$25</b>) before activating forwarding.`
+      text += ` · 💳 $${walletBal.toFixed(2)}`
+      if (walletBal < rate) text += `\n⚠️ Top up <b>$25</b> via 👛 Wallet first.`
     }
     return text
   },
