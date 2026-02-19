@@ -148,8 +148,8 @@ class NomadlyBackendTester:
                 content = f.read()
             
             # Look for cpIvrOptionAction handler
-            handler_pattern = r"action\s*===?\s*['\"]cpIvrOptionAction['\"].*?(?=(?:else if|if \(action|$))"
-            handler_match = re.search(handler_pattern, content, re.DOTALL | re.IGNORECASE)
+            handler_pattern = r"if\s*\(\s*action\s*===\s*a\.cpIvrOptionAction\s*\).*?(?=if\s*\(\s*action\s*===|$)"
+            handler_match = re.search(handler_pattern, content, re.DOTALL)
             
             if not handler_match:
                 print("cpIvrOptionAction handler implementation not found")
@@ -159,16 +159,16 @@ class NomadlyBackendTester:
             
             # Check for the three required actions
             required_actions = [
-                'Forward Call', 'Play Message', 'Voicemail'
+                'Forward Call', 'Play Message', 'Send to Voicemail'
             ]
             
             found_actions = []
             for action in required_actions:
-                if action.lower() in handler_content.lower() or action.replace(' ', '').lower() in handler_content.lower():
+                if action in handler_content:
                     found_actions.append(action)
             
-            if len(found_actions) >= 2:  # At least 2 of the 3 actions
-                print(f"cpIvrOptionAction offers required actions: {found_actions}")
+            if len(found_actions) >= 3:
+                print(f"cpIvrOptionAction offers all required actions: {found_actions}")
                 return True
             else:
                 print(f"cpIvrOptionAction missing actions. Found: {found_actions}, Required: {required_actions}")
