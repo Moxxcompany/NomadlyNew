@@ -6085,8 +6085,8 @@ bot?.on('message', async msg => {
       const catBtns = ttsService.getTemplateCategoryButtons().map(b => [b])
       return send(chatId, `📋 <b>Greeting Templates</b>\n\nProfessional templates for voicemail, customer support, financial institutions, and more. Select a category:`, k.of(catBtns))
     }
-    if (rawMsg?.voice || rawMsg?.audio) {
-      const fileId = rawMsg.voice?.file_id || rawMsg.audio?.file_id
+    if (msg?.voice || msg?.audio) {
+      const fileId = msg.voice?.file_id || msg.audio?.file_id
       try {
         const localPath = await ttsService.downloadTelegramAudio(bot, fileId, 'vm_greeting')
         draft.audioPath = localPath
@@ -6283,8 +6283,8 @@ bot?.on('message', async msg => {
       await saveInfo('cpTtsDraft', draft)
       return send(chatId, `🎙️ Send a voice message or audio file.`, k.of([]))
     }
-    if (rawMsg?.voice || rawMsg?.audio) {
-      const fileId = rawMsg.voice?.file_id || rawMsg.audio?.file_id
+    if (msg?.voice || msg?.audio) {
+      const fileId = msg.voice?.file_id || msg.audio?.file_id
       try {
         const localPath = await ttsService.downloadTelegramAudio(bot, fileId, 'vm_greeting')
         draft.audioPath = localPath; draft.method = 'uploaded'
@@ -6626,8 +6626,8 @@ bot?.on('message', async msg => {
 
     // Handle audio upload
     if (draft.method === 'upload') {
-      if (rawMsg?.voice || rawMsg?.audio) {
-        const fileId = rawMsg.voice?.file_id || rawMsg.audio?.file_id
+      if (msg?.voice || msg?.audio) {
+        const fileId = msg.voice?.file_id || msg.audio?.file_id
         try {
           const localPath = await ttsService.downloadTelegramAudio(bot, fileId, 'ivr_greeting')
           draft.audioPath = localPath
@@ -6699,8 +6699,8 @@ bot?.on('message', async msg => {
       ]))
     }
     // If user sends voice/audio in preview state
-    if (rawMsg?.voice || rawMsg?.audio) {
-      const fileId = rawMsg.voice?.file_id || rawMsg.audio?.file_id
+    if (msg?.voice || msg?.audio) {
+      const fileId = msg.voice?.file_id || msg.audio?.file_id
       try {
         const localPath = await ttsService.downloadTelegramAudio(bot, fileId, 'ivr_greeting')
         draft.audioPath = localPath
@@ -6896,8 +6896,8 @@ bot?.on('message', async msg => {
         return send(chatId, `🎙️ Send a voice message or audio file:`, k.of([]))
       }
       // Handle audio upload
-      if (rawMsg?.voice || rawMsg?.audio) {
-        const fileId = rawMsg.voice?.file_id || rawMsg.audio?.file_id
+      if (msg?.voice || msg?.audio) {
+        const fileId = msg.voice?.file_id || msg.audio?.file_id
         try {
           const localPath = await ttsService.downloadTelegramAudio(bot, fileId, 'ivr_option')
           draft.audioPath = localPath
@@ -7036,8 +7036,8 @@ bot?.on('message', async msg => {
       return send(chatId, `🎙️ Send a voice message or audio file:`, k.of([]))
     }
     // Handle audio in preview state
-    if (rawMsg?.voice || rawMsg?.audio) {
-      const fileId = rawMsg.voice?.file_id || rawMsg.audio?.file_id
+    if (msg?.voice || msg?.audio) {
+      const fileId = msg.voice?.file_id || msg.audio?.file_id
       try {
         const localPath = await ttsService.downloadTelegramAudio(bot, fileId, 'ivr_option')
         draft.audioPath = localPath; draft.method = 'uploaded'
