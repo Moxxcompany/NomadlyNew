@@ -316,6 +316,58 @@ Tap <b>HQ SMS Lead</b>
 -----
 Shorten campaign links — tap <b>URL Shortener</b>`,
     ],
+
+    cloudphone: [
+      `<b>YOUR OWN PHONE NUMBER</b>
+
+Virtual numbers in US, Canada, UK & 30+ countries.
+IVR, voicemail, SMS to Telegram. From $5/mo.
+
+Tap <b>Cloud Phone</b>
+
+-----
+Need leads? Tap <b>HQ SMS Lead</b>`,
+
+      `<b>CLOUD PHONE — BY SPEECHCUE</b>
+
+Get a real number. Forward calls anywhere.
+SIP access + multilingual AI greetings.
+
+Tap <b>Cloud Phone</b>
+
+-----
+Shorten links — tap <b>URL Shortener</b>`,
+
+      `<b>PROFESSIONAL IVR IN MINUTES</b>
+
+"Press 1 for sales, 2 for support" — set up in the bot.
+AI voices in 20 languages. Business plan: unlimited minutes.
+
+Tap <b>Cloud Phone</b>
+
+-----
+DMCA-ignored domains — tap <b>Register Domain Names</b>`,
+
+      `<b>NO SIM NEEDED</b>
+
+Virtual numbers with call forwarding + voicemail.
+SMS forwarded straight to your Telegram.
+
+Tap <b>Cloud Phone</b>
+
+-----
+Targeted leads — tap <b>HQ SMS Lead</b>`,
+
+      `<b>$5/mo VIRTUAL NUMBER</b>
+
+100 min + 50 SMS. Call forwarding included.
+Upgrade for IVR, recording & SIP.
+
+Tap <b>Cloud Phone</b>
+
+-----
+5 free short links — tap <b>URL Shortener</b>`,
+    ],
   },
 
   fr: {
