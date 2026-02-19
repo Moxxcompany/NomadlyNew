@@ -255,20 +255,30 @@ ${CHAT_BOT_NAME}`,
   askValidPayOption: 'Veuillez choisir une option de paiement valide.',
   chooseSubscription:
     HIDE_SMS_APP === 'true'
-      ? `<b>Élevez votre marque avec nos plans d'abonnement !</b>
+      ? `<b>Choisissez votre plan</b>
 
-- <b>Quotidien :</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} domaine gratuit ".sbs/.xyz" + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + liens Shortit illimités.
-- <b>Hebdomadaire :</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + liens Shortit illimités.
-- <b>Mensuel :</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + liens Shortit illimités.
+<b>Quotidien</b> — $${PRICE_DAILY}
+${DAILY_PLAN_FREE_DOMAINS} domaine · ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Liens illimités
 
-(Domaines gratuits exclusifs aux extensions ".sbs" et ".xyz".)`
-      : `<b>Élevez votre marque avec nos plans d'abonnement !</b>
+<b>Hebdomadaire</b> — $${PRICE_WEEKLY}
+${WEEKLY_PLAN_FREE_DOMAINS} domaines · ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Liens illimités
 
-- <b>Quotidien :</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} domaine gratuit ".sbs/.xyz" + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + liens Shortit illimités + SMS en masse illimités.
-- <b>Hebdomadaire :</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + liens Shortit illimités + SMS en masse illimités.
-- <b>Mensuel :</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} domaines gratuits ".sbs/.xyz" + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations gratuites de numéros USA + liens Shortit illimités + SMS en masse illimités.
+<b>Mensuel</b> — $${PRICE_MONTHLY}
+${MONTHLY_PLAN_FREE_DOMAINS} domaines · ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Liens illimités
 
-(Domaines gratuits exclusifs aux extensions ".sbs" et ".xyz".)`,
+<i>Tous les plans incluent des domaines .sbs/.xyz gratuits + raccourcissement d'URL illimité.</i>`
+      : `<b>Choisissez votre plan</b>
+
+<b>Quotidien</b> — $${PRICE_DAILY}
+${DAILY_PLAN_FREE_DOMAINS} domaine · ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Liens + SMS illimités
+
+<b>Hebdomadaire</b> — $${PRICE_WEEKLY}
+${WEEKLY_PLAN_FREE_DOMAINS} domaines · ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Liens + SMS illimités
+
+<b>Mensuel</b> — $${PRICE_MONTHLY}
+${MONTHLY_PLAN_FREE_DOMAINS} domaines · ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} validations · Liens + SMS illimités
+
+<i>Tous les plans incluent des domaines .sbs/.xyz gratuits + raccourcissement d'URL illimité.</i>`,
 
   askCoupon: usd =>
     `Le prix est de $${usd}. Souhaitez-vous utiliser un code promo ? Si vous en avez un, veuillez l'entrer maintenant. Sinon, appuyez sur "Passer".`,
