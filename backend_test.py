@@ -244,8 +244,8 @@ class NomadlyCloudPhoneTester:
             # Check for admin release text change
             number_deleted = "🗑️ <b>Number Deleted</b>" in config_content
             
-            # Check for status change from Released to Deleted
-            status_deleted = "'Deleted'" in config_content and "status shows 'Deleted'" not in config_content  # avoid false positive
+            # Check for status change in myNumbersList function - should use 'Deleted' not 'Released'
+            status_deleted = "'🗑️ Deleted'" in config_content and "'Released'" not in config_content
             
             admin_changes = number_deleted and status_deleted
             
