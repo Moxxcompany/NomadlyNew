@@ -279,7 +279,8 @@ Beyond plan limits: $${OVERAGE_RATE_MIN}/min and $${OVERAGE_RATE_SMS}/SMS charge
 📍 Location: ${country}
 📦 Plan: ${plan.name} — $${price}/mo
 📩 Inbound SMS: ${plan.sms}/mo (receive only)
-📞 Inbound Minutes: ${plan.minutes}/mo (includes forwarded calls)
+📞 Inbound Minutes: ${plan.minutes}/mo
+📲 Call Forwarding: $${CALL_FORWARDING_RATE_MIN}/min from wallet
 ⚡ Features: ${plan.features.join(', ')}
 💰 Overage: $${OVERAGE_RATE_MIN}/min + $${OVERAGE_RATE_SMS}/SMS beyond plan limits (from wallet)
 
