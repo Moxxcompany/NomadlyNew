@@ -1,50 +1,42 @@
-# Nomadly Bot - PRD
+# Nomadly Bot - PRD & Architecture
 
 ## Problem Statement
-Nomadly Telegram Bot — link shortener, domain registration, phone leads, cloud phone, and hosting platform. Progressive feature additions and UX improvements.
+Set up the Nomadly Telegram bot codebase on the Emergent platform, configure environment variables and webhook URLs to use the current pod URL with `/api` prefix.
 
 ## Architecture
-- **Node.js Express app** (`js/_index.js`) — core Telegram bot + REST APIs on port 5000
-- **FastAPI proxy** (`backend/server.py`) — starts Node.js, proxies all requests on port 8001
-- **React frontend** — minimal, served on port 3000
-- **MongoDB** — external Railway MongoDB (`caboose.proxy.rlwy.net:59668`)
-- **Kubernetes ingress** — routes `/api/*` to backend:8001, else to frontend:3000
-- **4-language support** — EN, FR, ZH, HI (`js/lang/*.js`)
+- **Python FastAPI** (port 8001): Proxy layer that starts Node.js bot and forwards all `/api/*` requests
+- **Node.js Express** (port 5000): Main business logic - Telegram bot, URL shortener, domain registration, phone leads, hosting, VPS, cloud phone
+- **React Frontend** (port 3000): Web UI
+- **MongoDB**: Remote Railway-hosted MongoDB for data storage
 
-## Key Services & Integrations
-- Telegram Bot API (webhook)
-- Telnyx (Cloud Phone: SIP, SMS, Voice/IVR, Call Recording)
-- EdenAI + ElevenLabs (TTS in 20 languages)
-- Connect Reseller / OpenProvider (domain registration)
-- Cloudflare (DNS)
-- Fincra / BlockBee / DynoPay (payments)
-- Brevo (email/SMTP)
-- Bitly / Cuttly (URL shortening)
-- Twilio / SignalWire (phone validation)
+## Webhook Flow
+1. External requests → `https://getting-started-64.preview.emergentagent.com/api/*`
+2. Kubernetes ingress → FastAPI on port 8001
+3. FastAPI strips `/api` prefix → forwards to Node.js on port 5000
+4. Node.js Express handles the request
 
-## What's Been Implemented
+## Key Webhooks Configured
+- Telegram: `https://getting-started-64.preview.emergentagent.com/api/telegram/webhook`
+- Telnyx Voice: `https://getting-started-64.preview.emergentagent.com/api/telnyx/voice-webhook`
+- Telnyx SMS: `https://getting-started-64.preview.emergentagent.com/api/telnyx/sms-webhook`
 
-### Session 1 — Setup
-- Updated `.env` with all API keys, set SELF_URL to pod URL + `/api`
+## What's Been Implemented (2026-02-19)
+- Updated `/app/backend/.env` with all provided API keys and credentials
+- Set `SELF_URL` and `SELF_URL_PROD` to pod URL + `/api`
+- Installed Node.js dependencies (`npm install`)
+- Restarted backend service
+- Verified: MongoDB connected, Telegram webhook set & verified, Telnyx resources initialized, all services running
 
-### Session 2 — Reseller Text & Contextual Upgrade
-- Replaced verbose reseller text with concise, dynamic version (auto-lists services from env flags)
-- Removed "Upgrade Plan" from main keyboard; shows contextually when free links exhaust and in leads flow
-
-### Session 3 — 4 Feature Additions (2026-02-19)
-1. **Multilingual TTS for IVR/Voicemail**: Added 20 languages (EN, FR, ES, DE, IT, PT, NL, PL, JA, KO, ZH, HI, AR, RU, TR, SV, DA, NO, FI, EL). Language selection step added between text entry and voice selection in both IVR and VM greeting flows. English users get 6 named voices; other languages get Male/Female options.
-2. **CloudPhone in Promos**: Added 'cloudphone' theme to auto-promo system with 5 promo variations in all 4 languages. Updated SERVICE_CONTEXT, PROMO_BANNERS, and THEMES.
-3. **Expanded Countries**: Added Puerto Rico (PR) and US Virgin Islands (VI) as no-docs-required countries. Populated moreCountries with 28 popular Telnyx countries (AU, IE, SE, NL, DE, FR, ES, IT, BE, AT, DK, NO, FI, PL, CZ, PT, CH, NZ, MX, BR, CO, CL, IL, SG, JP, ZA, PH, MY). "More Countries" button in buy flow.
-4. **Smart Link Upsell**: When free users have 2 or fewer links remaining, shows urgency upsell text + Upgrade Plan button. All 4 languages updated.
-
-## User Personas
-- Telegram bot users (link shortening, domain purchase, phone leads, cloud phone, hosting)
-- International callers (multilingual IVR greetings)
-- Resellers (white-label service resale)
-- Admin users (analytics, user management, broadcasts)
+## Core Features (existing)
+- Telegram bot (URL shortening, domain registration, phone leads, wallet, subscriptions)
+- Cloud Phone (Telnyx: SIP, SMS, Voice, IVR, Voicemail)
+- Domain management (Connect Reseller, Cloudflare, OpenProvider)
+- Payment processing (Fincra bank, BlockBee/DynoPay crypto)
+- VPS/Hosting management
+- Auto-promo & daily coupons system
+- Multi-language support (EN, FR, HI, ZH)
 
 ## Backlog
-- P0: None — all services operational
-- P1: Consider auto-language detection for IVR based on caller's country code
-- P2: Frontend admin dashboard for business analytics
-- P2: Add more Telnyx countries as compliance requirements change
+- P0: Connect Reseller IP whitelist (35.225.230.28 needs to be added)
+- P1: Frontend UI development (currently minimal)
+- P2: Production deployment optimization
