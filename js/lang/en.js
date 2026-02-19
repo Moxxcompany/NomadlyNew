@@ -79,7 +79,7 @@ const user = {
   urlShortenerMain: `🔗✂️ URL Shortener - ${FREE_LINKS} Trial Links`,
   vpsPlans: 'Buy Bulletproof VPS🛡️ - Hourly/Monthly',
   buyPlan: '🔔 Subscribe Here',
-  domainNames: '🌐 Register Domain Names - ❌ DMCA',
+  domainNames: '🌐 Register Bulletproof Domain ¹⁰⁰⁰⁺ ᵀᴸᴰ',
   viewPlan: '📋 My Subscriptions',
   becomeReseller: '💼 Become A Reseller',
   getSupport: '💬 Get Support',

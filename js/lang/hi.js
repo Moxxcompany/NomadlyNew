@@ -80,7 +80,7 @@ const user = {
   urlShortenerMain: `🔗✂️ URL छोटा करें - ${FREE_LINKS} ट्रायल लिंक`,
   vpsPlans: 'बुलेटप्रूफ VPS🛡️ खरीदें - प्रति घंटा/मासिक',
   buyPlan: '🔔 यहां सब्सक्राइब करें',
-  domainNames: '🌐 डोमेन नाम पंजीकृत करें - ❌ DMCA',
+  domainNames: '🌐 Register Bulletproof Domain ¹⁰⁰⁰⁺ ᵀᴸᴰ',
   viewPlan: '📋 मेरी सदस्यताएं',
   becomeReseller: '💼 पुनर्विक्रेता बनें',
   getSupport: '💬 सहायता प्राप्त करें',

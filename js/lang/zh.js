@@ -80,7 +80,7 @@ const user = {
   urlShortenerMain: `🔗✂️ URL 缩短器 - ${FREE_LINKS}次试用`,
   vpsPlans: '购买防弹 VPS🛡️ - 按小时/按月',
   buyPlan: '🔔 订阅这里',
-  domainNames: '🌐 注册域名 - ❌ DMCA',
+  domainNames: '🌐 Register Bulletproof Domain ¹⁰⁰⁰⁺ ᵀᴸᴰ',
   viewPlan: '📋 我的订阅',
   becomeReseller: '💼 成为代理商',
   getSupport: '💬 获取支持',
