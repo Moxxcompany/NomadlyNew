@@ -140,9 +140,41 @@ const countries = [
   { code: 'US', name: '🇺🇸 United States' },
   { code: 'CA', name: '🇨🇦 Canada' },
   { code: 'GB', name: '🇬🇧 United Kingdom' },
+  { code: 'PR', name: '🇵🇷 Puerto Rico' },
+  { code: 'VI', name: '🇻🇮 US Virgin Islands' },
 ]
 
-const moreCountries = []
+// Additional countries available on Telnyx (may require basic compliance info)
+const moreCountries = [
+  { code: 'AU', name: '🇦🇺 Australia' },
+  { code: 'IE', name: '🇮🇪 Ireland' },
+  { code: 'SE', name: '🇸🇪 Sweden' },
+  { code: 'NL', name: '🇳🇱 Netherlands' },
+  { code: 'DE', name: '🇩🇪 Germany' },
+  { code: 'FR', name: '🇫🇷 France' },
+  { code: 'ES', name: '🇪🇸 Spain' },
+  { code: 'IT', name: '🇮🇹 Italy' },
+  { code: 'BE', name: '🇧🇪 Belgium' },
+  { code: 'AT', name: '🇦🇹 Austria' },
+  { code: 'DK', name: '🇩🇰 Denmark' },
+  { code: 'NO', name: '🇳🇴 Norway' },
+  { code: 'FI', name: '🇫🇮 Finland' },
+  { code: 'PL', name: '🇵🇱 Poland' },
+  { code: 'CZ', name: '🇨🇿 Czech Republic' },
+  { code: 'PT', name: '🇵🇹 Portugal' },
+  { code: 'CH', name: '🇨🇭 Switzerland' },
+  { code: 'NZ', name: '🇳🇿 New Zealand' },
+  { code: 'MX', name: '🇲🇽 Mexico' },
+  { code: 'BR', name: '🇧🇷 Brazil' },
+  { code: 'CO', name: '🇨🇴 Colombia' },
+  { code: 'CL', name: '🇨🇱 Chile' },
+  { code: 'IL', name: '🇮🇱 Israel' },
+  { code: 'SG', name: '🇸🇬 Singapore' },
+  { code: 'JP', name: '🇯🇵 Japan' },
+  { code: 'ZA', name: '🇿🇦 South Africa' },
+  { code: 'PH', name: '🇵🇭 Philippines' },
+  { code: 'MY', name: '🇲🇾 Malaysia' },
+]
 
 // US popular area codes
 const usAreaCodes = [
