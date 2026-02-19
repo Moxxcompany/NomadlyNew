@@ -432,6 +432,14 @@ Veuillez noter que les transactions cryptographiques peuvent prendre jusqu'à 30
 Cordialement,
 ${CHAT_BOT_NAME}`,
 
+  showDepositCryptoInfoLeads: (priceCrypto, tickerView, address, label) =>
+    `Veuillez envoyer ${priceCrypto} ${tickerView} à\n\n<code>${address}</code>
+
+Veuillez noter que les transactions cryptographiques peuvent prendre jusqu'à 30 minutes pour être complétées. Une fois la transaction confirmée, vous serez notifié immédiatement et vos ${label} seront livrés.
+
+Cordialement,
+${CHAT_BOT_NAME}`,
+
   showDepositCryptoInfo: (priceCrypto, tickerView, address) =>
     `Veuillez envoyer ${priceCrypto} ${tickerView} à\n\n<code>${address}</code>\n\nVeuillez noter que les transactions cryptographiques peuvent prendre jusqu'à 30 minutes pour être confirmées. Une fois la transaction confirmée, vous serez notifié rapidement et votre portefeuille sera mis à jour.\n\nCordialement,\n${CHAT_BOT_NAME}`,
 
