@@ -7,7 +7,7 @@ import re
 from datetime import datetime
 
 class UsageLimitsTester:
-    def __init__(self, base_url="https://setup-assistant-11.preview.emergentagent.com"):
+    def __init__(self, base_url="https://setup-wizard-101.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
