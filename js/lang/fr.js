@@ -306,7 +306,7 @@ ${CHAT_BOT_NAME}`,
   blockedUser: `Vous êtes actuellement bloqué d'utiliser le bot. Veuillez appuyer sur 💬 Obtenir de l'aide. Découvrez plus ${TG_HANDLE}.`,
   greet: `${CHAT_BOT_BRAND} — raccourcissez vos URLs, enregistrez des domaines, achetez des leads et developpez votre activite. Directement depuis Telegram.
 Commencez avec ${FREE_LINKS} liens Shortit d'essai — /start
-Support: ${SUPPORT_USERNAME}`,
+Support: Appuyez sur 💬 Obtenir de l'aide`,
   linkExpired: `Votre essai ${CHAT_BOT_BRAND} a pris fin et votre lien raccourci est désactivé. Nous vous invitons à vous abonner pour maintenir l'accès à notre service d'URL et aux noms de domaine gratuits. Choisissez un plan approprié et suivez les instructions pour vous abonner. Veuillez nous contacter pour toute question.
 Cordialement,
 L'équipe ${CHAT_BOT_BRAND}
@@ -314,8 +314,8 @@ Découvrez plus : ${TG_CHANNEL}`,
   successPayment: `Paiement traité avec succès ! Vous pouvez maintenant fermer cette fenêtre.`,
   welcome: `Merci d'avoir choisi ${CHAT_BOT_NAME} ! Veuillez choisir une option ci-dessous :`,
   welcomeFreeTrial: `Bienvenue sur ${CHAT_BOT_BRAND} ! Vous avez ${FREE_LINKS} liens Shortit d'essai pour raccourcir vos URLs. Abonnez-vous pour des liens Shortit illimites, des domaines ".sbs/.xyz" gratuits et des validations de numeros USA gratuites. Decouvrez la difference ${CHAT_BOT_BRAND} !`,
-  unknownCommand: `Commande introuvable. Appuyez sur /start ou veuillez contacter le support ${SUPPORT_USERNAME}. Découvrez plus ${TG_HANDLE}.`,
-  support: `Veuillez contacter le support ${SUPPORT_USERNAME}. Découvrez plus ${TG_HANDLE}.`,
+  unknownCommand: `Commande introuvable. Appuyez sur /start ou veuillez appuyer sur 💬 Obtenir de l'aide. Découvrez plus ${TG_HANDLE}.`,
+  support: `Veuillez appuyer sur 💬 Obtenir de l'aide. Découvrez plus ${TG_HANDLE}.`,
   joinChannel: `Veuillez rejoindre la chaîne ${TG_CHANNEL}.`,
   dnsPropagated: `La propagation DNS pour {{domain}} est terminée pour un raccourcissement d'URL illimité.`,
   dnsNotPropagated: `La propagation DNS pour {{domain}} est en cours et vous serez mis à jour une fois terminée. ✅`,
@@ -327,7 +327,7 @@ ${CHAT_BOT_NAME}`,
   domainBought: `Votre domaine {{domain}} est désormais lié à votre compte tandis que la propagation DNS est en cours. Vous serez mis à jour automatiquement très bientôt.🚀`,
   domainLinking: domain =>
     `Lien du domaine avec votre compte. Veuillez noter que la mise à jour DNS peut prendre jusqu'à 30 minutes. Vous pouvez vérifier le statut de votre mise à jour DNS ici : https://www.whatsmydns.net/#A/${domain}`,
-  errorSavingDomain: `Erreur lors de l'enregistrement du domaine sur le serveur, veuillez contacter le support ${SUPPORT_USERNAME}. Découvrez plus ${TG_HANDLE}.`,
+  errorSavingDomain: `Erreur lors de l'enregistrement du domaine sur le serveur, veuillez appuyer sur 💬 Obtenir de l'aide. Découvrez plus ${TG_HANDLE}.`,
   chooseDomainToManage: `Veuillez sélectionner un domaine si vous souhaitez gérer ses paramètres DNS.`,
   chooseDomainWithShortener: `Veuillez sélectionner ou acheter le nom de domaine que vous souhaitez relier à votre lien raccourci.`,
   viewDnsRecords: (records, domain) => `Voici les enregistrements DNS pour ${domain}
@@ -396,7 +396,7 @@ ${
   dnsRecordDeleted: `Enregistrement supprimé`,
   dnsRecordUpdated: `Enregistrement mis à jour`,
   provideLink: `Veuillez fournir une URL valide. ex https://google.com`,
-  comingSoonWithdraw: `Les retraits ne sont pas encore disponibles. Besoin d'aide ? Contactez ${SUPPORT_USERNAME}.`,
+  comingSoonWithdraw: `Les retraits ne sont pas encore disponibles. Besoin d'aide ? Appuyez sur 💬 Obtenir de l'aide.`,
   promoOptOut: `Vous avez été désabonné des messages promotionnels. Tapez /start_promos pour vous réabonner à tout moment.`,
   promoOptIn: `Vous êtes de nouveau abonné aux messages promotionnels. Vous recevrez nos dernières offres et promotions !`,
   selectCurrencyToDeposit: `Veuillez sélectionner la devise à déposer`,
@@ -505,9 +505,9 @@ ${CHAT_BOT_NAME}`,
 
   redValidUrl: `Veuillez fournir une URL valide. ex : https://google.com`,
   redTakeUrl: url => `Votre URL raccourcie est : ${url}`,
-  redIssueUrlBitly: `Le raccourcissement a échoué. Votre portefeuille n'a pas été débité. Réessayez ou contactez ${SUPPORT_USERNAME}.`,
+  redIssueUrlBitly: `Le raccourcissement a échoué. Votre portefeuille n'a pas été débité. Réessayez ou appuyez sur 💬 Obtenir de l'aide.`,
   redIssueSlugCuttly: `Le nom de lien préféré est déjà pris, essayez un autre.`,
-  redIssueUrlCuttly: `Le raccourcissement a échoué. Réessayez ou contactez ${SUPPORT_USERNAME}.`,
+  redIssueUrlCuttly: `Le raccourcissement a échoué. Réessayez ou appuyez sur 💬 Obtenir de l'aide.`,
   freeLinksExhausted: `Vous avez utilisé vos ${FREE_LINKS} liens Shortit d'essai ! Abonnez-vous pour obtenir des liens Shortit illimités, des domaines ".sbs/.xyz" gratuits et plus encore. Appuyez sur "🔔 S'abonner" pour choisir un plan.`,
   linksRemaining: (count, total) => `Il vous reste ${count} sur ${total || FREE_LINKS} lien${count !== 1 ? 's' : ''} Shortit d'essai.`,
   redNewPrice: (price, newPrice) =>
@@ -1049,7 +1049,7 @@ Vos informations d'identification ${info.hostingType} ont été envoyées avec s
     plan,
     statusCode,
   ) => `Quelque chose s'est mal passé lors de la configuration de votre ${plan} | ${statusCode}. 
-                                              Veuillez contacter le support ${SUPPORT_USERNAME}.
+                                              Veuillez appuyer sur 💬 Obtenir de l'aide.
                                               Découvrez plus sur ${TG_HANDLE}.`,
 
   bankPayDomain: (
@@ -1201,7 +1201,7 @@ ${list.map(item => `${name == 'whm' ? `<strong>• ${item.name} - </strong>` : '
 
   errorPurchasingVPS: plan => `Une erreur est survenue lors de la configuration de votre plan VPS ${plan}.
 
-Veuillez contacter le support ${SUPPORT_USERNAME}.
+Veuillez appuyer sur 💬 Obtenir de l'aide.
 Découvrez-en plus sur ${TG_HANDLE}.`,
 
   generateBillSummary: vpsDetails => `<strong>📋 Détail final des coûts :</strong>
@@ -1595,7 +1595,7 @@ ${
 
   errorUpgradingVPS: vpsName => `Une erreur s'est produite lors de la mise à niveau de votre plan VPS ${vpsName}.
 
-Veuillez contacter le support ${SUPPORT_USERNAME}.
+Veuillez appuyer sur 💬 Obtenir de l'aide.
 En savoir plus ${TG_HANDLE}.`,
 
   vpsUpgradePlanTypeSuccess: vpsDetails => `
