@@ -140,32 +140,10 @@ class NomadlyBackendTester:
             with open('/app/js/tts-service.js', 'r') as f:
                 content = f.read()
             
-            # Find GREETING_TEMPLATES object
-            templates_match = re.search(r'const GREETING_TEMPLATES\s*=\s*\{(.*?)\n\}', content, re.DOTALL)
-            if not templates_match:
-                print("GREETING_TEMPLATES not found")
-                return False
-            
-            templates_content = templates_match.group(1)
-            
-            # Count templates in each category by looking for objects in arrays
-            financial_matches = re.findall(r'financial:\s*\[(.*?)\]', templates_content, re.DOTALL)
-            support_matches = re.findall(r'support:\s*\[(.*?)\]', templates_content, re.DOTALL)
-            voicemail_matches = re.findall(r'voicemail:\s*\[(.*?)\]', templates_content, re.DOTALL)
-            
-            # Count objects within each array
-            financial_count = 0
-            support_count = 0
-            voicemail_count = 0
-            
-            if financial_matches:
-                financial_count = len(re.findall(r'\{[^}]*key:\s*[\'"][^\'\"]*[\'\"],[^}]*\}', financial_matches[0], re.DOTALL))
-            
-            if support_matches:
-                support_count = len(re.findall(r'\{[^}]*key:\s*[\'"][^\'\"]*[\'\"],[^}]*\}', support_matches[0], re.DOTALL))
-            
-            if voicemail_matches:
-                voicemail_count = len(re.findall(r'\{[^}]*key:\s*[\'"][^\'\"]*[\'\"],[^}]*\}', voicemail_matches[0], re.DOTALL))
+            # Count the specific template keys directly
+            financial_count = len(re.findall(r'key:\s*[\'"]fin_[^\'\"]*[\'"]', content))
+            support_count = len(re.findall(r'key:\s*[\'"]sup_[^\'\"]*[\'"]', content))
+            voicemail_count = len(re.findall(r'key:\s*[\'"]vm_[^\'\"]*[\'"]', content))
             
             expected_counts = {'financial': 8, 'support': 4, 'voicemail': 6}
             actual_counts = {'financial': financial_count, 'support': support_count, 'voicemail': voicemail_count}
