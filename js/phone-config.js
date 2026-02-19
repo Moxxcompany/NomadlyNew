@@ -7,6 +7,56 @@ const PHONE_PRO_PRICE = parseFloat(process.env.PHONE_PRO_PRICE || '15')
 const PHONE_BUSINESS_PRICE = parseFloat(process.env.PHONE_BUSINESS_PRICE || '30')
 const SIP_DOMAIN = process.env.SIP_DOMAIN || 'sip.nomadly.com'
 
+// ── Plan availability (admin toggle via .env) ──
+const PHONE_STARTER_ON = (process.env.PHONE_STARTER_ON || 'true').toLowerCase() === 'true'
+const PHONE_PRO_ON = (process.env.PHONE_PRO_ON || 'true').toLowerCase() === 'true'
+const PHONE_BUSINESS_ON = (process.env.PHONE_BUSINESS_ON || 'true').toLowerCase() === 'true'
+
+const planAvailability = {
+  starter: PHONE_STARTER_ON,
+  pro: PHONE_PRO_ON,
+  business: PHONE_BUSINESS_ON,
+}
+
+const isPlanAvailable = (planKey) => planAvailability[planKey] !== false
+
+const comingSoonFeatures = {
+  starter: [
+    '100 minutes/mo + 50 SMS',
+    'Call forwarding to any number',
+    'SMS forwarded to Telegram',
+    'Dedicated local phone number',
+  ],
+  pro: [
+    '500 minutes/mo + 200 SMS',
+    'Voicemail with custom greetings',
+    'SIP credentials for softphones',
+    'SMS to Telegram & Email',
+    'Webhook integrations',
+  ],
+  business: [
+    'Unlimited minutes + 1,000 SMS',
+    'IVR / Auto-attendant with AI voice',
+    'Call recording & analytics',
+    'All Pro features included',
+    'Priority support',
+  ],
+}
+
+const comingSoonText = (planKey) => {
+  const plan = plans[planKey] || {}
+  const features = comingSoonFeatures[planKey] || []
+  const icon = planKey === 'starter' ? '💡' : planKey === 'pro' ? '⭐' : '👑'
+  return `${icon} <b>${plan.name || planKey} Plan — Coming Soon!</b>
+
+🚀 We're loading this plan with powerful features:
+
+${features.map(f => `  ✦ ${f}`).join('\n')}
+
+📢 Stay tuned — this plan will be available very soon.
+Use /start to check back later!`
+}
+
 // ── Overage rates (pay-per-use above plan limits, from .env) ──
 const OVERAGE_RATE_SMS = parseFloat(process.env.OVERAGE_RATE_SMS || '0.02')
 const OVERAGE_RATE_MIN = parseFloat(process.env.OVERAGE_RATE_MIN || '0.03')
