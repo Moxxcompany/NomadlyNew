@@ -7440,13 +7440,8 @@ bot?.on('message', async msg => {
     if (message === '🎟️ Apply Coupon') {
       return goto.askCoupon(a.buyLeadsSelectFormat)
     }
-    if (message.startsWith('✅ Pay')) {
-      const price = info?.couponApplied ? info?.newPrice : info?.price
-      const { usdBal } = await getBalance(walletOf, chatId)
-      if (usdBal < price) return send(chatId, t.walletBalanceLow, k.of([u.deposit]))
-      await saveInfo('coin', u.usd)
-      await saveInfo('couponApplied', info?.couponApplied || false)
-      return walletOk[a.buyLeadsSelectFormat](u.usd)
+    if (message.startsWith('✅ Pay') || message.startsWith('✅ Confirm')) {
+      return goto['leads-pay']()
     }
     return send(chatId, t.what)
   }
