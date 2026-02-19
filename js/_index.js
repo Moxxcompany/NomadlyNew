@@ -6243,7 +6243,13 @@ bot?.on('message', async msg => {
       await saveInfo('cpTtsDraft', { type: 'ivrGreeting', method: 'upload' })
       return send(chatId, `🎙️ Send a voice message or audio file for your IVR greeting.`, k.of([]))
     }
-    return send(chatId, `Choose an option:`, k.of([['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio']]))
+    if (message === '📋 Use Template') {
+      set(state, chatId, 'action', a.cpIvrTemplate)
+      await saveInfo('cpTtsDraft', { type: 'ivrGreeting', method: 'template' })
+      const catBtns = ttsService.getTemplateCategoryButtons().map(b => [b])
+      return send(chatId, `📋 <b>Greeting Templates</b>\n\nSelect a category:`, k.of(catBtns))
+    }
+    return send(chatId, `Choose an option:`, k.of([['📋 Use Template'], ['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio']]))
   }
 
   // ── IVR Greeting: Enter text → select language → select voice ──
