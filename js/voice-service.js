@@ -344,7 +344,7 @@ async function handleCallAnswered(payload) {
           // Low balance warning
           const estMinutes = Math.floor(usdBal / CALL_FORWARDING_RATE_MIN)
           if (usdBal < 5) {
-            _bot?.sendMessage(chatId, `⚠️ <b>Low Wallet Balance</b>\n\n💳 Balance: $${usdBal.toFixed(2)} (~${estMinutes} min of forwarding)\n\nForwarding this call, but your balance is low. Top up <b>$25</b> via 👛 My Wallet to avoid disconnection mid-call.`, { parse_mode: 'HTML' }).catch(() => {})
+            _bot?.sendMessage(chatId, `⚠️ <b>Low Balance</b> — $${usdBal.toFixed(2)} (~${estMinutes} min fwd). Top up <b>$25</b> via 👛 Wallet.`, { parse_mode: 'HTML' }).catch(() => {})
           }
         } else {
           log(`[Voice] Forwarding wallet check: $${usdBal} < $${CALL_FORWARDING_RATE_MIN} required — blocking forward`)
