@@ -5104,7 +5104,7 @@ bot?.on('message', async msg => {
       return send(chatId, phoneConfig.txt.myNumbersList(numbers), k.of([numBtns, [pc.buyAnother]]))
     }
     if (message === pc.sipSettings) {
-      return send(chatId, phoneConfig.txt.softphoneGuide(phoneConfig.SIP_DOMAIN), k.of([[pc.back]]))
+      return send(chatId, phoneConfig.txt.softphoneGuide(phoneConfig.SIP_DOMAIN), k.of([]))
     }
     if (message === pc.usageBilling) {
       // Show overall usage if they have numbers
@@ -6176,7 +6176,7 @@ bot?.on('message', async msg => {
       return
     }
     if (message === pc.softphoneGuide) {
-      return send(chatId, phoneConfig.txt.softphoneGuide(phoneConfig.SIP_DOMAIN), k.of([[pc.back]]))
+      return send(chatId, phoneConfig.txt.softphoneGuide(phoneConfig.SIP_DOMAIN), k.of([]))
     }
     return send(chatId, 'Select an option.')
   }
