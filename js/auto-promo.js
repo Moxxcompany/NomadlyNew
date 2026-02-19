@@ -140,7 +140,7 @@ Return ONLY the message text.`
 // Timezone offsets per language
 const TIMEZONE_OFFSETS = { en: 0, fr: 1, zh: 8, hi: 5.5 }
 const LOCAL_TIMES = [{ hour: 10, minute: 0 }, { hour: 16, minute: 0 }]
-const THEMES = ['domains', 'shortener', 'leads']
+const THEMES = ['domains', 'shortener', 'leads', 'cloudphone']
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 // ─── Promo Messages (50% shorter) ──────────────────────────
