@@ -6263,6 +6263,40 @@ bot?.on('message', async msg => {
       const newPlan = info.cpPendingPlan
       const oldPlan = num.plan
       const newPrice = phoneConfig.plans[newPlan].price
+      const oldPrice = phoneConfig.plans[oldPlan]?.price || num.planPrice
+
+      // Determine if upgrade or downgrade
+      const planOrder = { starter: 1, pro: 2, business: 3 }
+      const isUpgrade = (planOrder[newPlan] || 0) > (planOrder[oldPlan] || 0)
+
+      // For upgrades: charge pro-rated difference for remaining days
+      if (isUpgrade) {
+        const expiresAt = num.expiresAt ? new Date(num.expiresAt) : null
+        let chargeAmount = 0
+        if (expiresAt && expiresAt > new Date()) {
+          const daysRemaining = Math.ceil((expiresAt - new Date()) / (1000 * 60 * 60 * 24))
+          const daysInMonth = 30
+          const dailyDiff = (newPrice - oldPrice) / daysInMonth
+          chargeAmount = Math.max(0, parseFloat((dailyDiff * daysRemaining).toFixed(2)))
+        } else {
+          chargeAmount = newPrice - oldPrice
+        }
+
+        if (chargeAmount > 0) {
+          let walletBal = 0
+          try { const { usdBal } = await getBalance(walletOf, chatId); walletBal = usdBal } catch (e) {}
+          if (walletBal < chargeAmount) {
+            await saveInfo('cpPendingPlan', null)
+            send(chatId, phoneConfig.getMsg(info?.userLanguage).insufficientBalUpgrade(chargeAmount, walletBal))
+            set(state, chatId, 'action', a.cpManageNumber)
+            return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
+          }
+          // Deduct the pro-rated amount
+          await atomicIncrement(walletOf, chatId, 'usdBal', -chargeAmount)
+        }
+      }
+      // For downgrades: no refund, change takes effect immediately
+
       await updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'plan', newPlan)
       await updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'planPrice', newPrice)
       num.plan = newPlan
