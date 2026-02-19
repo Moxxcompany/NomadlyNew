@@ -6633,33 +6633,81 @@ bot?.on('message', async msg => {
   }
 
   if (message === user.viewPlan) {
+    // ── Aggregate all subscriptions ──
+    let sections = []
+    let hasAnySub = false
+
+    // 1. Bot Subscription (Daily/Weekly/Monthly plan)
     const subscribedPlan = await get(planOf, chatId)
     if (subscribedPlan) {
       const rawTime = await get(planEndingTime, chatId)
       const timeEnd = new Date(rawTime)
-
-      // Sanity check: reject plans expiring more than 31 days out
       const MAX_REASONABLE_MS = 31 * 86400 * 1000
       if (rawTime > Date.now() + MAX_REASONABLE_MS) {
         log(`[viewPlan] Anomalous planEndingTime for chatId ${chatId}: ${timeEnd.toISOString()} — auto-expiring`)
         set(planEndingTime, chatId, 0)
-        send(chatId, t.subscriptionExpire(subscribedPlan, timeEnd))
-        return
+        sections.push(`📦 <b>Bot Plan:</b> ${subscribedPlan} — ❌ Expired`)
+      } else if (await isSubscribed(chatId)) {
+        const daysLeft = Math.ceil((rawTime - Date.now()) / 86400000)
+        sections.push(`📦 <b>Bot Plan:</b> ${subscribedPlan}\n   ✅ Active · Expires ${timeEnd.toLocaleDateString()} (${daysLeft}d left)`)
+        hasAnySub = true
+      } else {
+        sections.push(`📦 <b>Bot Plan:</b> ${subscribedPlan} — ❌ Expired ${timeEnd.toLocaleDateString()}`)
       }
+    }
 
-      if (!(await isSubscribed(chatId))) {
-        send(chatId, t.subscriptionExpire(subscribedPlan, timeEnd))
-        return
+    // 2. Cloud Phone Numbers
+    try {
+      const phoneData = await get(phoneNumbersOf, chatId)
+      const numbers = phoneData?.numbers || []
+      const activeNums = numbers.filter(n => n.status === 'active')
+      if (activeNums.length > 0) {
+        hasAnySub = true
+        let cpText = `📞 <b>CloudPhone:</b> ${activeNums.length} number${activeNums.length > 1 ? 's' : ''}`
+        activeNums.forEach(n => {
+          const plan = n.plan ? n.plan.charAt(0).toUpperCase() + n.plan.slice(1) : '—'
+          const exp = n.expiresAt ? new Date(n.expiresAt).toLocaleDateString() : '—'
+          const dLeft = n.expiresAt ? Math.ceil((new Date(n.expiresAt) - Date.now()) / 86400000) : 0
+          cpText += `\n   ${phoneConfig.formatPhone(n.phoneNumber)} · ${plan} · ${exp}${dLeft > 0 ? ` (${dLeft}d)` : ''}`
+        })
+        sections.push(cpText)
       }
+    } catch (e) {}
 
-      send(
-        chatId,
-        t.plansSubscripedtill(subscribedPlan, timeEnd),
-      )
+    // 3. VPS Plans
+    try {
+      const vpsData = await vpsPlansOf.findOne({ _id: String(chatId) })
+      const vpsPlans = vpsData?.val?.plans || vpsData?.plans || []
+      if (vpsPlans.length > 0) {
+        let vpsText = `🖥️ <b>VPS:</b> ${vpsPlans.length} server${vpsPlans.length > 1 ? 's' : ''}`
+        vpsPlans.forEach(v => {
+          const exp = v.expiresAt ? new Date(v.expiresAt).toLocaleDateString() : '—'
+          const name = v.name || v.hostname || v.planType || 'VPS'
+          const status = v.status === 'active' ? '✅' : '❌'
+          vpsText += `\n   ${status} ${name} · ${exp}`
+          hasAnySub = true
+        })
+        sections.push(vpsText)
+      }
+    } catch (e) {}
+
+    // 4. Hosting Plans
+    try {
+      const hostingData = info?.userVPSDetails
+      if (hostingData && hostingData.status === 'active') {
+        const exp = hostingData.expiresAt ? new Date(hostingData.expiresAt).toLocaleDateString() : '—'
+        sections.push(`🌐 <b>Hosting:</b> ${hostingData.planType || hostingData.type || 'Plan'}\n   ✅ Active · Expires ${exp}`)
+        hasAnySub = true
+      }
+    } catch (e) {}
+
+    if (sections.length === 0) {
+      send(chatId, t.planNotSubscriped)
       return
     }
 
-    send(chatId, t.planNotSubscriped)
+    const header = hasAnySub ? '📋 <b>My Subscriptions</b>\n' : '📋 <b>My Subscriptions</b>\n\n<i>No active subscriptions.</i>\n'
+    send(chatId, header + '\n' + sections.join('\n\n'), { parse_mode: 'HTML' })
     return
   }
   if (message === user.becomeReseller) {
