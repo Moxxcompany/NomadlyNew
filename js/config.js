@@ -661,7 +661,7 @@ const kOf = list => ({
     keyboard: [
       ...list.map(a => Array.isArray(a) ? a : [a]),
       ...(list.some(a => Array.isArray(a)
-        && a.some(item => typeof item === 'string' && (item.includes(t.backButton) || item.includes(user.backToHostingPlans) || item.includes(user.backToStarterPlanDetails) || item.includes(user.backToPurchaseOptions))),
+        && a.some(item => typeof item === 'string' && (item === 'Back' || item === 'Cancel' || item.includes(t.backButton) || item.includes(user.backToHostingPlans) || item.includes(user.backToStarterPlanDetails) || item.includes(user.backToPurchaseOptions))),
       ) ? [] : [_bc]),
     ],
   },
