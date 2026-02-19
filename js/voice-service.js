@@ -269,7 +269,7 @@ async function handleCallInitiated(payload) {
               await atomicIncrement(_walletOf, chatId, 'usdOut', OVERAGE_RATE_MIN)
               if (!sess._overageNotified) {
                 sess._overageNotified = true
-                _bot?.sendMessage(chatId, `💰 <b>Overage Billing Active</b>\n\n📞 ${formatPhone(to)}\nYour plan minutes are exhausted. Charging $${OVERAGE_RATE_MIN}/min from wallet.\nWallet: $${(usdBal - OVERAGE_RATE_MIN).toFixed(2)}\n\nCall will disconnect if wallet runs out.`, { parse_mode: 'HTML' }).catch(() => {})
+                _bot?.sendMessage(chatId, `💰 <b>Overage Active</b> — Plan minutes exhausted. $${OVERAGE_RATE_MIN}/min from wallet.\n💳 $${(usdBal - OVERAGE_RATE_MIN).toFixed(2)}`, { parse_mode: 'HTML' }).catch(() => {})
               }
             }
           } catch (e) { log(`[Voice] Mid-call overage error: ${e.message}`) }
