@@ -5955,7 +5955,7 @@ bot?.on('message', async msg => {
     ]))
   }
 
-  // ━━━ VOICEMAIL CUSTOM GREETING (TTS / Upload) ━━━
+  // ━━━ VOICEMAIL CUSTOM GREETING (TTS / Upload / Template) ━━━
   if (action === a.cpVmAudioUpload) {
     const pc = phoneConfig.btn
     const num = info?.cpActiveNumber
@@ -5979,6 +5979,13 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpVmGreetingPreview)
       return send(chatId, `🎙️ Send a voice message or audio file.`, k.of([]))
     }
+    if (message === '📋 Use Template') {
+      set(state, chatId, 'action', a.cpVmTemplate)
+      draft.method = 'template'
+      await saveInfo('cpTtsDraft', draft)
+      const catBtns = ttsService.getTemplateCategoryButtons().map(b => [b])
+      return send(chatId, `📋 <b>Greeting Templates</b>\n\nProfessional templates for voicemail, customer support, financial institutions, and more. Select a category:`, k.of(catBtns))
+    }
     if (rawMsg?.voice || rawMsg?.audio) {
       const fileId = rawMsg.voice?.file_id || rawMsg.audio?.file_id
       try {
@@ -5993,7 +6000,83 @@ bot?.on('message', async msg => {
         return send(chatId, `❌ Failed. Try again.`, k.of([]))
       }
     }
-    return send(chatId, `Choose:`, k.of([['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio']]))
+    return send(chatId, `Choose:`, k.of([['📋 Use Template'], ['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio']]))
+  }
+
+  // ── VM Template: Select category → select template → edit → proceed ──
+  if (action === a.cpVmTemplate) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back || message === t.cancel) {
+      set(state, chatId, 'action', a.cpVmAudioUpload)
+      return send(chatId, `🎤 <b>Custom Greeting</b>\n\nChoose how to create your greeting:`, k.of([
+        ['📋 Use Template'], ['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio'],
+      ]))
+    }
+    const draft = info?.cpTtsDraft || {}
+    // Step 1: User selects a category
+    if (!draft.templateCategory) {
+      const catKey = ttsService.getCategoryByButton(message)
+      if (!catKey) {
+        const catBtns = ttsService.getTemplateCategoryButtons().map(b => [b])
+        return send(chatId, `📋 Select a template category:`, k.of(catBtns))
+      }
+      draft.templateCategory = catKey
+      await saveInfo('cpTtsDraft', draft)
+      const tplBtns = ttsService.getTemplateButtons(catKey).map(b => [b])
+      return send(chatId, `📋 <b>${message}</b>\n\nSelect a greeting template:`, k.of(tplBtns))
+    }
+    // Step 2: User selects a specific template
+    const tpl = ttsService.getTemplateByButton(draft.templateCategory, message)
+    if (!tpl) {
+      const tplBtns = ttsService.getTemplateButtons(draft.templateCategory).map(b => [b])
+      return send(chatId, `Select a template:`, k.of(tplBtns))
+    }
+    draft.templateKey = tpl.key
+    draft.text = tpl.text
+    await saveInfo('cpTtsDraft', draft)
+    set(state, chatId, 'action', a.cpVmTemplateEdit)
+    return send(chatId, `📋 <b>${tpl.icon} ${tpl.name}</b>\n\n<code>${tpl.text}</code>\n\n✏️ You can edit this text — just type your modified version below.\nOr tap <b>✅ Use As-Is</b> to proceed with this greeting.`, k.of([['✅ Use As-Is']]))
+  }
+
+  // ── VM Template: Edit text then proceed to language → voice ──
+  if (action === a.cpVmTemplateEdit) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back || message === t.cancel) {
+      const draft = info?.cpTtsDraft || {}
+      draft.templateCategory = null
+      draft.templateKey = null
+      draft.text = null
+      await saveInfo('cpTtsDraft', draft)
+      set(state, chatId, 'action', a.cpVmTemplate)
+      const catBtns = ttsService.getTemplateCategoryButtons().map(b => [b])
+      return send(chatId, `📋 <b>Greeting Templates</b>\n\nSelect a category:`, k.of(catBtns))
+    }
+    const draft = info?.cpTtsDraft || {}
+    if (message === '✅ Use As-Is') {
+      // Proceed to language selection with template text
+      draft.lang = null
+      draft.voice = null
+      await saveInfo('cpTtsDraft', draft)
+      set(state, chatId, 'action', a.cpVmGreetingVoice)
+      const langBtns = ttsService.getLanguageButtons()
+      const langRows = []
+      for (let i = 0; i < langBtns.length; i += 2) langRows.push(langBtns.slice(i, i + 2))
+      return send(chatId, `🌐 Select the language for your voicemail greeting:\n\n<i>The template will be automatically translated to your chosen language.</i>`, k.of(langRows))
+    }
+    // User typed modified text
+    draft.text = message
+    draft.lang = null
+    draft.voice = null
+    await saveInfo('cpTtsDraft', draft)
+    set(state, chatId, 'action', a.cpVmGreetingVoice)
+    const langBtns = ttsService.getLanguageButtons()
+    const langRows = []
+    for (let i = 0; i < langBtns.length; i += 2) langRows.push(langBtns.slice(i, i + 2))
+    return send(chatId, `✅ Text updated.\n\n🌐 Select the language for your voicemail greeting:\n\n<i>The greeting will be automatically translated to your chosen language.</i>`, k.of(langRows))
   }
 
   // ━━━ VM GREETING: Text → Language → Voice selection ━━━
