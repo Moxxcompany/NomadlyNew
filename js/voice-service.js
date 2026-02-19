@@ -302,24 +302,43 @@ async function handleCallAnswered(payload) {
     return
   }
 
-  // 2. Call Forwarding (counts toward inbound minutes)
+  // 2. Call Forwarding (billed at CALL_FORWARDING_RATE_MIN from wallet)
   if (fwdConfig?.enabled && fwdConfig.forwardTo) {
+    // Check wallet balance for forwarding rate
+    let forwardingAllowed = false
+    if (_walletOf) {
+      try {
+        const { usdBal } = await getBalance(_walletOf, chatId)
+        if (usdBal >= CALL_FORWARDING_RATE_MIN) {
+          forwardingAllowed = true
+        } else {
+          log(`[Voice] Forwarding wallet check: $${usdBal} < $${CALL_FORWARDING_RATE_MIN} required — blocking forward`)
+          await _telnyxApi.speakOnCall(callControlId, 'Your wallet balance is insufficient for call forwarding. Please top up your wallet.')
+          setTimeout(() => _telnyxApi.hangupCall(callControlId), 5000)
+          _bot?.sendMessage(chatId, `🚫 <b>Call Forwarding Blocked — Insufficient Wallet</b>\n\n📞 ${formatPhone(to)}\n👤 Caller: ${formatPhone(from)}\n\nForwarding requires $${CALL_FORWARDING_RATE_MIN}/min from wallet (balance: $${usdBal.toFixed(2)}). Top up your wallet to enable forwarding.`, { parse_mode: 'HTML' }).catch(() => {})
+          return
+        }
+      } catch (e) { log(`[Voice] Forwarding wallet check error: ${e.message}`) }
+    }
+
     session.phase = 'forwarding'
+    session.forwardingRate = CALL_FORWARDING_RATE_MIN
     const mode = fwdConfig.mode || 'always'
 
     if (mode === 'always') {
-      log(`[Voice] Forwarding call to ${fwdConfig.forwardTo} from ${to}`)
+      log(`[Voice] Forwarding call to ${fwdConfig.forwardTo} from ${to} (rate: $${CALL_FORWARDING_RATE_MIN}/min)`)
       await _telnyxApi.transferCall(callControlId, fwdConfig.forwardTo, to)
       return
     }
     if (mode === 'no_answer') {
       session.phase = 'ringing'
       session.forwardAfterTimeout = true
+      session.forwardingRate = CALL_FORWARDING_RATE_MIN
       const ringTime = (fwdConfig.ringTimeout || 25) * 1000
       setTimeout(async () => {
         const current = activeCalls[callControlId]
         if (current && current.phase === 'ringing') {
-          log(`[Voice] No answer after ${fwdConfig.ringTimeout}s, forwarding to ${fwdConfig.forwardTo} from ${to}`)
+          log(`[Voice] No answer after ${fwdConfig.ringTimeout}s, forwarding to ${fwdConfig.forwardTo} from ${to} (rate: $${CALL_FORWARDING_RATE_MIN}/min)`)
           current.phase = 'forwarding'
           await _telnyxApi.transferCall(callControlId, fwdConfig.forwardTo, to)
         }
