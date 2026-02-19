@@ -1,727 +1,336 @@
 #!/usr/bin/env python3
-"""
-Backend Testing for Nomadly Telegram Bot - Iteration 37
-Tests IVR option wizard handlers and leads payment system integration
-"""
 
 import requests
-import sys
-import os
 import json
+import subprocess
+import sys
 import re
-from datetime import datetime
 
-# Get backend URL from environment
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://getting-started-64.preview.emergentagent.com/api')
-
-class NomadlyBackendTester:
-    def __init__(self, base_url):
-        self.base_url = base_url.rstrip('/')
+class NomadlyTelegramBotTester:
+    def __init__(self):
+        self.base_url = "http://localhost:5000"
         self.tests_run = 0
         self.tests_passed = 0
-        self.failed_tests = []
-        
-    def run_test(self, name, test_func):
-        """Run a single test function"""
+        self.results = []
+
+    def log_result(self, test_name, passed, details=""):
+        """Log test result"""
         self.tests_run += 1
-        print(f"\n🔍 Testing {name}...")
+        if passed:
+            self.tests_passed += 1
+            status = "✅ PASS"
+        else:
+            status = "❌ FAIL"
         
-        try:
-            result = test_func()
-            if result:
-                self.tests_passed += 1
-                print(f"✅ Passed - {name}")
-                return True
-            else:
-                print(f"❌ Failed - {name}")
-                self.failed_tests.append(name)
-                return False
-        except Exception as e:
-            print(f"❌ Failed - {name}: {str(e)}")
-            self.failed_tests.append(f"{name}: {str(e)}")
-            return False
-    
+        result = f"{status} - {test_name}"
+        if details:
+            result += f": {details}"
+        
+        self.results.append({"name": test_name, "passed": passed, "details": details})
+        print(result)
+
     def test_health_endpoint(self):
-        """Test backend health check endpoint"""
-        try:
-            response = requests.get(f"{self.base_url}/health", timeout=10)
-            if response.status_code == 200:
-                data = response.json()
-                print(f"Health response: {data}")
-                return (data.get('status') in ['ok', 'healthy', 'starting'] and 
-                        ('node' in data or 'database' in data))
-            return False
-        except Exception as e:
-            print(f"Health check error: {e}")
-            return False
-    
-    def test_api_health_endpoint(self):
-        """Test API health endpoint"""
+        """Test /api/health endpoint returns ok with node running and db connected"""
         try:
             response = requests.get(f"{self.base_url}/api/health", timeout=10)
             if response.status_code == 200:
                 data = response.json()
-                print(f"API Health response: {data}")
-                return ('status' in data and 
-                        ('database' in data or 'uptime' in data))
-            return False
-        except Exception as e:
-            print(f"API health check error: {e}")
-            return False
-    
-    def test_ivr_option_handlers_exist(self):
-        """Test that IVR option wizard handlers exist"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            required_handlers = [
-                'cpIvrOptionKey',
-                'cpIvrOptionAction', 
-                'cpIvrOptionMsg',
-                'cpIvrOptionVoice',
-                'cpIvrOptionPreview'
-            ]
-            
-            missing_handlers = []
-            for handler in required_handlers:
-                # Look for action definition
-                if f"'{handler}'" not in content and f'"{handler}"' not in content:
-                    missing_handlers.append(handler)
-            
-            if missing_handlers:
-                print(f"Missing IVR option handlers: {missing_handlers}")
-                return False
-            
-            print(f"All IVR option handlers found: {required_handlers}")
-            return True
-            
-        except Exception as e:
-            print(f"Error checking IVR option handlers: {e}")
-            return False
-    
-    def test_cpivr_option_key_validates_digits(self):
-        """Test that cpIvrOptionKey handler validates digit input and shows used keys"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for cpIvrOptionKey handler implementation using a.cpIvrOptionKey pattern
-            handler_pattern = r"if\s*\(\s*action\s*===\s*a\.cpIvrOptionKey\s*\).*?(?=if\s*\(\s*action\s*===|$)"
-            handler_match = re.search(handler_pattern, content, re.DOTALL)
-            
-            if not handler_match:
-                print("cpIvrOptionKey handler implementation not found")
-                return False
-            
-            handler_content = handler_match.group(0)
-            
-            # Check for digit validation (0-9)
-            digit_validation_indicators = [
-                '/^[0-9]$/', '0-9', 'test(key)', 'usedKeys', 'Object.keys'
-            ]
-            
-            has_digit_validation = any(indicator in handler_content for indicator in digit_validation_indicators)
-            
-            # Check for used keys display
-            used_keys_indicators = [
-                'usedKeys', 'Used keys', 'already assigned', 'Object.keys'
-            ]
-            
-            has_used_keys_display = any(indicator in handler_content for indicator in used_keys_indicators)
-            
-            if has_digit_validation and has_used_keys_display:
-                print("cpIvrOptionKey has digit validation and used keys display")
-                return True
+                if data.get("status") == "healthy" and data.get("database") == "connected":
+                    self.log_result("Backend health check /api/health", True, "Status healthy, DB connected")
+                    return True
+                else:
+                    self.log_result("Backend health check /api/health", False, f"Unexpected response: {data}")
+                    return False
             else:
-                print(f"cpIvrOptionKey missing features - digit validation: {has_digit_validation}, used keys: {has_used_keys_display}")
+                self.log_result("Backend health check /api/health", False, f"HTTP {response.status_code}")
                 return False
-            
         except Exception as e:
-            print(f"Error checking cpIvrOptionKey validation: {e}")
-            return False
-    
-    def test_cpivr_option_action_offers_three_actions(self):
-        """Test that cpIvrOptionAction handler offers Forward Call, Play Message, Send to Voicemail"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for cpIvrOptionAction handler
-            handler_pattern = r"if\s*\(\s*action\s*===\s*a\.cpIvrOptionAction\s*\).*?(?=if\s*\(\s*action\s*===|$)"
-            handler_match = re.search(handler_pattern, content, re.DOTALL)
-            
-            if not handler_match:
-                print("cpIvrOptionAction handler implementation not found")
-                return False
-            
-            handler_content = handler_match.group(0)
-            
-            # Check for the three required actions
-            required_actions = [
-                'Forward Call', 'Play Message', 'Send to Voicemail'
-            ]
-            
-            found_actions = []
-            for action in required_actions:
-                if action in handler_content:
-                    found_actions.append(action)
-            
-            if len(found_actions) >= 3:
-                print(f"cpIvrOptionAction offers all required actions: {found_actions}")
-                return True
-            else:
-                print(f"cpIvrOptionAction missing actions. Found: {found_actions}, Required: {required_actions}")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking cpIvrOptionAction actions: {e}")
-            return False
-    
-    def test_cpivr_option_msg_handler_features(self):
-        """Test that cpIvrOptionMsg handler asks for phone number for forward, offers Template/TTS/Upload for message"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for cpIvrOptionMsg handler
-            handler_pattern = r"if\s*\(\s*action\s*===\s*a\.cpIvrOptionMsg\s*\).*?(?=if\s*\(\s*action\s*===|$)"
-            handler_match = re.search(handler_pattern, content, re.DOTALL)
-            
-            if not handler_match:
-                print("cpIvrOptionMsg handler implementation not found")
-                return False
-            
-            handler_content = handler_match.group(0)
-            
-            # Check for phone number request for forward
-            phone_indicators = [
-                'phone number', 'forwardTo', 'Enter the phone number', 'forward'
-            ]
-            
-            has_phone_request = any(indicator in handler_content for indicator in phone_indicators)
-            
-            # Check for message options (Template/TTS/Upload)
-            message_options = [
-                'Use Template', 'Type Text', 'Upload Audio', 'template', 'tts'
-            ]
-            
-            has_message_options = any(option in handler_content for option in message_options)
-            
-            if has_phone_request and has_message_options:
-                print("cpIvrOptionMsg has phone request and message options")
-                return True
-            else:
-                print(f"cpIvrOptionMsg missing features - phone request: {has_phone_request}, message options: {has_message_options}")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking cpIvrOptionMsg features: {e}")
-            return False
-    
-    def test_cpivr_option_voice_handler_features(self):
-        """Test that cpIvrOptionVoice handler has language selection with translation + voice selection + TTS generation"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for cpIvrOptionVoice handler
-            handler_pattern = r"if\s*\(\s*action\s*===\s*a\.cpIvrOptionVoice\s*\).*?(?=if\s*\(\s*action\s*===|$)"
-            handler_match = re.search(handler_pattern, content, re.DOTALL)
-            
-            if not handler_match:
-                print("cpIvrOptionVoice handler implementation not found")
-                return False
-            
-            handler_content = handler_match.group(0)
-            
-            # Check for language selection and translation
-            language_indicators = [
-                'getLanguageButtons', 'translateText', 'language', 'translation'
-            ]
-            
-            has_language_support = any(indicator in handler_content for indicator in language_indicators)
-            
-            # Check for voice selection
-            voice_indicators = [
-                'getVoiceButtons', 'voice', 'tts', 'generateTTS'
-            ]
-            
-            has_voice_selection = any(indicator in handler_content for indicator in voice_indicators)
-            
-            # Check for TTS generation
-            tts_indicators = [
-                'generateTTS', 'text-to-speech', 'ttsService'
-            ]
-            
-            has_tts_generation = any(indicator in handler_content for indicator in tts_indicators)
-            
-            features_count = sum([has_language_support, has_voice_selection, has_tts_generation])
-            
-            if features_count >= 1:  # At least one feature present
-                print(f"cpIvrOptionVoice has TTS features - language: {has_language_support}, voice: {has_voice_selection}, TTS: {has_tts_generation}")
-                return True
-            else:
-                print(f"cpIvrOptionVoice missing features - language: {has_language_support}, voice: {has_voice_selection}, TTS: {has_tts_generation}")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking cpIvrOptionVoice features: {e}")
-            return False
-    
-    def test_cpivr_option_preview_saves_correctly(self):
-        """Test that cpIvrOptionPreview handler saves option with correct ivrConf.options[key] structure"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for cpIvrOptionPreview handler
-            handler_pattern = r"if\s*\(\s*action\s*===\s*a\.cpIvrOptionPreview\s*\).*?(?=if\s*\(\s*action\s*===|$)"
-            handler_match = re.search(handler_pattern, content, re.DOTALL)
-            
-            if not handler_match:
-                print("cpIvrOptionPreview handler implementation not found")
-                return False
-            
-            handler_content = handler_match.group(0)
-            
-            # Check for IVR configuration saving
-            save_indicators = [
-                'ivrConf', 'updatePhoneNumberFeature', 'options', 'draft.key'
-            ]
-            
-            has_save_logic = any(indicator in handler_content for indicator in save_indicators)
-            
-            # Check for key structure
-            structure_indicators = [
-                'options[', '[draft.key]', 'key', 'action'
-            ]
-            
-            has_key_structure = any(indicator in handler_content for indicator in structure_indicators)
-            
-            if has_save_logic and has_key_structure:
-                print("cpIvrOptionPreview has save logic with key structure")
-                return True
-            else:
-                print(f"cpIvrOptionPreview missing features - save logic: {has_save_logic}, key structure: {has_key_structure}")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking cpIvrOptionPreview save logic: {e}")
-            return False
-    
-    def test_leads_pay_goto_handler_exists(self):
-        """Test that 'leads-pay' goto handler exists and shows Crypto/Bank/Wallet options"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for 'leads-pay' in goto object
-            goto_pattern = r"'leads-pay'\s*:\s*async\s*\(\)\s*=>\s*\{.*?(?=,\s*'[^']*':|,\s*}|\s*\}\s*$)"
-            goto_match = re.search(goto_pattern, content, re.DOTALL)
-            
-            if not goto_match:
-                print("'leads-pay' goto handler not found")
-                return False
-            
-            goto_content = goto_match.group(0)
-            
-            # Check for payment options in k.pay which includes crypto, bank, wallet
-            if 'k.pay' in goto_content:
-                print("'leads-pay' goto handler found with k.pay keyboard (includes Crypto/Bank/Wallet)")
-                return True
-            
-            # Fallback check for payment options
-            payment_options = ['crypto', 'bank', 'wallet']
-            found_options = []
-            
-            for option in payment_options:
-                if option.lower() in goto_content.lower():
-                    found_options.append(option)
-            
-            if len(found_options) >= 2:
-                print(f"'leads-pay' goto handler found with payment options: {found_options}")
-                return True
-            else:
-                print(f"'leads-pay' goto handler missing payment options. Found: {found_options}")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking 'leads-pay' goto handler: {e}")
-            return False
-    
-    def test_leads_pay_action_handler_routing(self):
-        """Test that 'leads-pay' action handler routes to crypto-pay-leads, bank-pay-leads, or walletSelectCurrency"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for 'leads-pay' action handler
-            action_pattern = r"if\s*\(\s*action\s*===\s*['\"]leads-pay['\"].*?(?=if\s*\(\s*action\s*===|$)"
-            action_match = re.search(action_pattern, content, re.DOTALL)
-            
-            if not action_match:
-                print("'leads-pay' action handler not found")
-                return False
-            
-            action_content = action_match.group(0)
-            
-            # Check for routing options
-            routing_options = [
-                'crypto-pay-leads', 'bank-pay-leads', 'walletSelectCurrency'
-            ]
-            
-            found_routes = []
-            for route in routing_options:
-                if route in action_content:
-                    found_routes.append(route)
-            
-            if len(found_routes) >= 2:
-                print(f"'leads-pay' action handler has routing to: {found_routes}")
-                return True
-            else:
-                print(f"'leads-pay' action handler missing routing. Found: {found_routes}")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking 'leads-pay' action handler routing: {e}")
-            return False
-    
-    def test_crypto_pay_leads_action_handler(self):
-        """Test that 'crypto-pay-leads' action handler supports both BlockBee and DynoPay paths"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for 'crypto-pay-leads' action handler
-            action_pattern = r"action\s*===?\s*['\"]crypto-pay-leads['\"].*?(?=(?:else if|if \(action|$))"
-            action_match = re.search(action_pattern, content, re.DOTALL | re.IGNORECASE)
-            
-            if not action_match:
-                print("'crypto-pay-leads' action handler not found")
-                return False
-            
-            action_content = action_match.group(0)
-            
-            # Check for BlockBee and DynoPay support
-            blockbee_indicators = ['blockbee', 'BLOCKBEE', 'bb']
-            dynopay_indicators = ['dynopay', 'DYNOPAY', 'dyno']
-            
-            has_blockbee = any(indicator in action_content for indicator in blockbee_indicators)
-            has_dynopay = any(indicator in action_content for indicator in dynopay_indicators)
-            
-            if has_blockbee and has_dynopay:
-                print("'crypto-pay-leads' action handler supports both BlockBee and DynoPay")
-                return True
-            elif has_blockbee or has_dynopay:
-                print(f"'crypto-pay-leads' action handler supports {'BlockBee' if has_blockbee else 'DynoPay'} (partial support)")
-                return True
-            else:
-                print("'crypto-pay-leads' action handler missing crypto provider support")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking 'crypto-pay-leads' action handler: {e}")
-            return False
-    
-    def test_bank_pay_leads_action_handler(self):
-        """Test that 'bank-pay-leads' action handler sends bank checkout URL"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for 'bank-pay-leads' action handler
-            action_pattern = r"action\s*===?\s*['\"]bank-pay-leads['\"].*?(?=(?:else if|if \(action|$))"
-            action_match = re.search(action_pattern, content, re.DOTALL | re.IGNORECASE)
-            
-            if not action_match:
-                print("'bank-pay-leads' action handler not found")
-                return False
-            
-            action_content = action_match.group(0)
-            
-            # Check for bank checkout functionality
-            bank_indicators = [
-                'checkout', 'url', 'bank', 'payment', 'createCheckout'
-            ]
-            
-            has_bank_checkout = any(indicator in action_content for indicator in bank_indicators)
-            
-            if has_bank_checkout:
-                print("'bank-pay-leads' action handler has bank checkout functionality")
-                return True
-            else:
-                print("'bank-pay-leads' action handler missing bank checkout functionality")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking 'bank-pay-leads' action handler: {e}")
-            return False
-    
-    def test_blockbee_crypto_pay_leads_callback(self):
-        """Test that app.get('/crypto-pay-leads') BlockBee callback exists and processes leads order directly"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for BlockBee crypto-pay-leads callback
-            callback_pattern = r"app\.get\s*\(\s*['\"]\/crypto-pay-leads['\"].*?(?=app\.|$)"
-            callback_match = re.search(callback_pattern, content, re.DOTALL)
-            
-            if not callback_match:
-                print("BlockBee crypto-pay-leads callback not found")
-                return False
-            
-            callback_content = callback_match.group(0)
-            
-            # Check for order processing
-            order_indicators = [
-                'order', 'lead', 'process', 'buy', 'purchase'
-            ]
-            
-            has_order_processing = any(indicator in callback_content.lower() for indicator in order_indicators)
-            
-            if has_order_processing:
-                print("BlockBee crypto-pay-leads callback has order processing")
-                return True
-            else:
-                print("BlockBee crypto-pay-leads callback missing order processing")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking BlockBee crypto-pay-leads callback: {e}")
-            return False
-    
-    def test_dynopay_crypto_pay_leads_callback(self):
-        """Test that app.post('/dynopay/crypto-pay-leads') DynoPay callback exists and processes leads order"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for DynoPay crypto-pay-leads callback
-            callback_pattern = r"app\.post\s*\(\s*['\"]\/dynopay\/crypto-pay-leads['\"].*?(?=app\.|$)"
-            callback_match = re.search(callback_pattern, content, re.DOTALL)
-            
-            if not callback_match:
-                print("DynoPay crypto-pay-leads callback not found")
-                return False
-            
-            callback_content = callback_match.group(0)
-            
-            # Check for order processing
-            order_indicators = [
-                'order', 'lead', 'process', 'buy', 'purchase'
-            ]
-            
-            has_order_processing = any(indicator in callback_content.lower() for indicator in order_indicators)
-            
-            if has_order_processing:
-                print("DynoPay crypto-pay-leads callback has order processing")
-                return True
-            else:
-                print("DynoPay crypto-pay-leads callback missing order processing")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking DynoPay crypto-pay-leads callback: {e}")
-            return False
-    
-    def test_bankapis_bank_pay_leads_handler(self):
-        """Test that bankApis has '/bank-pay-leads' handler that processes leads order"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for bank-pay-leads in bankApis
-            bank_pattern = r"['\"]\/bank-pay-leads['\"].*?(?=,|\}|$)"
-            bank_match = re.search(bank_pattern, content, re.DOTALL)
-            
-            if not bank_match:
-                print("bankApis '/bank-pay-leads' handler not found")
-                return False
-            
-            bank_content = bank_match.group(0)
-            
-            # Check for order processing
-            order_indicators = [
-                'order', 'lead', 'process', 'buy', 'purchase'
-            ]
-            
-            has_order_processing = any(indicator in bank_content.lower() for indicator in order_indicators)
-            
-            if has_order_processing:
-                print("bankApis '/bank-pay-leads' handler has order processing")
-                return True
-            else:
-                print("bankApis '/bank-pay-leads' handler missing order processing")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking bankApis '/bank-pay-leads' handler: {e}")
-            return False
-    
-    def test_askcoupon_buyleads_uses_leads_pay(self):
-        """Test that askCoupon + buyLeadsSelectFormat now calls goto['leads-pay']() instead of goto.walletSelectCurrency()"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for buyLeadsSelectFormat flow
-            buyleads_pattern = r"buyLeadsSelectFormat.*?(?=(?:action\s*===|else if|$))"
-            buyleads_matches = re.finditer(buyleads_pattern, content, re.DOTALL | re.IGNORECASE)
-            
-            uses_leads_pay = False
-            for match in buyleads_matches:
-                match_content = match.group(0)
-                if "goto['leads-pay']" in match_content or "goto[\"leads-pay\"]" in match_content:
-                    uses_leads_pay = True
-                    break
-            
-            if uses_leads_pay:
-                print("askCoupon + buyLeadsSelectFormat uses goto['leads-pay']()")
-                return True
-            else:
-                print("askCoupon + buyLeadsSelectFormat not using goto['leads-pay']()")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking askCoupon buyLeadsSelectFormat flow: {e}")
-            return False
-    
-    def test_askcoupon_validator_uses_leads_pay(self):
-        """Test that askCoupon + validatorSelectFormat now calls goto['leads-pay']() instead of goto.walletSelectCurrency()"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for validatorSelectFormat flow
-            validator_pattern = r"validatorSelectFormat.*?(?=(?:action\s*===|else if|$))"
-            validator_matches = re.finditer(validator_pattern, content, re.DOTALL | re.IGNORECASE)
-            
-            uses_leads_pay = False
-            for match in validator_matches:
-                match_content = match.group(0)
-                if "goto['leads-pay']" in match_content or "goto[\"leads-pay\"]" in match_content:
-                    uses_leads_pay = True
-                    break
-            
-            if uses_leads_pay:
-                print("askCoupon + validatorSelectFormat uses goto['leads-pay']()")
-                return True
-            else:
-                print("askCoupon + validatorSelectFormat not using goto['leads-pay']()")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking askCoupon validatorSelectFormat flow: {e}")
-            return False
-    
-    def test_target_leads_confirm_uses_leads_pay(self):
-        """Test that targetLeadsConfirm now calls goto['leads-pay']() instead of direct wallet deduction"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for targetLeadsConfirm flow
-            target_pattern = r"targetLeadsConfirm.*?(?=(?:action\s*===|else if|$))"
-            target_matches = re.finditer(target_pattern, content, re.DOTALL | re.IGNORECASE)
-            
-            uses_leads_pay = False
-            for match in target_matches:
-                match_content = match.group(0)
-                if "goto['leads-pay']" in match_content or "goto[\"leads-pay\"]" in match_content:
-                    uses_leads_pay = True
-                    break
-            
-            if uses_leads_pay:
-                print("targetLeadsConfirm uses goto['leads-pay']()")
-                return True
-            else:
-                print("targetLeadsConfirm not using goto['leads-pay']()")
-                return False
-            
-        except Exception as e:
-            print(f"Error checking targetLeadsConfirm flow: {e}")
-            return False
-    
-    def test_dynopay_actions_payleads_exists(self):
-        """Test that dynopayActions.payLeads exists in config.js"""
-        try:
-            with open('/app/js/config.js', 'r') as f:
-                content = f.read()
-            
-            # Look for payLeads in dynopayActions
-            dynopay_match = re.search(r'const dynopayActions\s*=\s*\{([^}]+)\}', content, re.DOTALL)
-            if dynopay_match and 'payLeads' in dynopay_match.group(1):
-                print("dynopayActions.payLeads found in config.js")
-                return True
-            
-            # Alternative check for payLeads anywhere in the file
-            if 'payLeads' in content:
-                print("payLeads found in config.js")
-                return True
-            
-            print("dynopayActions.payLeads not found in config.js")
-            return False
-            
-        except Exception as e:
-            print(f"Error checking dynopayActions.payLeads: {e}")
+            self.log_result("Backend health check /api/health", False, f"Error: {str(e)}")
             return False
 
+    def test_no_rawmsg_references(self):
+        """Verify NO remaining references to 'rawMsg' in _index.js"""
+        try:
+            result = subprocess.run(['grep', '-n', 'rawMsg', '/app/js/_index.js'], 
+                                 capture_output=True, text=True)
+            if result.returncode != 0:  # grep returns 1 when no matches found
+                self.log_result("No rawMsg references in _index.js", True, "All rawMsg references removed")
+                return True
+            else:
+                matches = result.stdout.strip()
+                self.log_result("No rawMsg references in _index.js", False, f"Found rawMsg: {matches}")
+                return False
+        except Exception as e:
+            self.log_result("No rawMsg references in _index.js", False, f"Error: {str(e)}")
+            return False
+
+    def test_voices_count_and_ids(self):
+        """Verify VOICES in tts-service.js has 15 voices with real ElevenLabs voice IDs"""
+        try:
+            with open('/app/js/tts-service.js', 'r') as f:
+                content = f.read()
+            
+            # Extract VOICES object - look for const VOICES = { ... }
+            voices_match = re.search(r'const VOICES = \{(.*?)\}', content, re.DOTALL)
+            if not voices_match:
+                self.log_result("15 voices with ElevenLabs IDs", False, "VOICES object not found")
+                return False
+            
+            voices_content = voices_match.group(1)
+            
+            # Count voice entries
+            voice_entries = re.findall(r'(\w+):\s*\{[^}]*voiceId:\s*[\'"]([^\'\"]+)[\'"]', voices_content)
+            voice_count = len(voice_entries)
+            
+            if voice_count == 15:
+                # Check if voice IDs look like ElevenLabs IDs (20-character alphanumeric)
+                valid_ids = all(len(voice_id) >= 15 and re.match(r'^[A-Za-z0-9]+$', voice_id) 
+                              for _, voice_id in voice_entries)
+                if valid_ids:
+                    voice_names = [name for name, _ in voice_entries]
+                    self.log_result("15 voices with ElevenLabs IDs", True, f"Found {voice_count} voices: {', '.join(voice_names)}")
+                    return True
+                else:
+                    self.log_result("15 voices with ElevenLabs IDs", False, "Some voice IDs don't look like ElevenLabs IDs")
+                    return False
+            else:
+                self.log_result("15 voices with ElevenLabs IDs", False, f"Found {voice_count} voices, expected 15")
+                return False
+        except Exception as e:
+            self.log_result("15 voices with ElevenLabs IDs", False, f"Error: {str(e)}")
+            return False
+
+    def test_voice_gender_distribution(self):
+        """Verify voice list includes both females and males with expected names"""
+        try:
+            with open('/app/js/tts-service.js', 'r') as f:
+                content = f.read()
+            
+            # Extract voice names and genders
+            voice_matches = re.findall(r'(\w+):\s*\{[^}]*name:\s*[\'"]([^\'\"]+)[\'"][^}]*gender:\s*[\'"]([FM])[\'"]', content)
+            
+            if not voice_matches:
+                self.log_result("Voice gender distribution", False, "No voice entries with gender found")
+                return False
+            
+            females = [name for _, name, gender in voice_matches if gender == 'F']
+            males = [name for _, name, gender in voice_matches if gender == 'M']
+            
+            expected_females = {'Rachel', 'Sarah', 'Laura', 'Emily', 'Domi', 'Dorothy', 'Glinda'}
+            expected_males = {'Drew', 'Charlie', 'Clyde', 'Adam', 'Josh', 'Arnold', 'Sam', 'Thomas'}
+            
+            found_females = set(females)
+            found_males = set(males)
+            
+            females_ok = expected_females.issubset(found_females)
+            males_ok = expected_males.issubset(found_males)
+            
+            if females_ok and males_ok:
+                self.log_result("Voice gender distribution", True, f"Females: {len(females)}, Males: {len(males)}")
+                return True
+            else:
+                missing_f = expected_females - found_females
+                missing_m = expected_males - found_males
+                self.log_result("Voice gender distribution", False, f"Missing females: {missing_f}, Missing males: {missing_m}")
+                return False
+        except Exception as e:
+            self.log_result("Voice gender distribution", False, f"Error: {str(e)}")
+            return False
+
+    def test_generatetts_voiceid_parameter(self):
+        """Verify generateTTS function passes voice.voiceId as the option parameter to EdenAI API"""
+        try:
+            with open('/app/js/tts-service.js', 'r') as f:
+                content = f.read()
+            
+            # Look for the generateTTS function and option parameter
+            generate_match = re.search(r'async function generateTTS\([^{]*\{(.*?)^\}', content, re.DOTALL | re.MULTILINE)
+            if not generate_match:
+                self.log_result("generateTTS uses voiceId", False, "generateTTS function not found")
+                return False
+            
+            func_content = generate_match.group(1)
+            
+            # Check if option is set to voice.voiceId
+            if 'option: voice.voiceId' in func_content:
+                self.log_result("generateTTS uses voiceId", True, "Function correctly uses voice.voiceId as option")
+                return True
+            else:
+                self.log_result("generateTTS uses voiceId", False, "option parameter not set to voice.voiceId")
+                return False
+        except Exception as e:
+            self.log_result("generateTTS uses voiceId", False, f"Error: {str(e)}")
+            return False
+
+    def test_edenai_endpoint(self):
+        """Verify EdenAI API endpoint is api.edenai.run/v2/audio/text_to_speech with providers: 'elevenlabs'"""
+        try:
+            with open('/app/js/tts-service.js', 'r') as f:
+                content = f.read()
+            
+            # Check for the correct endpoint
+            endpoint_found = 'https://api.edenai.run/v2/audio/text_to_speech' in content
+            providers_found = "providers: 'elevenlabs'" in content
+            
+            if endpoint_found and providers_found:
+                self.log_result("EdenAI endpoint configuration", True, "Correct endpoint and provider configured")
+                return True
+            else:
+                details = []
+                if not endpoint_found:
+                    details.append("endpoint not found")
+                if not providers_found:
+                    details.append("elevenlabs provider not found")
+                self.log_result("EdenAI endpoint configuration", False, ", ".join(details))
+                return False
+        except Exception as e:
+            self.log_result("EdenAI endpoint configuration", False, f"Error: {str(e)}")
+            return False
+
+    def test_getvoicebuttons_returns_all_voices(self):
+        """Verify getVoiceButtons returns all 15 voices regardless of language"""
+        try:
+            with open('/app/js/tts-service.js', 'r') as f:
+                content = f.read()
+            
+            # Look for getVoiceButtons function
+            func_match = re.search(r'function getVoiceButtons\([^{]*\{(.*?)^\}', content, re.DOTALL | re.MULTILINE)
+            if not func_match:
+                self.log_result("getVoiceButtons returns all voices", False, "getVoiceButtons function not found")
+                return False
+            
+            func_content = func_match.group(1)
+            
+            # Check that it uses VOICES and doesn't filter by language (should show all voices)
+            if 'Object.entries(VOICES)' in func_content and 'filter' in func_content and 'gender' in func_content:
+                # This indicates it's showing all voices, just grouped by gender
+                self.log_result("getVoiceButtons returns all voices", True, "Function returns all voices grouped by gender")
+                return True
+            else:
+                self.log_result("getVoiceButtons returns all voices", False, "Function may not return all voices")
+                return False
+        except Exception as e:
+            self.log_result("getVoiceButtons returns all voices", False, f"Error: {str(e)}")
+            return False
+
+    def test_getvoicekeybybutton_matches_all_voices(self):
+        """Verify getVoiceKeyByButton matches voice name for all 15 voices"""
+        try:
+            with open('/app/js/tts-service.js', 'r') as f:
+                content = f.read()
+            
+            # Look for getVoiceKeyByButton function
+            func_match = re.search(r'function getVoiceKeyByButton\([^{]*\{(.*?)^\}', content, re.DOTALL | re.MULTILINE)
+            if not func_match:
+                self.log_result("getVoiceKeyByButton matches voices", False, "getVoiceKeyByButton function not found")
+                return False
+            
+            func_content = func_match.group(1)
+            
+            # Check that it iterates through all VOICES
+            if 'Object.entries(VOICES)' in func_content and 'buttonText.startsWith(v.name)' in func_content:
+                self.log_result("getVoiceKeyByButton matches voices", True, "Function matches all voice names")
+                return True
+            else:
+                self.log_result("getVoiceKeyByButton matches voices", False, "Function may not handle all voices")
+                return False
+        except Exception as e:
+            self.log_result("getVoiceKeyByButton matches voices", False, f"Error: {str(e)}")
+            return False
+
+    def test_generic_voices_equals_voices(self):
+        """Verify GENERIC_VOICES is set to VOICES (same voice library for all languages)"""
+        try:
+            with open('/app/js/tts-service.js', 'r') as f:
+                content = f.read()
+            
+            # Look for GENERIC_VOICES = VOICES
+            if 'const GENERIC_VOICES = VOICES' in content or 'GENERIC_VOICES = VOICES' in content:
+                self.log_result("GENERIC_VOICES equals VOICES", True, "Same voice library for all languages")
+                return True
+            else:
+                self.log_result("GENERIC_VOICES equals VOICES", False, "GENERIC_VOICES not set to VOICES")
+                return False
+        except Exception as e:
+            self.log_result("GENERIC_VOICES equals VOICES", False, f"Error: {str(e)}")
+            return False
+
+    def test_handlers_use_msg_not_rawmsg(self):
+        """Verify IVR option preview and VM greeting preview handlers use 'msg' not 'rawMsg'"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                content = f.read()
+            
+            # Look for the handler sections
+            ivr_preview_section = re.search(r'if \(action === a\.cpIvrOptionPreview\)(.*?)(?=if \(action ===|\Z)', content, re.DOTALL)
+            vm_preview_section = re.search(r'if \(action === a\.cpVmGreetingPreview\)(.*?)(?=if \(action ===|\Z)', content, re.DOTALL)
+            
+            issues = []
+            
+            if ivr_preview_section:
+                ivr_content = ivr_preview_section.group(1)
+                if 'msg?.voice' in ivr_content or 'msg?.audio' in ivr_content:
+                    if 'rawMsg' not in ivr_content:
+                        # Good - using msg, not rawMsg
+                        pass
+                    else:
+                        issues.append("IVR preview handler still has rawMsg references")
+                else:
+                    issues.append("IVR preview handler doesn't handle audio uploads")
+            
+            if vm_preview_section:
+                vm_content = vm_preview_section.group(1)
+                if 'msg?.voice' in vm_content or 'msg?.audio' in vm_content:
+                    if 'rawMsg' not in vm_content:
+                        # Good - using msg, not rawMsg
+                        pass
+                    else:
+                        issues.append("VM preview handler still has rawMsg references")
+                else:
+                    issues.append("VM preview handler doesn't handle audio uploads")
+            
+            if not issues:
+                self.log_result("Handlers use 'msg' not 'rawMsg'", True, "Both handlers correctly use 'msg' for audio uploads")
+                return True
+            else:
+                self.log_result("Handlers use 'msg' not 'rawMsg'", False, "; ".join(issues))
+                return False
+                
+        except Exception as e:
+            self.log_result("Handlers use 'msg' not 'rawMsg'", False, f"Error: {str(e)}")
+            return False
+
+    def run_all_tests(self):
+        """Run all tests"""
+        print("🧪 Starting Nomadly Telegram Bot Testing...")
+        print("=" * 60)
+        
+        # Run all tests
+        self.test_health_endpoint()
+        self.test_no_rawmsg_references()
+        self.test_voices_count_and_ids()
+        self.test_voice_gender_distribution()
+        self.test_generatetts_voiceid_parameter()
+        self.test_edenai_endpoint()
+        self.test_getvoicebuttons_returns_all_voices()
+        self.test_getvoicekeybybutton_matches_all_voices()
+        self.test_generic_voices_equals_voices()
+        self.test_handlers_use_msg_not_rawmsg()
+        
+        # Print summary
+        print("=" * 60)
+        print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} tests passed")
+        
+        if self.tests_passed == self.tests_run:
+            print("🎉 All tests passed!")
+            return 0
+        else:
+            print("❌ Some tests failed!")
+            return 1
+
 def main():
-    tester = NomadlyBackendTester(BACKEND_URL)
-    print(f"🚀 Starting Nomadly Backend Tests - Iteration 37")
-    print(f"Backend URL: {BACKEND_URL}")
-    print(f"Test Time: {datetime.now().isoformat()}")
-    
-    # Run all tests
-    test_results = []
-    
-    # Health check tests
-    test_results.append(tester.run_test("Backend health check /api/health returns ok with node running and db connected", tester.test_health_endpoint))
-    test_results.append(tester.run_test("API health endpoint returns healthy status", tester.test_api_health_endpoint))
-    
-    # IVR option wizard tests
-    test_results.append(tester.run_test("IVR option wizard handlers exist: cpIvrOptionKey, cpIvrOptionAction, cpIvrOptionMsg, cpIvrOptionVoice, cpIvrOptionPreview", tester.test_ivr_option_handlers_exist))
-    test_results.append(tester.run_test("cpIvrOptionKey handler validates digit input (0-9) and shows used keys", tester.test_cpivr_option_key_validates_digits))
-    test_results.append(tester.run_test("cpIvrOptionAction handler offers 3 actions: Forward Call, Play Message, Send to Voicemail", tester.test_cpivr_option_action_offers_three_actions))
-    test_results.append(tester.run_test("cpIvrOptionMsg handler: for forward asks phone number, for message offers Template/TTS/Upload", tester.test_cpivr_option_msg_handler_features))
-    test_results.append(tester.run_test("cpIvrOptionVoice handler: language selection with translation + voice selection + TTS generation", tester.test_cpivr_option_voice_handler_features))
-    test_results.append(tester.run_test("cpIvrOptionPreview handler: save option with correct ivrConf.options[key] structure", tester.test_cpivr_option_preview_saves_correctly))
-    
-    # Leads payment system tests
-    test_results.append(tester.run_test("'leads-pay' goto handler exists and shows Crypto/Bank/Wallet options", tester.test_leads_pay_goto_handler_exists))
-    test_results.append(tester.run_test("'leads-pay' action handler routes to crypto-pay-leads, bank-pay-leads, or walletSelectCurrency", tester.test_leads_pay_action_handler_routing))
-    test_results.append(tester.run_test("'crypto-pay-leads' action handler supports both BlockBee and DynoPay paths", tester.test_crypto_pay_leads_action_handler))
-    test_results.append(tester.run_test("'bank-pay-leads' action handler sends bank checkout URL", tester.test_bank_pay_leads_action_handler))
-    
-    # Payment callback tests
-    test_results.append(tester.run_test("app.get('/crypto-pay-leads') BlockBee callback exists and processes leads order directly", tester.test_blockbee_crypto_pay_leads_callback))
-    test_results.append(tester.run_test("app.post('/dynopay/crypto-pay-leads') DynoPay callback exists and processes leads order", tester.test_dynopay_crypto_pay_leads_callback))
-    test_results.append(tester.run_test("bankApis has '/bank-pay-leads' handler that processes leads order", tester.test_bankapis_bank_pay_leads_handler))
-    
-    # Flow changes tests
-    test_results.append(tester.run_test("askCoupon + buyLeadsSelectFormat now calls goto['leads-pay']() instead of goto.walletSelectCurrency()", tester.test_askcoupon_buyleads_uses_leads_pay))
-    test_results.append(tester.run_test("askCoupon + validatorSelectFormat now calls goto['leads-pay']() instead of goto.walletSelectCurrency()", tester.test_askcoupon_validator_uses_leads_pay))
-    test_results.append(tester.run_test("targetLeadsConfirm now calls goto['leads-pay']() instead of direct wallet deduction", tester.test_target_leads_confirm_uses_leads_pay))
-    
-    # Config tests
-    test_results.append(tester.run_test("dynopayActions.payLeads exists in config.js", tester.test_dynopay_actions_payleads_exists))
-    
-    # Print results summary
-    print(f"\n📊 Test Results Summary:")
-    print(f"Tests Run: {tester.tests_run}")
-    print(f"Tests Passed: {tester.tests_passed}")
-    print(f"Tests Failed: {len(tester.failed_tests)}")
-    print(f"Success Rate: {(tester.tests_passed/tester.tests_run*100):.1f}%")
-    
-    if tester.failed_tests:
-        print(f"\n❌ Failed Tests:")
-        for failed_test in tester.failed_tests:
-            print(f"  - {failed_test}")
-    
-    # Return appropriate exit code
-    return 0 if tester.tests_passed == tester.tests_run else 1
+    tester = NomadlyTelegramBotTester()
+    return tester.run_all_tests()
 
 if __name__ == "__main__":
     sys.exit(main())
