@@ -249,7 +249,7 @@ async function handleCallInitiated(payload) {
             } catch (e) {
               await _telnyxApi.hangupCall(callControlId).catch(() => {})
             }
-            _bot?.sendMessage(chatId, `🚫 <b>Forwarded Call Disconnected — Wallet Empty</b>\n\n📞 ${formatPhone(to)}\n⏱️ ~${elapsedMin} min\n\nWallet ran out during forwarded call ($${CALL_FORWARDING_RATE_MIN}/min). Top up wallet to continue.`, { parse_mode: 'HTML' }).catch(() => {})
+            _bot?.sendMessage(chatId, `🚫 <b>Forwarded Call Disconnected — Wallet Empty</b>\n\n📞 ${formatPhone(to)}\n⏱️ ~${elapsedMin} min\n\nWallet ran out during forwarded call ($${CALL_FORWARDING_RATE_MIN}/min).\n\n👉 Top up <b>$25</b> via 👛 My Wallet for ~${Math.floor(25 / CALL_FORWARDING_RATE_MIN)} min of uninterrupted forwarding.`, { parse_mode: 'HTML' }).catch(() => {})
           }
         } catch (e) { log(`[Voice] Mid-call forwarding billing error: ${e.message}`) }
       }
