@@ -1,7 +1,8 @@
 # Nomadly Bot - PRD
 
 ## Original Problem Statement
-Update backend .env with provided API keys and credentials, using current pod URL for webhooks with /api prefix.
+1. Update backend .env with provided API keys and credentials, using current pod URL for webhooks with /api prefix.
+2. Fix crypto payment message for leads — was using domain template ("your Phone Leads domain will be seamlessly activated") instead of a leads-specific message.
 
 ## Architecture
 - **Backend**: FastAPI (server.py) acts as reverse proxy to Node.js Express app
@@ -20,25 +21,26 @@ Update backend .env with provided API keys and credentials, using current pod UR
 - Subscription plans (Daily/Weekly/Monthly)
 - Multi-language support (EN, FR, HI, ZH)
 
-## What's Been Implemented (Feb 19, 2026)
+## What's Been Implemented
+
+### Feb 19, 2026 — Session 1: Env Setup
 - Updated backend .env with all provided API keys
-- Set SELF_URL and SELF_URL_PROD to pod URL with /api: `https://quickstart-setup-1.preview.emergentagent.com/api`
-- Updated API_ALCAZAR, API_KEY_RAILWAY, RAILWAY_ENVIRONMENT_ID, RAILWAY_SERVICE_ID, TELNYX_MESSAGING_PROFILE_ID
-- Set PHONE_STARTER_ON, PHONE_PRO_ON, PHONE_BUSINESS_ON to empty (as specified)
-- Installed Node.js dependencies (npm install)
-- Verified all services running: FastAPI proxy, Node.js bot, MongoDB connected
-- Telegram webhook set to pod URL
-- Telnyx webhooks (voice, SMS) set to pod URL
-- All services healthy (confirmed via /api/health)
+- Set SELF_URL and SELF_URL_PROD to pod URL with /api
+- Installed Node.js dependencies
+- Verified all services running
+
+### Feb 19, 2026 — Session 2: Leads Crypto Message Fix
+- **Bug**: Crypto payment for leads used `showDepositCryptoInfoDomain` template, producing "your Phone Leads domain will be seamlessly activated"
+- **Fix**: Added `showDepositCryptoInfoLeads` template in all 5 files (config.js, en.js, fr.js, hi.js, zh.js) with correct wording: "your {label} will be delivered"
+- Updated 2 call sites in _index.js (lines 5478, 5491) from `showDepositCryptoInfoDomain` → `showDepositCryptoInfoLeads`
 
 ## Status
 - All services: RUNNING
 - Database: CONNECTED
 - Telegram webhook: CONFIGURED
-- Telnyx webhooks: CONFIGURED
-- Connect Reseller API: WORKING
+- Crypto payment messages: FIXED for leads context
 
 ## Next Tasks / Backlog
-- P0: None - setup complete
+- P0: None
 - P1: Frontend dashboard development (if needed)
 - P2: Additional feature development per user requests
