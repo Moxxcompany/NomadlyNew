@@ -740,6 +740,8 @@ function getMsg(lang) {
 module.exports = {
   btn,
   txt,
+  msg,
+  getMsg,
   plans,
   planByButton,
   planFeatureAccess,
