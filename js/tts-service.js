@@ -15,14 +15,14 @@ if (!fs.existsSync(AUDIO_DIR)) {
   fs.mkdirSync(AUDIO_DIR, { recursive: true })
 }
 
-// Curated voice presets (ElevenLabs voice IDs)
+// Curated voice presets — mapped to EdenAI option/language params
 const VOICES = {
-  rachel: { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', desc: 'Calm, professional female', gender: 'female' },
-  drew: { id: '29vD33N1CtxCmqQRPOHJ', name: 'Drew', desc: 'Confident, warm male', gender: 'male' },
-  clyde: { id: '2EiwWnXFnvU5JabPnv8n', name: 'Clyde', desc: 'Deep, authoritative male', gender: 'male' },
-  sarah: { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah', desc: 'Soft, friendly female', gender: 'female' },
-  laura: { id: 'FGY2WhTYpPnrIDTdsKH5', name: 'Laura', desc: 'Upbeat, energetic female', gender: 'female' },
-  charlie: { id: 'IKne3meq5aSn9XLyUdCD', name: 'Charlie', desc: 'Casual, natural male', gender: 'male' },
+  rachel: { name: 'Rachel', desc: 'Calm, professional female', option: 'FEMALE', lang: 'en' },
+  sarah: { name: 'Sarah', desc: 'Soft, friendly female', option: 'FEMALE', lang: 'en' },
+  laura: { name: 'Laura', desc: 'Upbeat, energetic female', option: 'FEMALE', lang: 'en' },
+  drew: { name: 'Drew', desc: 'Confident, warm male', option: 'MALE', lang: 'en' },
+  charlie: { name: 'Charlie', desc: 'Casual, natural male', option: 'MALE', lang: 'en' },
+  clyde: { name: 'Clyde', desc: 'Deep, authoritative male', option: 'MALE', lang: 'en' },
 }
 
 const DEFAULT_VOICE = 'rachel'
@@ -31,7 +31,7 @@ const DEFAULT_VOICE = 'rachel'
  * Generate TTS audio via EdenAI (ElevenLabs provider)
  * @param {string} text - Text to convert
  * @param {string} voiceKey - Voice key from VOICES
- * @returns {{ audioPath: string, audioUrl: string|null }} Local file path + remote URL if available
+ * @returns {{ audioPath: string, audioUrl: string|null }} Local file path + remote URL
  */
 async function generateTTS(text, voiceKey = DEFAULT_VOICE) {
   if (!EDENAI_API_KEY) throw new Error('EDENAI_API_KEY not configured')
@@ -42,15 +42,8 @@ async function generateTTS(text, voiceKey = DEFAULT_VOICE) {
   const res = await axios.post('https://api.edenai.run/v2/audio/text_to_speech', {
     providers: 'elevenlabs',
     text: text.trim(),
-    language: 'en',
-    option: voice.gender === 'male' ? 'MALE' : 'FEMALE',
-    settings: {
-      elevenlabs: {
-        voice_id: voice.id,
-        model_id: 'eleven_turbo_v2_5',
-        voice_settings: { stability: 0.5, similarity_boost: 0.75 },
-      },
-    },
+    language: voice.lang,
+    option: voice.option,
   }, {
     headers: {
       Authorization: `Bearer ${EDENAI_API_KEY}`,
