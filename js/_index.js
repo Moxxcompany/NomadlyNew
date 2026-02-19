@@ -6393,7 +6393,7 @@ bot?.on('message', async msg => {
       warningMsg += `<b>Limits change:</b>\n`
       warningMsg += `📞 Minutes: ${oldPlanMinutes} → ${newPlanMinutes}\n`
       warningMsg += `📩 SMS: ${oldPlanSms} → ${newPlanSms}\n\n`
-      warningMsg += `These features will be <b>immediately disabled</b>. Continue?`
+      warningMsg += `These features will be <b>immediately disabled</b>.\n⚠️ <b>No refund</b> for the remaining billing period.\n\nContinue?`
 
       await saveInfo('cpPendingPlan', newPlan)
       return send(chatId, warningMsg, k.of([['✅ Confirm Change', pc.back]]))
