@@ -252,41 +252,31 @@ Select an option:`,
     return text
   },
 
-  selectPlan: (number) => `✅ You selected: <b>${formatPhone(number)}</b>
+  selectPlan: (number) => `✅ Selected: <b>${formatPhone(number)}</b>
 
 📋 Choose your plan:
 
 <b>💡 Starter — $${PHONE_STARTER_PRICE}/mo</b>
-${plans.starter.minutes} inbound min · ${plans.starter.sms} inbound SMS
-${plans.starter.features.join(' · ')}
+${plans.starter.minutes} min · ${plans.starter.sms} SMS · ${plans.starter.features.join(' · ')}
 
 <b>⭐ Pro — $${PHONE_PRO_PRICE}/mo</b>
-${plans.pro.minutes} inbound min · ${plans.pro.sms} inbound SMS
-${plans.pro.features.join(' · ')}
+${plans.pro.minutes} min · ${plans.pro.sms} SMS · ${plans.pro.features.join(' · ')}
 
 <b>👑 Business — $${PHONE_BUSINESS_PRICE}/mo</b>
-${plans.business.minutes} inbound min · ${plans.business.sms} inbound SMS
-${plans.business.features.join(' · ')}
+${plans.business.minutes} min · ${plans.business.sms} SMS · ${plans.business.features.join(' · ')}
 
-📌 <i>SMS is inbound only. Inbound calls use plan minutes.
-Call forwarding: $${CALL_FORWARDING_RATE_MIN}/min from wallet.
-Beyond plan limits: $${OVERAGE_RATE_MIN}/min and $${OVERAGE_RATE_SMS}/SMS charged from wallet. Service pauses if wallet balance is insufficient.</i>`,
+<i>Forwarding: $${CALL_FORWARDING_RATE_MIN}/min · Overage: $${OVERAGE_RATE_MIN}/min + $${OVERAGE_RATE_SMS}/SMS from wallet</i>`,
 
   orderSummary: (number, country, plan, price) => `📋 <b>Order Summary</b>
 
-📞 Number: ${formatPhone(number)}
-📍 Location: ${country}
-📦 Plan: ${plan.name} — $${price}/mo
-📩 Inbound SMS: ${plan.sms}/mo (receive only)
-📞 Inbound Minutes: ${plan.minutes}/mo
-📲 Call Forwarding: $${CALL_FORWARDING_RATE_MIN}/min from wallet
-⚡ Features: ${plan.features.join(', ')}
-💰 Overage: $${OVERAGE_RATE_MIN}/min + $${OVERAGE_RATE_SMS}/SMS beyond plan limits (from wallet)
+📞 ${formatPhone(number)} · ${country}
+📦 ${plan.name} — $${price}/mo
+📩 ${plan.sms} SMS · 📞 ${plan.minutes} min · 📲 Fwd $${CALL_FORWARDING_RATE_MIN}/min
+⚡ ${plan.features.join(', ')}
 
-💰 Total: <b>$${price}/mo</b>
-First month billed now.`,
+💰 Total: <b>$${price}</b> (first month)`,
 
-  paymentPrompt: (price) => `Price of Cloud Phone is <b>$${price}</b>.\nPlease choose payment method.`,
+  paymentPrompt: (price) => `Price: <b>$${price}</b>. Choose payment method:`,
 
   activated: (number, plan, price, sipUser, sipDomain, expiry) => `🎉 <b>Your Cloud Phone is Active!</b>
 
