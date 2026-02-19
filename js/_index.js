@@ -5975,7 +5975,7 @@ bot?.on('message', async msg => {
     return send(chatId, `Choose:`, k.of([['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio']]))
   }
 
-  // ━━━ VM GREETING: Text → Voice selection ━━━
+  // ━━━ VM GREETING: Text → Language → Voice selection ━━━
   if (action === a.cpVmGreetingVoice) {
     const pc = phoneConfig.btn
     const num = info?.cpActiveNumber
@@ -5985,32 +5985,49 @@ bot?.on('message', async msg => {
       return send(chatId, `🎤 <b>Custom Greeting</b>\n\nChoose:`, k.of([['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio']]))
     }
     const draft = info?.cpTtsDraft || {}
-    if (draft.text && !draft.voice) {
-      const voiceKey = ttsService.getVoiceKeyByButton(message)
+    if (draft.text && draft.lang && !draft.voice) {
+      const voiceKey = ttsService.getVoiceKeyByButton(message, draft.lang)
       draft.voice = voiceKey
       await saveInfo('cpTtsDraft', draft)
       send(chatId, '🔄 Generating audio preview...')
       try {
-        const result = await ttsService.generateTTS(draft.text, voiceKey)
+        const result = await ttsService.generateTTS(draft.text, voiceKey, draft.lang)
         draft.audioPath = result.audioPath
         draft.audioUrl = result.audioUrl
         await saveInfo('cpTtsDraft', draft)
         await bot.sendVoice(chatId, result.audioPath)
         set(state, chatId, 'action', a.cpVmGreetingPreview)
         return send(chatId, `✅ Preview (${result.voice})\n\nSave this greeting?`, k.of([
-          ['✅ Save Greeting'], ['🔄 Try Different Voice'], ['📝 Re-type Text'],
+          ['✅ Save Greeting'], ['🔄 Try Different Voice'], ['🌐 Change Language'], ['📝 Re-type Text'],
         ]))
       } catch (e) {
         log(`[TTS] Error: ${e.message}`)
         return send(chatId, `❌ Audio generation failed: ${e.message}`, k.of([['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio']]))
       }
     }
+    if (draft.text && !draft.lang) {
+      const langCode = ttsService.getLanguageByButton(message)
+      if (langCode) {
+        draft.lang = langCode
+        await saveInfo('cpTtsDraft', draft)
+        const voiceBtns = ttsService.getVoiceButtons(langCode).map(v => [v])
+        return send(chatId, `🎙️ Choose a voice:`, k.of(voiceBtns))
+      }
+      const langBtns = ttsService.getLanguageButtons()
+      const langRows = []
+      for (let i = 0; i < langBtns.length; i += 2) langRows.push(langBtns.slice(i, i + 2))
+      return send(chatId, `🌐 Select the language for your greeting:`, k.of(langRows))
+    }
     const vmButtons = [pc.vmCustomGreeting, pc.vmDefaultGreeting, pc.enableVoicemail, pc.disableVoicemail]
     if (vmButtons.includes(message)) return send(chatId, `📝 Type the greeting text:`, k.of([]))
     draft.text = message
+    draft.lang = null
+    draft.voice = null
     await saveInfo('cpTtsDraft', draft)
-    const voiceBtns = ttsService.getVoiceButtons().map(v => [v])
-    return send(chatId, `🎙️ Choose a voice:\n\n<i>"${message.length > 80 ? message.slice(0, 80) + '...' : message}"</i>`, k.of(voiceBtns))
+    const langBtns = ttsService.getLanguageButtons()
+    const langRows = []
+    for (let i = 0; i < langBtns.length; i += 2) langRows.push(langBtns.slice(i, i + 2))
+    return send(chatId, `🌐 Select the language for your greeting:\n\n<i>"${message.length > 80 ? message.slice(0, 80) + '...' : message}"</i>`, k.of(langRows))
   }
 
   // ━━━ VM GREETING: Preview & Save ━━━
