@@ -6057,6 +6057,12 @@ bot?.on('message', async msg => {
         [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
       ]))
     }
+    if (message === t.cancel) return goto.submenu5()
+    // Reject IVR button text as greeting
+    const ivrButtons = [pc.ivrGreeting, pc.ivrAddOption, pc.ivrRemoveOption, pc.ivrViewOptions, pc.ivrAnalytics, pc.disableIvr, pc.enableIvr]
+    if (ivrButtons.includes(message)) {
+      return send(chatId, phoneConfig.txt.ivrSetGreeting, k.of([]))
+    }
     const ivrConf = num.features?.ivr || { enabled: true, options: {} }
     ivrConf.greeting = message
     await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'ivr', ivrConf)
