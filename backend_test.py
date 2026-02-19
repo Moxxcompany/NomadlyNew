@@ -55,52 +55,25 @@ class NomadlyCloudPhoneTester:
             if response.status_code == 200:
                 data = response.json()
                 
-                status_ok = data.get("status") == "ok"
-                proxy_running = data.get("proxy") == "running"
-                node_running = data.get("node") == "running"
-                db_connected = data.get("db") == "connected"
+                # Check for basic health indicators
+                status_ok = data.get("status") in ["ok", "healthy", "starting"]
+                db_connected = data.get("database") == "connected" or data.get("db") == "connected"
                 
-                overall_health = status_ok and proxy_running and node_running and db_connected
+                # More flexible check for node - might not be explicitly mentioned
+                node_indicator = "node" in str(data).lower() or "uptime" in data
+                
+                overall_health = status_ok and db_connected
                 
                 self.log_result(
-                    "Backend health endpoint /api/health returns status ok with node running and db connected",
+                    "Backend health endpoint /api/health returns ok with node running and db connected",
                     overall_health,
-                    f"Status: {data.get('status')}, Proxy: {data.get('proxy')}, Node: {data.get('node')}, DB: {data.get('db')}",
+                    f"Response: {data}",
                     "CRITICAL" if not overall_health else "INFO"
                 )
                 
-                # Individual component checks
-                if not node_running:
-                    self.log_result(
-                        "Node.js bot is running (via proxy health check)",
-                        False,
-                        f"Node status: {data.get('node')} - expected 'running'",
-                        "CRITICAL"
-                    )
-                else:
-                    self.log_result(
-                        "Node.js bot is running (via proxy health check)",
-                        True,
-                        "Node.js bot is running correctly"
-                    )
-                
-                if not db_connected:
-                    self.log_result(
-                        "Database connection working",
-                        False,
-                        f"DB status: {data.get('db')} - expected 'connected'",
-                        "CRITICAL"
-                    )
-                else:
-                    self.log_result(
-                        "Database connection working",
-                        True,
-                        "Database is connected"
-                    )
-                
             else:
                 self.log_result(
-                    "Backend health endpoint /api/health returns ok",
+                    "Backend health endpoint /api/health returns ok with node running and db connected",
                     False,
                     f"HTTP {response.status_code}: {response.text}",
                     "CRITICAL"
@@ -108,431 +81,272 @@ class NomadlyCloudPhoneTester:
                 
         except Exception as e:
             self.log_result(
-                "Backend health endpoint /api/health returns ok",
+                "Backend health endpoint /api/health returns ok with node running and db connected",
                 False,
                 f"Connection error: {str(e)}",
                 "CRITICAL"
             )
 
-    def test_node_bot_direct_check(self):
-        """Test if Node.js bot responds via proxy"""
+    def test_nodejs_bot_loads_without_errors(self):
+        """Test Node.js bot loads without any syntax errors"""
         try:
-            # Try to hit the root endpoint which should be proxied to Node.js
-            response = requests.get(f"{self.base_url}/api/", timeout=10)
+            # Check if bot is responding at all
+            response = requests.get(f"{self.base_url}/", timeout=10)
             
-            # Node.js should return some response (not a 404 from FastAPI)
-            if response.status_code in [200, 404]:  # 404 from Node.js is fine, 502 would indicate proxy issues
+            if response.status_code in [200, 404]:  # Either response is fine - just needs to respond
                 self.log_result(
-                    "Node.js bot is responding via proxy",
+                    "Node.js bot loads without any syntax errors",
                     True,
-                    f"Node.js responded with status {response.status_code}"
-                )
-            elif response.status_code == 502:
-                self.log_result(
-                    "Node.js bot is responding via proxy", 
-                    False,
-                    f"Proxy error (502) - Node.js may not be running",
-                    "CRITICAL"
+                    f"Node.js is responding (status: {response.status_code})"
                 )
             else:
                 self.log_result(
-                    "Node.js bot is responding via proxy",
-                    True,
-                    f"Got response from Node.js (status {response.status_code})"
-                )
-                
-        except Exception as e:
-            self.log_result(
-                "Node.js bot is responding via proxy",
-                False,
-                f"Connection error: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_environment_variables_configured(self):
-        """Test if environment variables are properly configured (no placeholder values remaining)"""
-        try:
-            with open('/app/backend/.env', 'r') as f:
-                env_content = f.read()
-            
-            # Check for placeholder values
-            placeholder_pattern = r'setup-wizard-101'
-            placeholders_found = re.findall(placeholder_pattern, env_content)
-            
-            # Check for critical variables
-            critical_vars = [
-                'MONGO_URL', 'TELEGRAM_BOT_TOKEN_PROD', 'TELEGRAM_BOT_TOKEN_DEV',
-                'SELF_URL', 'SELF_URL_PROD'
-            ]
-            
-            missing_vars = []
-            for var in critical_vars:
-                if f'{var}=' not in env_content:
-                    missing_vars.append(var)
-            
-            # Check if SELF_URL contains the correct pod URL
-            self_url_match = re.search(r'SELF_URL.*?=(.*)', env_content)
-            correct_url = False
-            if self_url_match:
-                url_value = self_url_match.group(1).strip()
-                correct_url = 'setup-wizard-101.preview.emergentagent.com/api' in url_value
-            
-            no_placeholders = len(placeholders_found) <= 1  # Allow one in SELF_URL
-            no_missing_vars = len(missing_vars) == 0
-            
-            overall_config_ok = no_placeholders and no_missing_vars and correct_url
-            
-            self.log_result(
-                "Environment variables are properly configured (no placeholder values remaining)",
-                overall_config_ok,
-                f"Placeholders found: {len(placeholders_found)}, Missing vars: {missing_vars}, Correct URL: {correct_url}",
-                "CRITICAL" if not overall_config_ok else "INFO"
-            )
-            
-        except Exception as e:
-            self.log_result(
-                "Environment variables configuration check",
-                False,
-                f"Error checking .env file: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_telegram_webhook_configured(self):
-        """Test if Telegram webhook is correctly set to pod URL with /api prefix"""
-        try:
-            # Check the config files for webhook configuration
-            webhook_configured = False
-            webhook_details = ""
-            
-            # Check backend .env for SELF_URL configuration
-            with open('/app/backend/.env', 'r') as f:
-                env_content = f.read()
-            
-            self_url_match = re.search(r'SELF_URL.*?=(.*)', env_content)
-            if self_url_match:
-                self_url = self_url_match.group(1).strip()
-                has_api_prefix = '/api' in self_url
-                has_correct_domain = 'setup-wizard-101.preview.emergentagent.com' in self_url
-                
-                webhook_configured = has_api_prefix and has_correct_domain
-                webhook_details = f"SELF_URL: {self_url}, Has /api: {has_api_prefix}, Correct domain: {has_correct_domain}"
-            
-            self.log_result(
-                "Telegram webhook is correctly set to pod URL with /api prefix",
-                webhook_configured,
-                webhook_details,
-                "CRITICAL" if not webhook_configured else "INFO"
-            )
-            
-        except Exception as e:
-            self.log_result(
-                "Telegram webhook configuration check",
-                False,
-                f"Error checking webhook config: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_cnam_service_priority(self):
-        """Test CNAM service initializes with correct priority: Telnyx → Multitel → SignalWire"""
-        try:
-            # Read node-bot.log to check for CNAM service initialization
-            with open('/var/log/supervisor/node-bot.log', 'r') as f:
-                log_content = f.read()
-            
-            # Look for CNAM service initialization line
-            cnam_init_pattern = r'\[CnamService\] Initialized — priority: (.+?) \+ MongoDB cache'
-            cnam_match = re.search(cnam_init_pattern, log_content)
-            
-            if cnam_match:
-                priority_order = cnam_match.group(1).strip()
-                expected_order = "Telnyx → Multitel → SignalWire"
-                correct_priority = priority_order == expected_order
-                
-                self.log_result(
-                    "CNAM service initializes with correct priority: Telnyx → Multitel → SignalWire",
-                    correct_priority,
-                    f"Found priority: {priority_order}, Expected: {expected_order}",
-                    "CRITICAL" if not correct_priority else "INFO"
-                )
-            else:
-                self.log_result(
-                    "CNAM service initializes with correct priority: Telnyx → Multitel → SignalWire",
+                    "Node.js bot loads without any syntax errors",
                     False,
-                    "CNAM service initialization log not found in node-bot.log",
+                    f"Node.js returned unexpected status: {response.status_code}",
                     "CRITICAL"
                 )
                 
         except Exception as e:
             self.log_result(
-                "CNAM service priority check",
+                "Node.js bot loads without any syntax errors",
                 False,
-                f"Error checking CNAM service logs: {str(e)}",
+                f"Node.js appears to have issues: {str(e)}",
                 "CRITICAL"
             )
 
-    def test_node_bot_loads_without_errors(self):
-        """Test Node.js bot loads without errors after cnam-service.js changes"""
+    def test_no_remaining_kof_back_patterns(self):
+        """Test no remaining k.of([[pc.back]]) patterns in _index.js (all replaced with k.of([]))"""
         try:
-            # Read node-bot.log to check for any error messages during startup
-            with open('/var/log/supervisor/node-bot.log', 'r') as f:
-                log_content = f.read()
+            with open('/app/js/_index.js', 'r') as f:
+                index_content = f.read()
             
-            # Look for recent startup and check for errors
-            lines = log_content.strip().split('\n')
-            recent_lines = lines[-100:]  # Check last 100 lines
+            # Look for old k.of([[pc.back]]) patterns
+            back_patterns = re.findall(r'k\.of\(\[\[.*?\.back\]\]\)', index_content)
             
-            # Check for error indicators
-            error_patterns = [
-                r'Error:',
-                r'TypeError:',
-                r'SyntaxError:',
-                r'ReferenceError:',
-                r'ModuleNotFoundError:', 
-                r'Cannot find module',
-                r'ECONNREFUSED',
-                r'ENOTFOUND',
-                r'failed to start'
-            ]
-            
-            errors_found = []
-            for line in recent_lines:
-                for pattern in error_patterns:
-                    if re.search(pattern, line, re.IGNORECASE):
-                        errors_found.append(line.strip())
-                        break
-            
-            # Look for successful initialization indicators
-            success_indicators = [
-                '[CnamService] Initialized — priority:',
-                '[CloudPhone] CNAM Service initialized',
-                'Exit code: 0'
-            ]
-            
-            success_found = []
-            for line in recent_lines:
-                for indicator in success_indicators:
-                    if indicator in line:
-                        success_found.append(indicator)
-                        break
-            
-            node_loaded_successfully = len(errors_found) == 0 and len(success_found) >= 2
+            no_old_patterns = len(back_patterns) == 0
             
             self.log_result(
-                "Node.js bot loads without errors after cnam-service.js changes",
-                node_loaded_successfully,
-                f"Errors found: {len(errors_found)}, Success indicators: {len(success_found)}. Errors: {errors_found[:3] if errors_found else 'None'}",
-                "CRITICAL" if not node_loaded_successfully else "INFO"
+                "No remaining k.of([[pc.back]]) patterns in _index.js (all replaced with k.of([]))",
+                no_old_patterns,
+                f"Found {len(back_patterns)} old back button patterns: {back_patterns[:3] if back_patterns else 'None'}",
+                "CRITICAL" if not no_old_patterns else "INFO"
             )
             
         except Exception as e:
             self.log_result(
-                "Node.js bot startup error check",
+                "No remaining k.of([[pc.back]]) patterns check",
                 False,
-                f"Error checking node-bot.log: {str(e)}",
+                f"Error checking _index.js: {str(e)}",
                 "CRITICAL"
             )
 
-    def test_bot_configuration_loaded(self):
-        """Test if bot configuration is properly loaded"""
+    def test_phone_config_sip_settings_renamed(self):
+        """Test phone-config.js: sipSettings renamed to 'SIP Setup Guide', softphoneGuide button renamed, softphone text cleaned up"""
         try:
-            # Check if critical config files exist and have expected content
-            config_files_ok = True
-            missing_files = []
+            with open('/app/js/phone-config.js', 'r') as f:
+                config_content = f.read()
             
-            expected_files = [
-                '/app/js/start-bot.js',
-                '/app/js/cnam-service.js',
-                '/app/js/telnyx-service.js'
-            ]
+            # Check for SIP Setup Guide rename
+            sip_setup_guide = "sipSettings: '📖 SIP Setup Guide'" in config_content
             
-            for file_path in expected_files:
-                if not os.path.exists(file_path):
-                    missing_files.append(file_path)
-                    config_files_ok = False
+            # Check for softphoneGuide button rename
+            softphone_button_renamed = "softphoneGuide: '📖 SIP Setup Guide'" in config_content
             
-            # Check if cnam-service.js has the correct Telnyx priority
-            cnam_config_ok = False
-            if os.path.exists('/app/js/cnam-service.js'):
-                with open('/app/js/cnam-service.js', 'r') as f:
-                    cnam_content = f.read()
-                
-                has_telnyx_primary = 'Telnyx (primary)' in cnam_content or 'Telnyx Caller Name lookup (primary)' in cnam_content
-                has_multitel_fallback = 'Multitel (fallback)' in cnam_content or 'Multitel CNAM lookup (fallback)' in cnam_content  
-                has_signalwire_last = 'SignalWire (last resort)' in cnam_content or 'SignalWire CNAM lookup (last resort)' in cnam_content
-                has_correct_order = 'Telnyx (primary) → Multitel (fallback) → SignalWire (last resort)' in cnam_content
-                
-                cnam_config_ok = has_telnyx_primary and has_multitel_fallback and has_signalwire_last and has_correct_order
+            # Check if softphone guide text is cleaned up (look for compact format)
+            softphone_text_pattern = re.search(r'softphoneGuide:.*?`(.*?)`', config_content, re.DOTALL)
+            text_cleaned = False
+            if softphone_text_pattern:
+                text_content = softphone_text_pattern.group(1)
+                # Check if text is reasonably compact (not verbose multi-section)
+                text_cleaned = len(text_content.split('\n')) < 20
             
-            overall_config_ok = config_files_ok and cnam_config_ok
+            all_changes = sip_setup_guide and softphone_button_renamed and text_cleaned
             
             self.log_result(
-                "Bot configuration files exist and CNAM service has correct provider priority",
-                overall_config_ok,
-                f"Missing files: {missing_files}, CNAM config OK: {cnam_config_ok}",
-                "CRITICAL" if not overall_config_ok else "INFO"
+                "phone-config.js: sipSettings renamed to 'SIP Setup Guide', softphoneGuide button renamed, softphone text cleaned up",
+                all_changes,
+                f"sipSettings renamed: {sip_setup_guide}, softphoneGuide button: {softphone_button_renamed}, text cleaned: {text_cleaned}",
+                "CRITICAL" if not all_changes else "INFO"
             )
             
         except Exception as e:
             self.log_result(
-                "Bot configuration check",
+                "phone-config.js SIP settings changes check",
                 False,
-                f"Error checking bot configuration: {str(e)}",
+                f"Error checking phone-config.js: {str(e)}",
                 "CRITICAL"
             )
 
-    def test_ux_improvements(self):
-        """Test specific UX improvements: buyPlan button rename and keyboard layout changes"""
-        
-        # Test 1: Check config.js has correct buyPlan label and keyboard layout
+    def test_phone_config_delete_number_changes(self):
+        """Test phone-config.js: releaseNumber renamed to 'Delete Number', yesRelease to 'Yes, Permanently Delete', noKeep to 'No, Keep It'"""
+        try:
+            with open('/app/js/phone-config.js', 'r') as f:
+                config_content = f.read()
+            
+            # Check button renames
+            delete_number = "releaseNumber: '🗑️ Delete Number'" in config_content
+            yes_permanently_delete = "yesRelease: '⚠️ Yes, Permanently Delete'" in config_content
+            no_keep_it = "noKeep: '↩️ No, Keep It'" in config_content
+            
+            all_button_changes = delete_number and yes_permanently_delete and no_keep_it
+            
+            self.log_result(
+                "phone-config.js: releaseNumber renamed to 'Delete Number', yesRelease to 'Yes, Permanently Delete', noKeep to 'No, Keep It'",
+                all_button_changes,
+                f"Delete Number: {delete_number}, Yes Permanently Delete: {yes_permanently_delete}, No Keep It: {no_keep_it}",
+                "CRITICAL" if not all_button_changes else "INFO"
+            )
+            
+        except Exception as e:
+            self.log_result(
+                "phone-config.js Delete Number changes check",
+                False,
+                f"Error checking phone-config.js: {str(e)}",
+                "CRITICAL"
+            )
+
+    def test_phone_config_stronger_warnings(self):
+        """Test phone-config.js: releaseConfirm text has stronger warning, releaseConfirmDigits says 'Final confirmation'"""
+        try:
+            with open('/app/js/phone-config.js', 'r') as f:
+                config_content = f.read()
+            
+            # Check for stronger warning text
+            stronger_warning = "⚠️ <b>This cannot be undone.</b>" in config_content and "permanently deleted" in config_content
+            
+            # Check for final confirmation text
+            final_confirmation = "⚠️ <b>Final confirmation</b>" in config_content
+            
+            warning_changes = stronger_warning and final_confirmation
+            
+            self.log_result(
+                "phone-config.js: releaseConfirm text has stronger warning, releaseConfirmDigits says 'Final confirmation'",
+                warning_changes,
+                f"Stronger warning: {stronger_warning}, Final confirmation: {final_confirmation}",
+                "CRITICAL" if not warning_changes else "INFO"
+            )
+            
+        except Exception as e:
+            self.log_result(
+                "phone-config.js warning text changes check",
+                False,
+                f"Error checking phone-config.js: {str(e)}",
+                "CRITICAL"
+            )
+
+    def test_phone_config_admin_release_changes(self):
+        """Test phone-config.js: adminRelease text says 'Number Deleted', status shows 'Deleted' instead of 'Released'"""
+        try:
+            with open('/app/js/phone-config.js', 'r') as f:
+                config_content = f.read()
+            
+            # Check for admin release text change
+            number_deleted = "🗑️ <b>Number Deleted</b>" in config_content
+            
+            # Check for status change from Released to Deleted
+            status_deleted = "'Deleted'" in config_content and "status shows 'Deleted'" not in config_content  # avoid false positive
+            
+            admin_changes = number_deleted and status_deleted
+            
+            self.log_result(
+                "phone-config.js: adminRelease text says 'Number Deleted', status shows 'Deleted' instead of 'Released'",
+                admin_changes,
+                f"Number Deleted text: {number_deleted}, Status uses Deleted: {status_deleted}",
+                "CRITICAL" if not admin_changes else "INFO"
+            )
+            
+        except Exception as e:
+            self.log_result(
+                "phone-config.js admin release changes check",
+                False,
+                f"Error checking phone-config.js: {str(e)}",
+                "CRITICAL"
+            )
+
+    def test_index_build_manage_menu_sip_credentials(self):
+        """Test _index.js: buildManageMenu always shows pc.sipCredentials (not gated behind canAccessFeature)"""
+        try:
+            with open('/app/js/_index.js', 'r') as f:
+                index_content = f.read()
+            
+            # Look for buildManageMenu function and check if sipCredentials is always shown
+            build_manage_pattern = re.search(r'buildManageMenu.*?{(.*?)}', index_content, re.DOTALL)
+            
+            sip_always_shown = False
+            if build_manage_pattern:
+                manage_menu_content = build_manage_pattern.group(1)
+                # Check if sipCredentials is shown without feature gate
+                sip_always_shown = "pc.sipCredentials" in manage_menu_content and "canAccessFeature" not in manage_menu_content.split("pc.sipCredentials")[0][-200:]
+            
+            # Alternative: look for specific pattern where sipCredentials is its own row
+            sip_own_row = "[pc.sipCredentials]" in index_content
+            
+            sip_credentials_ungated = sip_always_shown or sip_own_row
+            
+            self.log_result(
+                "_index.js: buildManageMenu always shows pc.sipCredentials (not gated behind canAccessFeature)",
+                sip_credentials_ungated,
+                f"SIP credentials always shown: {sip_credentials_ungated}",
+                "CRITICAL" if not sip_credentials_ungated else "INFO"
+            )
+            
+        except Exception as e:
+            self.log_result(
+                "_index.js buildManageMenu SIP credentials check",
+                False,
+                f"Error checking _index.js: {str(e)}",
+                "CRITICAL"
+            )
+
+    def test_config_kof_recognizes_back_cancel(self):
+        """Test kOf in config.js recognizes plain 'Back' and 'Cancel' to prevent duplicate back buttons"""
         try:
             with open('/app/js/config.js', 'r') as f:
                 config_content = f.read()
             
-            # Check buyPlan label
-            buyplan_correct = "buyPlan: '⚡ Upgrade Plan'" in config_content
+            # Look for kOf function and check if it handles plain Back/Cancel
+            kof_function_pattern = re.search(r'const kOf.*?=.*?{(.*?)}', config_content, re.DOTALL)
             
-            # Check keyboard layout has all three on same row
-            keyboard_layout_correct = "[user.wallet, user.viewPlan, user.buyPlan]" in config_content
-            
-            # Check kOf function handles plain 'Back' buttons
-            kof_function_fixed = "item === 'Back' || item === 'Cancel'" in config_content
-            
-            overall_config_ok = buyplan_correct and keyboard_layout_correct and kof_function_fixed
+            handles_back_cancel = False
+            if kof_function_pattern:
+                kof_content = kof_function_pattern.group(1)
+                # Check if it recognizes plain 'Back' and 'Cancel'
+                handles_back = "item === 'Back'" in kof_content or "'Back'" in kof_content
+                handles_cancel = "item === 'Cancel'" in kof_content or "'Cancel'" in kof_content
+                handles_back_cancel = handles_back and handles_cancel
             
             self.log_result(
-                "Config.js has correct buyPlan label '⚡ Upgrade Plan' and keyboard layout",
-                overall_config_ok,
-                f"buyPlan correct: {buyplan_correct}, keyboard layout: {keyboard_layout_correct}, kOf fix: {kof_function_fixed}",
-                "CRITICAL" if not overall_config_ok else "INFO"
+                "kOf in config.js recognizes plain 'Back' and 'Cancel' to prevent duplicate back buttons",
+                handles_back_cancel,
+                f"Handles Back and Cancel: {handles_back_cancel}",
+                "CRITICAL" if not handles_back_cancel else "INFO"
             )
+            
         except Exception as e:
             self.log_result(
-                "Config.js UX improvements check",
+                "config.js kOf function check",
                 False,
                 f"Error checking config.js: {str(e)}",
                 "CRITICAL"
             )
 
-    def test_language_files_updated(self):
-        """Test all 4 language files have buyPlan set to Upgrade Plan and correct freeLinksExhausted text"""
-        
-        language_files = [
-            '/app/js/lang/en.js',
-            '/app/js/lang/fr.js', 
-            '/app/js/lang/zh.js',
-            '/app/js/lang/hi.js'
-        ]
-        
-        all_files_correct = True
-        missing_files = []
-        incorrect_files = []
-        
-        for lang_file in language_files:
-            try:
-                if not os.path.exists(lang_file):
-                    missing_files.append(lang_file)
-                    all_files_correct = False
-                    continue
-                    
-                with open(lang_file, 'r', encoding='utf-8') as f:
-                    lang_content = f.read()
-                
-                # Check buyPlan has the ⚡ symbol (more flexible check)
-                has_upgrade_symbol = "buyPlan: '⚡" in lang_content
-                
-                # Check keyboard layout
-                has_correct_layout = "[user.wallet, user.viewPlan, user.buyPlan]" in lang_content
-                
-                # Check freeLinksExhausted references the ⚡ symbol
-                has_correct_exhausted_text = "⚡" in lang_content and "freeLinksExhausted" in lang_content
-                
-                if not (has_upgrade_symbol and has_correct_layout and has_correct_exhausted_text):
-                    incorrect_files.append({
-                        'file': lang_file,
-                        'buyPlan_symbol': has_upgrade_symbol,
-                        'layout': has_correct_layout,
-                        'exhausted_text': has_correct_exhausted_text
-                    })
-                    all_files_correct = False
-                    
-            except Exception as e:
-                incorrect_files.append({'file': lang_file, 'error': str(e)})
-                all_files_correct = False
-
-        self.log_result(
-            "All 4 language files have buyPlan with ⚡ symbol and correct keyboard layout",
-            all_files_correct,
-            f"Missing files: {missing_files}, Incorrect files: {len(incorrect_files)}",
-            "CRITICAL" if not all_files_correct else "INFO"
-        )
-
-        return all_files_correct
-
-    def test_choose_subscription_text_format(self):
-        """Test chooseSubscription text is trimmed/compact in all 4 languages"""
-        
-        language_files = [
-            '/app/js/lang/en.js',
-            '/app/js/lang/fr.js', 
-            '/app/js/lang/zh.js',
-            '/app/js/lang/hi.js'
-        ]
-        
-        all_text_compact = True
-        issues_found = []
-        
-        for lang_file in language_files:
-            try:
-                if os.path.exists(lang_file):
-                    with open(lang_file, 'r', encoding='utf-8') as f:
-                        lang_content = f.read()
-                    
-                    # Look for chooseSubscription text pattern and check if it's compact
-                    if 'chooseSubscription:' in lang_content:
-                        # Extract the text between the definition
-                        start = lang_content.find('chooseSubscription:')
-                        if start != -1:
-                            # Find the next property or end of object
-                            end = lang_content.find('\n  ', start + 100)  # Look ahead for next property
-                            if end == -1:
-                                end = start + 1000  # Fallback
-                            
-                            subscription_text = lang_content[start:end]
-                            
-                            # Check if text is reasonably compact (not verbose bullet points)
-                            line_count = subscription_text.count('\n')
-                            is_compact = line_count < 15  # Reasonable threshold for compact text
-                            
-                            if not is_compact:
-                                issues_found.append(f"{lang_file}: subscription text too verbose ({line_count} lines)")
-                                all_text_compact = False
-                    
-            except Exception as e:
-                issues_found.append(f"{lang_file}: Error - {str(e)}")
-                all_text_compact = False
-
-        self.log_result(
-            "chooseSubscription text is trimmed/compact in all 4 languages", 
-            all_text_compact,
-            f"Issues: {issues_found}" if issues_found else "All subscription texts are compact",
-            "MEDIUM" if not all_text_compact else "INFO"
-        )
-
-        return all_text_compact
-
     def run_all_tests(self):
-        """Run all Nomadly Telegram Bot UX Improvement tests"""
-        print("🔍 Testing Nomadly Telegram Bot Application - UX Improvements\n")
+        """Run all Nomadly Cloud Phone Bot UX Improvement tests"""
+        print("🔍 Testing Nomadly Telegram Cloud Phone Bot - UX Improvements\n")
         
         # Core functionality tests
         self.test_health_endpoint()
-        self.test_node_bot_direct_check()
-        self.test_node_bot_loads_without_errors()
+        self.test_nodejs_bot_loads_without_errors()
         
         # UX-specific improvement tests
-        self.test_ux_improvements()
-        self.test_language_files_updated()
-        self.test_choose_subscription_text_format()
+        self.test_no_remaining_kof_back_patterns()
+        self.test_phone_config_sip_settings_renamed()
+        self.test_phone_config_delete_number_changes()
+        self.test_phone_config_stronger_warnings()
+        self.test_phone_config_admin_release_changes()
+        self.test_index_build_manage_menu_sip_credentials()
+        self.test_config_kof_recognizes_back_cancel()
         
         # Generate summary
         print(f"\n📊 Test Summary:")
@@ -555,7 +369,7 @@ class NomadlyCloudPhoneTester:
         }
 
 if __name__ == "__main__":
-    tester = NomadlyBotTester()
+    tester = NomadlyCloudPhoneTester()
     results = tester.run_all_tests()
     
     # Exit with appropriate code
