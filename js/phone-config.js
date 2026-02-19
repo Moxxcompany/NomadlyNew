@@ -334,20 +334,26 @@ Select an option:`,
     return text
   },
 
-  selectPlan: (number) => `✅ Selected: <b>${formatPhone(number)}</b>
-
-📋 Choose your plan:
-
-<b>💡 Starter — $${PHONE_STARTER_PRICE}/mo</b>
-${plans.starter.minutes} min · ${plans.starter.sms} SMS · ${plans.starter.features.join(' · ')}
-
-<b>⭐ Pro — $${PHONE_PRO_PRICE}/mo</b>
-${plans.pro.minutes} min · ${plans.pro.sms} SMS · ${plans.pro.features.join(' · ')}
-
-<b>👑 Business — $${PHONE_BUSINESS_PRICE}/mo</b>
-${plans.business.minutes} min · ${plans.business.sms} SMS · ${plans.business.features.join(' · ')}
-
-<i>Forwarding: $${CALL_FORWARDING_RATE_MIN}/min · Overage: $${OVERAGE_RATE_MIN}/min + $${OVERAGE_RATE_SMS}/SMS from wallet</i>`,
+  selectPlan: (number) => {
+    let text = `✅ Selected: <b>${formatPhone(number)}</b>\n\n📋 Choose your plan:\n\n`
+    if (PHONE_STARTER_ON) {
+      text += `<b>💡 Starter — $${PHONE_STARTER_PRICE}/mo</b>\n${plans.starter.minutes} min · ${plans.starter.sms} SMS · ${plans.starter.features.join(' · ')}\n\n`
+    } else {
+      text += `<b>💡 Starter — Coming Soon 🔜</b>\n<i>Stay tuned for exciting features!</i>\n\n`
+    }
+    if (PHONE_PRO_ON) {
+      text += `<b>⭐ Pro — $${PHONE_PRO_PRICE}/mo</b>\n${plans.pro.minutes} min · ${plans.pro.sms} SMS · ${plans.pro.features.join(' · ')}\n\n`
+    } else {
+      text += `<b>⭐ Pro — Coming Soon 🔜</b>\n<i>Stay tuned for exciting features!</i>\n\n`
+    }
+    if (PHONE_BUSINESS_ON) {
+      text += `<b>👑 Business — $${PHONE_BUSINESS_PRICE}/mo</b>\n${plans.business.minutes} min · ${plans.business.sms} SMS · ${plans.business.features.join(' · ')}\n\n`
+    } else {
+      text += `<b>👑 Business — Coming Soon 🔜</b>\n<i>Stay tuned for exciting features!</i>\n\n`
+    }
+    text += `<i>Forwarding: $${CALL_FORWARDING_RATE_MIN}/min · Overage: $${OVERAGE_RATE_MIN}/min + $${OVERAGE_RATE_SMS}/SMS from wallet</i>`
+    return text
+  },
 
   orderSummary: (number, country, plan, price) => `📋 <b>Order Summary</b>
 
