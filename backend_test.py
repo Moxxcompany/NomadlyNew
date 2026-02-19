@@ -382,11 +382,13 @@ class NomadlyBotTester:
 
     def run_all_tests(self):
         """Run all Nomadly Telegram Bot tests"""
-        print("🔍 Testing Nomadly Telegram Bot Application\n")
+        print("🔍 Testing Nomadly Telegram Bot Application - CNAM Service Priority Changes\n")
         
         # Core functionality tests
         self.test_health_endpoint()
         self.test_node_bot_direct_check()
+        self.test_cnam_service_priority()  # New test for CNAM priority
+        self.test_node_bot_loads_without_errors()  # New test for error-free loading
         self.test_environment_variables_configured() 
         self.test_telegram_webhook_configured()
         self.test_bot_configuration_loaded()
