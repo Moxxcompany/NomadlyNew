@@ -76,7 +76,7 @@ const user = {
   joinChannel: '📢 Rejoindre le canal',
   phoneNumberLeads: '🎯 Leads Ciblés & Validation',
   hostingDomainsRedirect: '🌐 Hébergement Offshore',
-  cloudPhone: '📞☁️ Téléphone Cloud',
+  cloudPhone: '📞 CloudPhone ˢᵖᵉᵉᶜʰᶜᵘᵉ',
   wallet: '👛 Mon portefeuille',
   urlShortenerMain: `🔗✂️ Raccourcisseur d'URL - ${FREE_LINKS} Essais`,
   vpsPlans: 'Acheter un VPS Bulletproof🛡️ - Horaire/Mensuel',

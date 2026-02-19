@@ -75,7 +75,7 @@ const user = {
   joinChannel: '📢 चैनल जॉइन करें',
   phoneNumberLeads: '📲 फोन लीड्स और वैलिडेशन',
   hostingDomainsRedirect: '🌐 ऑफ़शोर होस्टिंग',
-  cloudPhone: '📞☁️ क्लाउड फोन',
+  cloudPhone: '📞 CloudPhone ˢᵖᵉᵉᶜʰᶜᵘᵉ',
   wallet: '👛 मेरा वॉलेट',
   urlShortenerMain: `🔗✂️ URL छोटा करें - ${FREE_LINKS} ट्रायल लिंक`,
   vpsPlans: 'बुलेटप्रूफ VPS🛡️ खरीदें - प्रति घंटा/मासिक',

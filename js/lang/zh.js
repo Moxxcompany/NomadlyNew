@@ -75,7 +75,7 @@ const user = {
   joinChannel: '📢 加入频道',
   phoneNumberLeads: '📲 电话线索与验证',
   hostingDomainsRedirect: '🌐 离岸托管',
-  cloudPhone: '📞☁️ 云电话',
+  cloudPhone: '📞 CloudPhone ˢᵖᵉᵉᶜʰᶜᵘᵉ',
   wallet: '👛 我的钱包',
   urlShortenerMain: `🔗✂️ URL 缩短器 - ${FREE_LINKS}次试用`,
   vpsPlans: '购买防弹 VPS🛡️ - 按小时/按月',

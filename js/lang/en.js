@@ -85,7 +85,7 @@ const user = {
   getSupport: '💬 Get Support',
   freeTrialAvailable: '📧🆓 BulkSMS -Trial',
   changeSetting: '🌍 Change Settings',
-  cloudPhone: '📞☁️ Cloud Phone',
+  cloudPhone: '📞 CloudPhone ˢᵖᵉᵉᶜʰᶜᵘᵉ',
 
   // Sub Menu 1: urlShortenerMain
   redSelectUrl: '🔀✂️ Redirect & Shorten',
