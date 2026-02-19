@@ -79,7 +79,7 @@ const user = {
   wallet: '👛 我的钱包',
   urlShortenerMain: `🔗✂️ URL 缩短器 - ${FREE_LINKS}次试用`,
   vpsPlans: '购买防弹 VPS🛡️ - 按小时/按月',
-  buyPlan: '🔔 订阅这里',
+  buyPlan: '⚡ 升级计划',
   domainNames: '🌐 Register Bulletproof Domain ¹⁰⁰⁰⁺ ᵀᴸᴰ',
   viewPlan: '📋 我的订阅',
   becomeReseller: '💼 成为代理商',
@@ -252,20 +252,30 @@ ${CHAT_BOT_NAME}`,
   askValidPayOption: '请选择一个有效的支付选项。',
   chooseSubscription:
     HIDE_SMS_APP === 'true'
-      ? `<b>通过我们的订阅计划提升您的品牌！</b>
+      ? `<b>选择您的计划</b>
 
-- <b>每日:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限Shortit链接。
-- <b>每周:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限Shortit链接。
-- <b>每月:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限Shortit链接。
+<b>每日</b> — $${PRICE_DAILY}
+${DAILY_PLAN_FREE_DOMAINS} 个域名 · ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次验证 · 无限链接
 
-(免费域名仅限 ".sbs" 和 ".xyz" 扩展名。)`
-      : `<b>通过我们的订阅计划提升您的品牌！</b>
+<b>每周</b> — $${PRICE_WEEKLY}
+${WEEKLY_PLAN_FREE_DOMAINS} 个域名 · ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次验证 · 无限链接
 
-- <b>每日:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限Shortit链接 + 无限BulkSMS。
-- <b>每周:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限Shortit链接 + 无限BulkSMS。
-- <b>每月:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} 个免费 ".sbs/.xyz" 域名 + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次免费USA电话验证 + 无限Shortit链接 + 无限BulkSMS。
+<b>每月</b> — $${PRICE_MONTHLY}
+${MONTHLY_PLAN_FREE_DOMAINS} 个域名 · ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次验证 · 无限链接
 
-(免费域名仅限 ".sbs" 和 ".xyz" 扩展名。)`,
+<i>所有计划包含免费 .sbs/.xyz 域名 + 无限URL缩短。</i>`
+      : `<b>选择您的计划</b>
+
+<b>每日</b> — $${PRICE_DAILY}
+${DAILY_PLAN_FREE_DOMAINS} 个域名 · ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次验证 · 无限链接 + BulkSMS
+
+<b>每周</b> — $${PRICE_WEEKLY}
+${WEEKLY_PLAN_FREE_DOMAINS} 个域名 · ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次验证 · 无限链接 + BulkSMS
+
+<b>每月</b> — $${PRICE_MONTHLY}
+${MONTHLY_PLAN_FREE_DOMAINS} 个域名 · ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} 次验证 · 无限链接 + BulkSMS
+
+<i>所有计划包含免费 .sbs/.xyz 域名 + 无限URL缩短。</i>`,
 
   askCoupon: usd => `价格是 $${usd}。您是否想使用优惠券代码？如果有，请立即输入。否则，您可以按“跳过”。`,
   planAskCoupon: `您是否想使用优惠券代码？如果有，请立即输入。否则，您可以按“跳过”。`,
@@ -717,8 +727,7 @@ const userKeyboard = {
       [user.cloudPhone],
       [user.phoneNumberLeads],
       HIDE_SMS_APP === 'true' ? [user.domainNames] : [user.freeTrialAvailable, user.domainNames],
-      [user.wallet, user.viewPlan],
-      [user.buyPlan],
+      [user.wallet, user.viewPlan, user.buyPlan],
       HIDE_BECOME_RESELLER === 'true'
         ? [user.changeSetting, user.getSupport, user.joinChannel]
         : [user.changeSetting, user.becomeReseller, user.getSupport],

@@ -79,7 +79,7 @@ const user = {
   wallet: '👛 मेरा वॉलेट',
   urlShortenerMain: `🔗✂️ URL छोटा करें - ${FREE_LINKS} ट्रायल लिंक`,
   vpsPlans: 'बुलेटप्रूफ VPS🛡️ खरीदें - प्रति घंटा/मासिक',
-  buyPlan: '🔔 यहां सब्सक्राइब करें',
+  buyPlan: '⚡ प्लान अपग्रेड करें',
   domainNames: '🌐 Register Bulletproof Domain ¹⁰⁰⁰⁺ ᵀᴸᴰ',
   viewPlan: '📋 मेरी सदस्यताएं',
   becomeReseller: '💼 पुनर्विक्रेता बनें',
@@ -256,20 +256,30 @@ ${CHAT_BOT_NAME}`,
   askValidPayOption: 'कृपया एक मान्य भुगतान विकल्प चुनें।',
   chooseSubscription:
     HIDE_SMS_APP === 'true'
-      ? `<b>हमारी सब्सक्रिप्शन योजनाओं के साथ अपनी ब्रांड को बढ़ावा दें!</b>
+      ? `<b>अपना प्लान चुनें</b>
 
-- <b>दैनिक:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन + असीमित Shortit लिंक।
-- <b>साप्ताहिक:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन + असीमित Shortit लिंक।
-- <b>मासिक:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन + असीमित Shortit लिंक।
+<b>दैनिक</b> — $${PRICE_DAILY}
+${DAILY_PLAN_FREE_DOMAINS} डोमेन · ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} वैलिडेशन · असीमित लिंक
 
-(मुफ्त डोमेन ".sbs" और ".xyz" एक्सटेंशन के लिए।)`
-      : `<b>हमारी सब्सक्रिप्शन योजनाओं के साथ अपनी ब्रांड को बढ़ावा दें!</b>
+<b>साप्ताहिक</b> — $${PRICE_WEEKLY}
+${WEEKLY_PLAN_FREE_DOMAINS} डोमेन · ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} वैलिडेशन · असीमित लिंक
 
-- <b>दैनिक:</b> $${PRICE_DAILY} — ${DAILY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन + असीमित Shortit लिंक + असीमित BulkSMS।
-- <b>साप्ताहिक:</b> $${PRICE_WEEKLY} — ${WEEKLY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन + असीमित Shortit लिंक + असीमित BulkSMS।
-- <b>मासिक:</b> $${PRICE_MONTHLY} — ${MONTHLY_PLAN_FREE_DOMAINS} मुफ्त ".sbs/.xyz" डोमेन + ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} मुफ्त USA फोन वैलिडेशन + असीमित Shortit लिंक + असीमित BulkSMS।
+<b>मासिक</b> — $${PRICE_MONTHLY}
+${MONTHLY_PLAN_FREE_DOMAINS} डोमेन · ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} वैलिडेशन · असीमित लिंक
 
-(मुफ्त डोमेन ".sbs" और ".xyz" एक्सटेंशन के लिए।)`,
+<i>सभी प्लान में मुफ्त .sbs/.xyz डोमेन + असीमित URL शॉर्टनिंग शामिल है।</i>`
+      : `<b>अपना प्लान चुनें</b>
+
+<b>दैनिक</b> — $${PRICE_DAILY}
+${DAILY_PLAN_FREE_DOMAINS} डोमेन · ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()} वैलिडेशन · असीमित लिंक + BulkSMS
+
+<b>साप्ताहिक</b> — $${PRICE_WEEKLY}
+${WEEKLY_PLAN_FREE_DOMAINS} डोमेन · ${WEEKLY_PLAN_FREE_VALIDATIONS.toLocaleString()} वैलिडेशन · असीमित लिंक + BulkSMS
+
+<b>मासिक</b> — $${PRICE_MONTHLY}
+${MONTHLY_PLAN_FREE_DOMAINS} डोमेन · ${MONTHLY_PLAN_FREE_VALIDATIONS.toLocaleString()} वैलिडेशन · असीमित लिंक + BulkSMS
+
+<i>सभी प्लान में मुफ्त .sbs/.xyz डोमेन + असीमित URL शॉर्टनिंग शामिल है।</i>`,
 
   askCoupon: usd =>
     `मूल्य $${usd} है। क्या आप कूपन कोड लगाना चाहेंगे? यदि आपके पास है, तो कृपया इसे अभी दर्ज करें। अन्यथा, "स्किप" पर क्लिक करें।`,
@@ -727,8 +737,7 @@ const userKeyboard = {
       [user.cloudPhone],
       [user.phoneNumberLeads],
       HIDE_SMS_APP === 'true' ? [user.domainNames] : [user.freeTrialAvailable, user.domainNames],
-      [user.wallet, user.viewPlan],
-      [user.buyPlan],
+      [user.wallet, user.viewPlan, user.buyPlan],
       HIDE_BECOME_RESELLER === 'true'
         ? [user.changeSetting, user.getSupport, user.joinChannel]
         : [user.changeSetting, user.becomeReseller, user.getSupport],
