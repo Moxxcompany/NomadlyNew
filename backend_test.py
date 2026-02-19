@@ -79,13 +79,13 @@ class IvrVoicemailTester:
             return False
 
     def test_node_bot_syntax(self):
-        """Test Node.js bot loads without syntax errors"""
+        """Test Node.js bot loads without syntax errors after major IVR/VM rewrite"""
         try:
-            # Test syntax of main files
+            # Test syntax of main files affected by IVR/VM rewrite
             main_files = [
                 "/app/js/_index.js",
                 "/app/js/phone-config.js",
-                "/app/js/start-bot.js"
+                "/app/js/tts-service.js"
             ]
             
             for file_path in main_files:
