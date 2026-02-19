@@ -3964,6 +3964,11 @@ bot?.on('message', async msg => {
       if (!(await isSubscribed(chatId)) && !(await freeLinksAvailable(chatId))) {
         return send(chatId, t.freeLinksExhausted, k.of([user.buyPlan]))
       }
+
+      try {
+        const { url } = info
+        let _shortUrl, shortUrl
+        if (process.env.LINK_TO_SELF_SERVER === 'false') {
           _shortUrl = await createShortUrlApi(url)
           shortUrl = _shortUrl.replaceAll('.', '@').replace('https://', '')
           set(linksOf, chatId, shortUrl, url)
