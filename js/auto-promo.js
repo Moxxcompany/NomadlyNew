@@ -526,6 +526,56 @@ Appuyez sur <b>Pistes SMS HQ</b>
 -----
 Liens courts — <b>Raccourcisseur d'URL</b>`,
     ],
+
+    cloudphone: [
+      `<b>VOTRE PROPRE NUMERO</b>
+
+Numeros virtuels US, Canada, UK et 30+ pays.
+IVR, messagerie vocale, SMS vers Telegram. Des $5/mois.
+
+Appuyez sur <b>Cloud Phone</b>
+
+-----
+Leads cibles — <b>Pistes SMS HQ</b>`,
+
+      `<b>CLOUD PHONE — PAR SPEECHCUE</b>
+
+Transfert d'appels + acces SIP + accueil vocal IA multilingue.
+
+Appuyez sur <b>Cloud Phone</b>
+
+-----
+Liens courts — <b>Raccourcisseur d'URL</b>`,
+
+      `<b>IVR PROFESSIONNEL EN MINUTES</b>
+
+Voix IA en 20 langues. Plan Business: minutes illimitees.
+
+Appuyez sur <b>Cloud Phone</b>
+
+-----
+Domaines offshore — <b>Enregistrer des noms de domaine</b>`,
+
+      `<b>PAS DE SIM REQUISE</b>
+
+Numeros virtuels + transfert + messagerie vocale.
+SMS directement dans votre Telegram.
+
+Appuyez sur <b>Cloud Phone</b>
+
+-----
+Leads — <b>Pistes SMS HQ</b>`,
+
+      `<b>NUMERO VIRTUEL A $5/MOIS</b>
+
+100 min + 50 SMS. Transfert inclus.
+Passez au plan Pro pour SIP & IVR.
+
+Appuyez sur <b>Cloud Phone</b>
+
+-----
+5 liens gratuits — <b>Raccourcisseur d'URL</b>`,
+    ],
   },
 
   zh: {
