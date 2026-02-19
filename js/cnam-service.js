@@ -1,11 +1,12 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // CNAM Lookup Service — Resolve caller/sender names
-// Uses Multitel as primary, SignalWire as fallback
+// Priority: Telnyx (primary) → Multitel (fallback) → SignalWire (last resort)
 // Results cached in MongoDB to avoid repeat lookups
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const axios = require('axios')
 const { log } = require('console')
 
+const TELNYX_API_KEY = process.env.TELNYX_API_KEY
 const MULTITEL_USERNAME = process.env.MULTITEL_USERNAME
 const MULTITEL_PASSWORD = process.env.MULTITEL_PASSWORD
 const TOKEN_SIGNALWIRE = process.env.TOKEN_SIGNALWIRE
@@ -14,10 +15,32 @@ let _cnamCache = null // MongoDB collection
 
 function initCnamService(deps) {
   _cnamCache = deps.cnamCache
-  log('[CnamService] Initialized with Multitel + SignalWire + MongoDB cache')
+  const providers = []
+  if (TELNYX_API_KEY) providers.push('Telnyx')
+  if (MULTITEL_USERNAME) providers.push('Multitel')
+  if (TOKEN_SIGNALWIRE) providers.push('SignalWire')
+  log(`[CnamService] Initialized — priority: ${providers.join(' → ')} + MongoDB cache`)
 }
 
-// ── Multitel CNAM lookup ──
+// ── Telnyx Caller Name lookup (primary) ──
+async function lookupTelnyx(phone) {
+  const clean = phone.replace(/[^+\d]/g, '')
+  const formatted = clean.startsWith('+') ? clean : `+${clean}`
+  const res = await axios({
+    method: 'get',
+    url: `https://api.telnyx.com/v2/number_lookup/${encodeURIComponent(formatted)}`,
+    headers: {
+      'Authorization': `Bearer ${TELNYX_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    params: { type: 'caller-name' },
+    timeout: 8000,
+  })
+  const data = res?.data?.data
+  return data?.caller_name?.caller_name || null
+}
+
+// ── Multitel CNAM lookup (fallback) ──
 async function lookupMultitel(phone) {
   const clean = phone.replace(/[^0-9]/g, '')
   const res = await axios({
@@ -32,7 +55,7 @@ async function lookupMultitel(phone) {
   return res?.data?.response?.name || null
 }
 
-// ── SignalWire CNAM lookup (fallback) ──
+// ── SignalWire CNAM lookup (last resort) ──
 async function lookupSignalwire(phone) {
   const clean = phone.replace(/[^0-9]/g, '')
   const res = await axios({
@@ -68,8 +91,19 @@ async function lookupCnam(phoneNumber) {
 
   let name = null
 
-  // Try Multitel first
-  if (MULTITEL_USERNAME && MULTITEL_PASSWORD) {
+  // 1. Try Telnyx first (cheapest, primary)
+  if (TELNYX_API_KEY) {
+    try {
+      name = await lookupTelnyx(clean)
+    } catch (e) {
+      const status = e.response?.status
+      const detail = e.response?.data?.errors?.[0]?.detail || e.message
+      log(`[CNAM] Telnyx failed for ${clean} (${status || 'network'}): ${detail}`)
+    }
+  }
+
+  // 2. Fallback to Multitel
+  if (!name && MULTITEL_USERNAME && MULTITEL_PASSWORD) {
     try {
       name = await lookupMultitel(clean)
     } catch (e) {
@@ -77,7 +111,7 @@ async function lookupCnam(phoneNumber) {
     }
   }
 
-  // Fallback to SignalWire
+  // 3. Last resort: SignalWire
   if (!name && TOKEN_SIGNALWIRE) {
     try {
       name = await lookupSignalwire(clean)
@@ -86,12 +120,12 @@ async function lookupCnam(phoneNumber) {
     }
   }
 
-  // Cache result (even null to avoid re-lookups)
+  // Cache result
   if (_cnamCache && name) {
     try {
       await _cnamCache.updateOne(
         { phone: clean },
-        { $set: { phone: clean, name: name, updatedAt: new Date().toISOString() } },
+        { $set: { phone: clean, name: name, source: name ? 'lookup' : 'miss', updatedAt: new Date().toISOString() } },
         { upsert: true }
       )
     } catch (e) {
