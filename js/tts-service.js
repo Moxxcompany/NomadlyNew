@@ -190,7 +190,11 @@ module.exports = {
   downloadTelegramAudio,
   getVoiceButtons,
   getVoiceKeyByButton,
+  getLanguageButtons,
+  getLanguageByButton,
   VOICES,
+  GENERIC_VOICES,
+  TTS_LANGUAGES,
   DEFAULT_VOICE,
   AUDIO_DIR,
 }
