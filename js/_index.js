@@ -6204,7 +6204,7 @@ bot?.on('message', async msg => {
     return send(chatId, `Choose an option:`, k.of([['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio']]))
   }
 
-  // ── IVR Greeting: Enter text → select voice ──
+  // ── IVR Greeting: Enter text → select language → select voice ──
   if (action === a.cpIvrGreetingVoice) {
     const pc = phoneConfig.btn
     const num = info?.cpActiveNumber
@@ -6215,17 +6215,17 @@ bot?.on('message', async msg => {
         ['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio'],
       ]))
     }
-    // Check if user is selecting a voice (after text was entered)
+    // Check if user is selecting a voice (after text + language were entered)
     const draft = info?.cpTtsDraft || {}
-    if (draft.text && !draft.voice) {
+    if (draft.text && draft.lang && !draft.voice) {
       // User is picking a voice
-      const voiceKey = ttsService.getVoiceKeyByButton(message)
+      const voiceKey = ttsService.getVoiceKeyByButton(message, draft.lang)
       draft.voice = voiceKey
       await saveInfo('cpTtsDraft', draft)
       // Generate TTS preview
       send(chatId, '🔄 Generating audio preview...')
       try {
-        const result = await ttsService.generateTTS(draft.text, voiceKey)
+        const result = await ttsService.generateTTS(draft.text, voiceKey, draft.lang)
         draft.audioPath = result.audioPath
         draft.audioUrl = result.audioUrl
         await saveInfo('cpTtsDraft', draft)
@@ -6235,6 +6235,7 @@ bot?.on('message', async msg => {
         return send(chatId, `✅ Preview generated (${result.voice})\n\n✅ Save this greeting?\n🔄 Try a different voice?\n📝 Re-type the text?`, k.of([
           ['✅ Save Greeting'],
           ['🔄 Try Different Voice'],
+          ['🌐 Change Language'],
           ['📝 Re-type Text'],
         ]))
       } catch (e) {
@@ -6244,16 +6245,35 @@ bot?.on('message', async msg => {
         ]))
       }
     }
+    // Check if user is selecting a language (after text was entered but no lang yet)
+    if (draft.text && !draft.lang) {
+      const langCode = ttsService.getLanguageByButton(message)
+      if (langCode) {
+        draft.lang = langCode
+        await saveInfo('cpTtsDraft', draft)
+        const voiceBtns = ttsService.getVoiceButtons(langCode).map(v => [v])
+        return send(chatId, `🎙️ Choose a voice for your greeting:`, k.of(voiceBtns))
+      }
+      // Show language buttons again if invalid selection
+      const langBtns = ttsService.getLanguageButtons()
+      const langRows = []
+      for (let i = 0; i < langBtns.length; i += 2) langRows.push(langBtns.slice(i, i + 2))
+      return send(chatId, `🌐 Select the language for your IVR greeting:`, k.of(langRows))
+    }
     // User is entering text — reject button-like text
     const ivrButtons = [pc.ivrGreeting, pc.ivrAddOption, pc.ivrRemoveOption, pc.ivrViewOptions, pc.ivrAnalytics, pc.disableIvr, pc.enableIvr]
     if (ivrButtons.includes(message)) {
       return send(chatId, `📝 Type the greeting callers will hear:`, k.of([]))
     }
-    // Save text, ask to select voice
+    // Save text, ask to select language
     draft.text = message
+    draft.lang = null
+    draft.voice = null
     await saveInfo('cpTtsDraft', draft)
-    const voiceBtns = ttsService.getVoiceButtons().map(v => [v])
-    return send(chatId, `🎙️ Choose a voice for your greeting:\n\n<i>"${message.length > 80 ? message.slice(0, 80) + '...' : message}"</i>`, k.of(voiceBtns))
+    const langBtns = ttsService.getLanguageButtons()
+    const langRows = []
+    for (let i = 0; i < langBtns.length; i += 2) langRows.push(langBtns.slice(i, i + 2))
+    return send(chatId, `🌐 Select the language for your IVR greeting:\n\n<i>"${message.length > 80 ? message.slice(0, 80) + '...' : message}"</i>`, k.of(langRows))
   }
 
   // ── IVR Greeting: Preview & Save ──
