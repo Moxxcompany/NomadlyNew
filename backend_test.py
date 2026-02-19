@@ -417,42 +417,53 @@ class IvrVoicemailTester:
 
     def run_all_tests(self):
         """Run all tests"""
-        self.log("🚀 Starting Nomadly Telegram Bot Backend Tests")
+        self.log("🚀 Starting IVR/Voicemail Overhaul Backend Tests")
         self.log("=" * 60)
         
-        # Test 1: Backend Health Check
-        self.run_test("Backend Health /api/health", self.test_backend_health)
+        # Test 1: Backend Health Check - /api/health returns ok
+        self.run_test("Backend health /api/health returns ok", self.test_backend_health)
         
-        # Test 2: Node.js Bot Syntax
-        self.run_test("Node.js Bot Syntax Check", self.test_node_bot_syntax)
+        # Test 2: Node.js Bot Syntax - loads without syntax errors after major IVR/VM rewrite
+        self.run_test("Node.js bot loads without syntax errors after major IVR/VM rewrite", self.test_node_bot_syntax)
         
-        # Test 3: IVR/Voicemail Handlers
-        self.run_test("IVR/Voicemail Handlers Structure", self.test_ivr_voicemail_handlers)
+        # Test 3: TTS Service Loading - loads correctly with EDENAI_API_KEY from .env
+        self.run_test("tts-service.js loads correctly with EDENAI_API_KEY from .env", self.test_tts_service_loading)
         
-        # Test 4: Phone Config Multilingual
-        self.run_test("Phone Config Multilingual Keys", self.test_phone_config_multilingual)
+        # Test 4: TTS Service Exports - exports required functions
+        self.run_test("tts-service.js exports: generateTTS, downloadTelegramAudio, getVoiceButtons, getVoiceKeyByButton, VOICES", self.test_tts_service_exports)
         
-        # Test 5: Translation Keys Wired
-        self.run_test("Translation Keys Wired in _index.js", self.test_translation_keys_wired)
+        # Test 5: TTS VOICES Config - has 6 voices (rachel, sarah, laura, drew, charlie, clyde)
+        self.run_test("tts-service.js VOICES has 6 voices (rachel, sarah, laura, drew, charlie, clyde)", self.test_tts_voices_config)
         
-        # Test 6: Plan Upgrade Logic
-        self.run_test("Plan Upgrade/Downgrade Logic", self.test_plan_upgrade_logic)
+        # Test 6: IVR Greeting Flow - entry shows 'Type Text (AI Voice)' and 'Upload Audio' options
+        self.run_test("IVR Greeting flow: entry shows 'Type Text (AI Voice)' and 'Upload Audio' options", self.test_ivr_greeting_flow)
         
-        # Test 7: Language Files Keys
-        self.run_test("Language Files Translation Keys", self.test_language_files_keys)
+        # Test 7: IVR Add Option Flow - step-by-step wizard with key selection (0-9), action (Forward/Voicemail), message config
+        self.run_test("IVR Add Option flow: step-by-step wizard with key selection (0-9), action (Forward/Voicemail), message config", self.test_ivr_add_option_flow)
         
-        # Test 8: Voicemail Default Greeting
-        self.run_test("Voicemail Default Greeting Text", self.test_voicemail_default_greeting)
+        # Test 8: VM Greeting Flow - Custom Greeting shows TTS and Upload options
+        self.run_test("VM Greeting flow: Custom Greeting shows TTS and Upload options", self.test_vm_greeting_flow)
+        
+        # Test 9: New Action States - registered
+        self.run_test("New action states registered: cpIvrGreetingVoice, cpIvrGreetingPreview, cpIvrOptionKey, cpIvrOptionAction, cpIvrOptionMsg, cpIvrOptionVoice, cpIvrOptionPreview, cpVmGreetingVoice, cpVmGreetingPreview", self.test_new_action_states)
+        
+        # Test 10: EDENAI API Key - properly set in backend/.env on its own line
+        self.run_test("EDENAI_API_KEY is properly set in backend/.env on its own line", self.test_edenai_api_key)
         
         # Summary
         self.log("=" * 60)
         self.log(f"📊 Tests completed: {self.tests_passed}/{self.tests_run} passed")
         
+        if self.failed_tests:
+            self.log("❌ Failed Tests:")
+            for test in self.failed_tests:
+                self.log(f"   - {test}")
+        
         if self.tests_passed == self.tests_run:
             self.log("🎉 All tests PASSED!")
             return True
         else:
-            self.log(f"⚠️  {self.tests_run - self.tests_passed} tests FAILED")
+            self.log(f"⚠️  {len(self.failed_tests)} tests FAILED")
             return False
 
 def main():
