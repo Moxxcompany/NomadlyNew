@@ -6291,9 +6291,10 @@ bot?.on('message', async msg => {
 
       await saveInfo('cpActiveNumber', num)
       await saveInfo('cpPendingPlan', null)
-      let confirmMsg = `✅ Plan changed to <b>${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)}</b> — $${newPrice}/mo`
+      const m = phoneConfig.getMsg(info?.userLanguage)
+      let confirmMsg = m.planChanged(newPlan, newPrice)
       if (downgradeNotices.length > 0) {
-        confirmMsg += `\n\n⚠️ <b>Features disabled:</b>\n` + downgradeNotices.join('\n')
+        confirmMsg += `\n\n⚠️ <b>${m.featuresDisabled}</b>\n` + downgradeNotices.join('\n')
       }
       send(chatId, confirmMsg)
       set(state, chatId, 'action', a.cpManageNumber)
