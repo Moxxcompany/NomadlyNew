@@ -135,15 +135,38 @@ async function downloadTelegramAudio(bot, fileId, prefix = 'upload') {
 /**
  * Get voice options formatted for Telegram keyboard
  */
-function getVoiceButtons() {
+function getVoiceButtons(langCode = 'en') {
+  if (langCode && langCode !== 'en') {
+    return Object.entries(GENERIC_VOICES).map(([key, v]) => `${v.name} — ${v.desc}`)
+  }
   return Object.entries(VOICES).map(([key, v]) => `${v.name} — ${v.desc}`)
 }
 
-function getVoiceKeyByButton(buttonText) {
+function getVoiceKeyByButton(buttonText, langCode = 'en') {
+  if (langCode && langCode !== 'en') {
+    for (const [key, v] of Object.entries(GENERIC_VOICES)) {
+      if (buttonText.startsWith(v.name)) return key
+    }
+    return 'female'
+  }
   for (const [key, v] of Object.entries(VOICES)) {
     if (buttonText.startsWith(v.name)) return key
   }
   return DEFAULT_VOICE
+}
+
+/**
+ * Get language buttons for Telegram keyboard
+ */
+function getLanguageButtons() {
+  return TTS_LANGUAGES.map(l => `${l.flag} ${l.name}`)
+}
+
+function getLanguageByButton(buttonText) {
+  for (const l of TTS_LANGUAGES) {
+    if (buttonText === `${l.flag} ${l.name}`) return l.code
+  }
+  return null
 }
 
 // Clean old audio files (>24h)
