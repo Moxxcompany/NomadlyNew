@@ -5928,6 +5928,7 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpVmAudioUpload)
       await saveInfo('cpTtsDraft', { type: 'vmGreeting' })
       return send(chatId, `🎤 <b>Custom Greeting</b>\n\nChoose how to create your greeting:`, k.of([
+        ['📋 Use Template'],
         ['📝 Type Text (AI Voice)'],
         ['🎙️ Upload Audio'],
       ]))
