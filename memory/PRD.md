@@ -44,7 +44,13 @@ User requested setup of the Nomadly Telegram Bot application. Tasks: update .env
 - **Voicemail Default Greeting**: Menu now shows exactly what callers will hear: "You have reached [number]. Please leave a message after the tone."
 - **Pro-rated Upgrade Billing**: Upgrades now calculate daily price difference × remaining days and charge pro-rated amount from wallet. Wallet balance checked before confirming. Downgrades: no refund, warning shown.
 - **Full Multilingual Coverage**: Added 5 new Cloud Phone msg keys (noIvrOptions, whichKeyRemove, sendVoiceOrText, noActivity, insufficientBalUpgrade) in 4 languages. Added 6 non-Cloud-Phone translation keys (failedAudio, enterBroadcastMessage, provide2Nameservers, noDomainSelected, validInstitutionName, validCityName) to all 4 lang files and wired in _index.js.
-- Testing passed: 100% (iterations 26-32)
+- **IVR/Voicemail TTS Overhaul** (EdenAI + ElevenLabs):
+  - Created `js/tts-service.js` — EdenAI TTS integration with 6 voice presets (Rachel, Sarah, Laura, Drew, Charlie, Clyde). Generates MP3, caches locally, auto-cleans after 24h.
+  - IVR Greeting: Step-by-step wizard → Choose method (Type Text / Upload Audio) → Type text → Select voice → Preview (Telegram voice message) → Save/Retry/Re-type.
+  - IVR Menu Options: Guided wizard → Pick key (0-9 buttons) → Pick action (Forward to Number / Play Message & Voicemail) → Configure message (TTS / Upload / Skip) → Preview → Save.
+  - Voicemail Greeting: Same TTS/Upload wizard pattern. Default greeting text now displayed clearly.
+  - All flows support Back/Cancel at every step. Audio preview sent as Telegram voice message before saving.
+- Testing passed: 100% (iterations 26-33)
 - **Upgrade Plan Preview**: Upgrade flow now shows feature gain preview (what user will unlock) + limit changes (minutes/SMS increase) with Confirm/Back buttons, matching the downgrade flow.
 - **SIP Username Branding**: `generateSipUsername()` prefix changed from `user_` to `sc_` (speechcue branding). New numbers will get `sc_XXXXXX` usernames.
 - **Cloud Phone Multilingual**: Added `phoneConfig.msg` object with 25+ message keys in 4 languages (EN/FR/ZH/HI) + `getMsg(lang)` helper. Replaced 34+ hardcoded English strings in `_index.js` with multilingual calls. Covers: validation messages, toggle confirmations, plan change headers, error messages, IVR prompts.
