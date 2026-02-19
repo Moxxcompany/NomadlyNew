@@ -195,23 +195,12 @@ class NomadlyImprovementsTester:
             with open('/app/js/phone-config.js', 'r') as f:
                 phone_config = f.read()
             
-            # Look for getMsg function definition
-            getmsg_function = re.search(r'function getMsg\(lang\)(.*?}', phone_config, re.DOTALL)
-            has_getmsg_function = False
-            defaults_to_en = False
-            returns_correct_object = False
+            # Look for getMsg function definition (simpler approach)
+            has_getmsg_function = 'function getMsg(lang)' in phone_config
+            defaults_to_en = 'msg.en' in phone_config or 'msg[lang] || msg.en' in phone_config
+            returns_correct_object = 'return msg[lang]' in phone_config
             
-            if getmsg_function:
-                function_body = getmsg_function.group(1)
-                has_getmsg_function = True
-                
-                # Check if it defaults to 'en'
-                defaults_to_en = 'msg.en' in function_body or 'msg[lang] || msg.en' in function_body
-                
-                # Check if it returns the correct language object
-                returns_correct_object = 'return msg[lang]' in function_body or 'msg[lang]' in function_body
-            
-            # Also check if it's exported in module.exports
+            # Check if it's exported in module.exports
             exported_correctly = 'getMsg' in phone_config and 'module.exports' in phone_config
             
             getmsg_working = has_getmsg_function and defaults_to_en and exported_correctly
@@ -219,7 +208,7 @@ class NomadlyImprovementsTester:
             self.log_result(
                 "phoneConfig.getMsg() returns correct language object, defaults to en",
                 getmsg_working,
-                f"Has function: {has_getmsg_function}, Defaults to en: {defaults_to_en}, Exported: {exported_correctly}",
+                f"Has function: {has_getmsg_function}, Defaults to en: {defaults_to_en}, Returns correct: {returns_correct_object}, Exported: {exported_correctly}",
                 "CRITICAL" if not getmsg_working else "INFO"
             )
             
