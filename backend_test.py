@@ -113,230 +113,306 @@ class IvrVoicemailTester:
             self.log(f"Syntax check failed: {str(e)}")
             return False
 
-    def test_ivr_voicemail_handlers(self):
-        """Test IVR and Voicemail handler code structure"""
+    def test_tts_service_loading(self):
+        """Test tts-service.js loads correctly with EDENAI_API_KEY from .env"""
         try:
-            # Read main bot file
-            with open("/app/js/_index.js", "r") as f:
+            tts_file = "/app/js/tts-service.js"
+            if not os.path.exists(tts_file):
+                self.log(f"TTS service file not found: {tts_file}")
+                return False
+            
+            # Check if file can be loaded without syntax errors
+            result = subprocess.run(
+                ["node", "--check", tts_file],
+                capture_output=True,
+                text=True,
+                cwd="/app"
+            )
+            
+            if result.returncode != 0:
+                self.log(f"TTS service syntax error: {result.stderr}")
+                return False
+            
+            # Check EDENAI_API_KEY usage
+            with open(tts_file, 'r') as f:
                 content = f.read()
             
-            # Check for IVR Set Greeting handler with k.of([]) keyboard clearing and button guards
-            ivr_greeting_checks = [
-                ("cpIvrGreeting", "IVR greeting action constant"),
-                ("action === a.cpIvrGreeting", "IVR greeting handler"),
-                ("k.of([]))", "Keyboard clearing in IVR greeting"),
-                ("Reject IVR button text", "Button text guard in IVR greeting"),
-                ("ivrButtons.includes(message)", "Button text validation")
-            ]
-            
-            for check, desc in ivr_greeting_checks:
-                if check not in content:
-                    self.log(f"Missing {desc}: {check}")
-                    return False
-            
-            # Check for IVR Add Menu Option handler with k.of([]) keyboard clearing and button guards
-            ivr_add_option_checks = [
-                ("cpIvrAddOption", "IVR add option action constant"), 
-                ("action === a.cpIvrAddOption", "IVR add option handler"),
-                ("k.of([]))", "Keyboard clearing in IVR add option"),
-                ("Reject IVR button text as input", "Button text guard in IVR add option")
-            ]
-            
-            for check, desc in ivr_add_option_checks:
-                if check not in content:
-                    self.log(f"Missing {desc}: {check}")
-                    return False
-            
-            # Check for Voicemail audio upload handler with k.of([]) keyboard clearing and button guards
-            vm_audio_checks = [
-                ("cpVmAudioUpload", "VM audio upload action constant"),
-                ("action === a.cpVmAudioUpload", "VM audio upload handler"),
-                ("k.of([]))", "Keyboard clearing in VM audio upload"),
-                ("Reject voicemail", "Button text guard in VM audio"),
-                ("vmButtons.includes(message)", "VM button text validation")
-            ]
-            
-            for check, desc in vm_audio_checks:
-                if check not in content:
-                    self.log(f"Missing {desc}: {check}")
-                    return False
-                    
-            self.log("IVR and Voicemail handler structure verified - all handlers have k.of([]) and button guards")
-            return True
-            
-        except Exception as e:
-            self.log(f"Handler check failed: {str(e)}")
-            return False
-
-    def test_phone_config_multilingual(self):
-        """Test phoneConfig.msg has required multilingual keys"""
-        try:
-            # Read phone-config.js
-            with open("/app/js/phone-config.js", "r") as f:
-                content = f.read()
-            
-            # Check for multilingual msg object
-            required_keys = [
-                'noIvrOptions',
-                'whichKeyRemove', 
-                'sendVoiceOrText',
-                'noActivity',
-                'insufficientBalUpgrade'
-            ]
-            
-            # Check all 4 languages
-            languages = ['en', 'fr', 'zh', 'hi']
-            
-            for lang in languages:
-                for key in required_keys:
-                    # Look for the key in each language section
-                    pattern = f"{lang}: {{" 
-                    if pattern in content:
-                        # Find the section for this language
-                        lang_start = content.find(pattern)
-                        if lang_start == -1:
-                            self.log(f"Language section not found: {lang}")
-                            return False
-                            
-                        # Look for the key within reasonable distance
-                        key_pattern = f"{key}:"
-                        search_area = content[lang_start:lang_start + 5000]  # Search next 5000 chars
-                        if key_pattern not in search_area:
-                            self.log(f"Missing key '{key}' in language '{lang}'")
-                            return False
-                            
-            self.log("Phone config multilingual keys verified")
-            return True
-            
-        except Exception as e:
-            self.log(f"Phone config multilingual check failed: {str(e)}")
-            return False
-
-    def test_translation_keys_wired(self):
-        """Test translation keys are wired in _index.js"""
-        try:
-            # Read main bot file
-            with open("/app/js/_index.js", "r") as f:
-                content = f.read()
-            
-            # Check for translation keys usage
-            required_translations = [
-                't.failedAudio',
-                't.enterBroadcastMessage'
-            ]
-            
-            for translation in required_translations:
-                if translation not in content:
-                    self.log(f"Missing translation usage: {translation}")
-                    return False
-                    
-            self.log("Translation keys wiring verified") 
-            return True
-            
-        except Exception as e:
-            self.log(f"Translation wiring check failed: {str(e)}")
-            return False
-
-    def test_plan_upgrade_logic(self):
-        """Test plan upgrade/downgrade logic exists"""
-        try:
-            # Read main bot file
-            with open("/app/js/_index.js", "r") as f:
-                content = f.read()
-            
-            # Check for plan change logic
-            plan_upgrade_checks = [
-                "cpChangePlan",
-                "walletBal",
-                "pro-rated",
-                "remaining days"
-            ]
-            
-            found_checks = 0
-            for check in plan_upgrade_checks:
-                if check.lower() in content.lower():
-                    found_checks += 1
-                    
-            # At least 2 of the 4 checks should be found for basic upgrade logic
-            if found_checks < 2:
-                self.log(f"Insufficient plan upgrade logic found ({found_checks}/4)")
+            if "process.env.EDENAI_API_KEY" not in content:
+                self.log("TTS service doesn't load EDENAI_API_KEY from .env")
                 return False
                 
-            self.log("Plan upgrade/downgrade logic structure verified")
+            self.log("TTS service loads correctly and references EDENAI_API_KEY")
             return True
             
         except Exception as e:
-            self.log(f"Plan upgrade logic check failed: {str(e)}")
+            self.log(f"TTS service loading check failed: {str(e)}")
             return False
 
-    def test_language_files_keys(self):
-        """Test all 4 language files have required new translation keys"""
+    def test_tts_service_exports(self):
+        """Test tts-service.js exports: generateTTS, downloadTelegramAudio, getVoiceButtons, getVoiceKeyByButton, VOICES"""
         try:
-            required_keys = [
-                'failedAudio',
-                'enterBroadcastMessage', 
-                'provide2Nameservers',
-                'noDomainSelected',
-                'validInstitutionName',
-                'validCityName'
-            ]
-            
-            language_files = [
-                '/app/js/lang/en.js',
-                '/app/js/lang/fr.js', 
-                '/app/js/lang/zh.js',
-                '/app/js/lang/hi.js'
-            ]
-            
-            for lang_file in language_files:
-                if not os.path.exists(lang_file):
-                    self.log(f"Language file not found: {lang_file}")
-                    return False
-                    
-                with open(lang_file, "r") as f:
-                    content = f.read()
-                
-                for key in required_keys:
-                    if f"{key}:" not in content and f"'{key}'" not in content and f'"{key}"' not in content:
-                        self.log(f"Missing key '{key}' in {lang_file}")
-                        return False
-                        
-            self.log("All language files have required keys")
-            return True
-            
-        except Exception as e:
-            self.log(f"Language files check failed: {str(e)}")
-            return False
-
-    def test_voicemail_default_greeting(self):
-        """Test voicemail shows default greeting text when no custom greeting"""
-        try:
-            # Read phone-config.js
-            with open("/app/js/phone-config.js", "r") as f:
+            tts_file = "/app/js/tts-service.js"
+            with open(tts_file, 'r') as f:
                 content = f.read()
             
-            # Check for default greeting text
-            default_greeting_patterns = [
-                "You have reached",
-                "Please leave a message after the tone",
-                "formatPhone(number)",
-                "default greeting"
+            required_exports = [
+                'generateTTS',
+                'downloadTelegramAudio', 
+                'getVoiceButtons',
+                'getVoiceKeyByButton',
+                'VOICES'
             ]
             
-            found_patterns = 0
-            for pattern in default_greeting_patterns:
-                if pattern.lower() in content.lower():
-                    found_patterns += 1
-                    
-            if found_patterns < 2:
-                self.log(f"Insufficient default greeting patterns found ({found_patterns}/4)")
+            exports_found = []
+            for export in required_exports:
+                if f"module.exports" in content and export in content:
+                    exports_found.append(export)
+            
+            self.log(f"TTS exports found: {exports_found}")
+            
+            if len(exports_found) != len(required_exports):
+                missing = [e for e in required_exports if e not in exports_found]
+                self.log(f"Missing TTS exports: {missing}")
                 return False
                 
-            self.log("Voicemail default greeting text verified")
             return True
             
         except Exception as e:
-            self.log(f"Voicemail default greeting check failed: {str(e)}")
+            self.log(f"TTS service exports check failed: {str(e)}")
+            return False
+
+    def test_tts_voices_config(self):
+        """Test tts-service.js VOICES has 6 voices (rachel, sarah, laura, drew, charlie, clyde)"""
+        try:
+            tts_file = "/app/js/tts-service.js"
+            with open(tts_file, 'r') as f:
+                content = f.read()
+            
+            expected_voices = ['rachel', 'sarah', 'laura', 'drew', 'charlie', 'clyde']
+            found_voices = []
+            
+            # Look for VOICES object definition
+            lines = content.split('\n')
+            in_voices = False
+            
+            for line in lines:
+                if 'const VOICES = {' in line or 'VOICES = {' in line:
+                    in_voices = True
+                    continue
+                elif in_voices and line.strip().startswith('}'):
+                    break
+                elif in_voices and ':' in line:
+                    voice_name = line.split(':')[0].strip()
+                    if voice_name in expected_voices:
+                        found_voices.append(voice_name)
+            
+            self.log(f"Found voices: {found_voices}")
+            
+            if len(found_voices) != 6 or set(found_voices) != set(expected_voices):
+                self.log(f"Expected 6 voices {expected_voices}, found {len(found_voices)}: {found_voices}")
+                return False
+                
+            return True
+            
+        except Exception as e:
+            self.log(f"TTS voices config check failed: {str(e)}")
+            return False
+
+    def test_edenai_api_key(self):
+        """Test EDENAI_API_KEY is properly set in backend/.env on its own line"""
+        try:
+            env_file = "/app/backend/.env"
+            if not os.path.exists(env_file):
+                self.log(f"Backend .env file not found: {env_file}")
+                return False
+            
+            with open(env_file, 'r') as f:
+                lines = f.readlines()
+            
+            # Check if EDENAI_API_KEY is present on its own line and not empty
+            edenai_key_found = False
+            for line in lines:
+                line = line.strip()
+                if line.startswith('EDENAI_API_KEY=') and len(line) > len('EDENAI_API_KEY='):
+                    edenai_key_found = True
+                    key_value = line.split('=', 1)[1]
+                    self.log(f"EDENAI_API_KEY found on its own line (length: {len(key_value)})")
+                    break
+            
+            if not edenai_key_found:
+                self.log("EDENAI_API_KEY not found or empty in backend/.env")
+                return False
+                
+            return True
+            
+        except Exception as e:
+            self.log(f"EDENAI API key check failed: {str(e)}")
+            return False
+
+    def test_ivr_greeting_flow(self):
+        """Test IVR Greeting flow: entry shows 'Type Text (AI Voice)' and 'Upload Audio' options"""
+        try:
+            # Check phone-config.js and _index.js for IVR greeting options
+            files_to_check = ["/app/js/phone-config.js", "/app/js/_index.js"]
+            
+            found_type_text = False
+            found_upload_audio = False
+            
+            for file_path in files_to_check:
+                if os.path.exists(file_path):
+                    with open(file_path, 'r') as f:
+                        content = f.read()
+                    
+                    # Look for Type Text (AI Voice) option
+                    if "Type Text" in content and ("AI Voice" in content or "TTS" in content):
+                        found_type_text = True
+                        self.log(f"Found 'Type Text (AI Voice)' option in {file_path}")
+                    
+                    # Look for Upload Audio option
+                    if "Upload Audio" in content:
+                        found_upload_audio = True
+                        self.log(f"Found 'Upload Audio' option in {file_path}")
+            
+            if not found_type_text:
+                self.log("IVR Greeting flow missing 'Type Text (AI Voice)' option")
+                return False
+                
+            if not found_upload_audio:
+                self.log("IVR Greeting flow missing 'Upload Audio' option")
+                return False
+                
+            return True
+            
+        except Exception as e:
+            self.log(f"IVR greeting flow check failed: {str(e)}")
+            return False
+
+    def test_ivr_add_option_flow(self):
+        """Test IVR Add Option flow: step-by-step wizard with key selection (0-9), action (Forward/Voicemail), message config"""
+        try:
+            files_to_check = ["/app/js/_index.js", "/app/js/phone-config.js"]
+            
+            found_key_selection = False
+            found_action_selection = False
+            found_message_config = False
+            
+            for file_path in files_to_check:
+                if os.path.exists(file_path):
+                    with open(file_path, 'r') as f:
+                        content = f.read()
+                    
+                    # Look for key selection (0-9)
+                    if "cpIvrOptionKey" in content or ("key" in content.lower() and "0-9" in content):
+                        found_key_selection = True
+                        self.log(f"Found key selection logic in {file_path}")
+                    
+                    # Look for action selection (Forward/Voicemail)
+                    if "cpIvrOptionAction" in content or ("Forward" in content and "Voicemail" in content):
+                        found_action_selection = True
+                        self.log(f"Found action selection logic in {file_path}")
+                    
+                    # Look for message config
+                    if "cpIvrOptionMsg" in content or "message config" in content.lower():
+                        found_message_config = True
+                        self.log(f"Found message config logic in {file_path}")
+            
+            missing = []
+            if not found_key_selection:
+                missing.append("key selection (0-9)")
+            if not found_action_selection:
+                missing.append("action selection (Forward/Voicemail)")
+            if not found_message_config:
+                missing.append("message config")
+                
+            if missing:
+                self.log(f"IVR Add Option flow missing: {', '.join(missing)}")
+                return False
+                
+            return True
+            
+        except Exception as e:
+            self.log(f"IVR Add Option flow check failed: {str(e)}")
+            return False
+
+    def test_vm_greeting_flow(self):
+        """Test VM Greeting flow: Custom Greeting shows TTS and Upload options"""
+        try:
+            files_to_check = ["/app/js/_index.js", "/app/js/phone-config.js"]
+            
+            found_tts_option = False
+            found_upload_option = False
+            
+            for file_path in files_to_check:
+                if os.path.exists(file_path):
+                    with open(file_path, 'r') as f:
+                        content = f.read()
+                    
+                    # Look for VM TTS/Voice option
+                    if "cpVmGreetingVoice" in content or ("voicemail" in content.lower() and "tts" in content.lower()):
+                        found_tts_option = True
+                        self.log(f"Found VM TTS option in {file_path}")
+                    
+                    # Look for VM Upload option
+                    if "cpVmAudioUpload" in content or ("voicemail" in content.lower() and "upload" in content.lower()):
+                        found_upload_option = True
+                        self.log(f"Found VM upload option in {file_path}")
+            
+            missing = []
+            if not found_tts_option:
+                missing.append("TTS option")
+            if not found_upload_option:
+                missing.append("Upload option")
+                
+            if missing:
+                self.log(f"VM Greeting flow missing: {', '.join(missing)}")
+                return False
+                
+            return True
+            
+        except Exception as e:
+            self.log(f"VM Greeting flow check failed: {str(e)}")
+            return False
+
+    def test_new_action_states(self):
+        """Test new action states registered: cpIvrGreetingVoice, cpIvrGreetingPreview, cpIvrOptionKey, cpIvrOptionAction, cpIvrOptionMsg, cpIvrOptionVoice, cpIvrOptionPreview, cpVmGreetingVoice, cpVmGreetingPreview"""
+        try:
+            expected_states = [
+                'cpIvrGreetingVoice',
+                'cpIvrGreetingPreview', 
+                'cpIvrOptionKey',
+                'cpIvrOptionAction',
+                'cpIvrOptionMsg',
+                'cpIvrOptionVoice',
+                'cpIvrOptionPreview',
+                'cpVmGreetingVoice',
+                'cpVmGreetingPreview'
+            ]
+            
+            # Check phone-config.js and _index.js for action states
+            files_to_check = ["/app/js/phone-config.js", "/app/js/_index.js"]
+            
+            found_states = []
+            
+            for file_path in files_to_check:
+                if os.path.exists(file_path):
+                    with open(file_path, 'r') as f:
+                        content = f.read()
+                    
+                    for state in expected_states:
+                        if state in content and state not in found_states:
+                            found_states.append(state)
+            
+            self.log(f"Found action states: {found_states}")
+            
+            missing_states = [s for s in expected_states if s not in found_states]
+            if missing_states:
+                self.log(f"Missing action states: {missing_states}")
+                return False
+                
+            return True
+            
+        except Exception as e:
+            self.log(f"Action states check failed: {str(e)}")
             return False
 
     def run_all_tests(self):
