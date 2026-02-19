@@ -327,50 +327,38 @@ Plan: ${n.plan.charAt(0).toUpperCase() + n.plan.slice(1)} ($${n.planPrice}/mo)
 
   // Call Forwarding
   forwardingStatus: (number, config, walletBal) => {
-    const status = config?.enabled ? '✅ Active' : '❌ Disabled'
-    let text = `📞 Call Forwarding for <b>${formatPhone(number)}</b>\n\nCurrent status: ${status}`
-    if (config?.enabled) {
-      text += `\nMode: ${config.mode}\nForward to: ${formatPhone(config.forwardTo)}`
-    }
-    text += `\n\n💰 <b>Rate: $${CALL_FORWARDING_RATE_MIN}/min</b> charged from wallet per forwarded call (covers inbound + outbound).`
+    const status = config?.enabled ? '✅ Active' : '❌ Off'
+    let text = `📞 <b>Call Forwarding</b> — ${formatPhone(number)}\n\nStatus: ${status}`
+    if (config?.enabled) text += `\n📲 ${formatPhone(config.forwardTo)} · ${config.mode}`
+    text += `\n💰 $${CALL_FORWARDING_RATE_MIN}/min from wallet`
     if (walletBal !== undefined) {
-      text += `\n💳 Wallet balance: <b>$${walletBal.toFixed(2)}</b>`
-      if (walletBal < CALL_FORWARDING_RATE_MIN) {
-        text += `\n\n⚠️ <b>Insufficient balance!</b> You need at least $${CALL_FORWARDING_RATE_MIN} to use call forwarding. We recommend topping up <b>$25</b> for uninterrupted service.`
-      } else if (walletBal < 5) {
-        text += `\n\n⚠️ Low balance — forwarding will stop if wallet runs out. We recommend topping up to at least <b>$25</b>.`
-      }
+      text += ` · 💳 $${walletBal.toFixed(2)}`
+      if (walletBal < CALL_FORWARDING_RATE_MIN) text += `\n\n⚠️ Insufficient balance. Top up <b>$25</b> via 👛 Wallet.`
+      else if (walletBal < 5) text += `\n⚠️ Low balance — top up <b>$25</b> recommended.`
     }
     return text
   },
   enterForwardNumber: (walletBal) => {
-    let text = `Enter the phone number to forward calls to.\nInclude country code (e.g. +14155551234):\n\n💰 <b>Rate: $${CALL_FORWARDING_RATE_MIN}/min</b> from wallet.`
+    let text = `Enter forwarding number with country code (e.g. +14155551234)\n💰 Rate: <b>$${CALL_FORWARDING_RATE_MIN}/min</b>`
     if (walletBal !== undefined) {
-      text += `\n💳 Wallet: <b>$${walletBal.toFixed(2)}</b>`
-      if (walletBal < CALL_FORWARDING_RATE_MIN) {
-        text += `\n\n⚠️ <b>Insufficient balance!</b> Please top up your wallet (recommended: <b>$25</b>) before activating forwarding. Calls will not be forwarded without sufficient balance.`
-      }
+      text += ` · 💳 $${walletBal.toFixed(2)}`
+      if (walletBal < CALL_FORWARDING_RATE_MIN) text += `\n⚠️ Top up <b>$25</b> via 👛 Wallet first.`
     }
     return text
   },
   forwardingUpdated: (number, forwardTo, mode, walletBal) => {
-    let text = `✅ <b>Call Forwarding Updated!</b>\n\n📞 ${formatPhone(number)}\n📲 Forward to: ${formatPhone(forwardTo)}\n📋 Mode: ${mode}\n💰 Rate: <b>$${CALL_FORWARDING_RATE_MIN}/min</b> from wallet\n\nAll incoming calls will now be forwarded.`
+    let text = `✅ <b>Forwarding Active</b>\n\n📞 ${formatPhone(number)} → ${formatPhone(forwardTo)}\n📋 ${mode} · $${CALL_FORWARDING_RATE_MIN}/min`
     if (walletBal !== undefined) {
-      text += `\n\n💳 Wallet balance: <b>$${walletBal.toFixed(2)}</b>`
-      const estMinutes = Math.floor(walletBal / CALL_FORWARDING_RATE_MIN)
-      text += `\n📊 Estimated: ~<b>${estMinutes} min</b> of forwarding`
-      if (walletBal < 5) {
-        text += `\n\n⚠️ Low balance! We recommend topping up to at least <b>$25</b> (~${Math.floor(25 / CALL_FORWARDING_RATE_MIN)} min) for uninterrupted call forwarding.`
-      } else if (walletBal < 25) {
-        text += `\n\n💡 Tip: Top up to <b>$25</b> (~${Math.floor(25 / CALL_FORWARDING_RATE_MIN)} min) for worry-free forwarding.`
-      }
+      const estMin = Math.floor(walletBal / CALL_FORWARDING_RATE_MIN)
+      text += `\n💳 $${walletBal.toFixed(2)} (~${estMin} min)`
+      if (walletBal < 25) text += `\n💡 Top up to <b>$25</b> for uninterrupted forwarding.`
     }
     return text
   },
-  forwardingBlocked: (number) => `🚫 <b>Forwarding Blocked</b>\n\nThe number ${formatPhone(number)} is a premium-rate or high-cost destination. Call forwarding to this number is not available.\n\nPlease tap 💬 <b>Get Support</b> to request activation for this destination.`,
-  forwardingNotRoutable: (number) => `⚠️ <b>Destination Not Routable</b>\n\nThe number ${formatPhone(number)} could not be validated as a routable destination.\n\nPlease check the number and try again, or tap 💬 <b>Get Support</b> for assistance.`,
-  forwardingInsufficientBalance: (walletBal) => `🚫 <b>Cannot Activate Call Forwarding</b>\n\n💳 Wallet balance: <b>$${(walletBal || 0).toFixed(2)}</b>\n💰 Required: <b>$${CALL_FORWARDING_RATE_MIN}/min</b> per forwarded call\n\n⚠️ You need sufficient wallet balance for call forwarding to work. Without funds, incoming calls will NOT be forwarded.\n\n👉 Please top up your wallet with at least <b>$25</b> (~${Math.floor(25 / CALL_FORWARDING_RATE_MIN)} min of forwarding) via 👛 My Wallet before activating.`,
-  forwardingDisabled: (number) => `✅ Call forwarding disabled for ${formatPhone(number)}.`,
+  forwardingBlocked: (number) => `🚫 <b>Blocked</b> — ${formatPhone(number)} is a premium destination.\nTap 💬 <b>Get Support</b> to request activation.`,
+  forwardingNotRoutable: (number) => `⚠️ ${formatPhone(number)} is not routable. Check the number or tap 💬 <b>Get Support</b>.`,
+  forwardingInsufficientBalance: (walletBal) => `🚫 <b>Insufficient Balance</b>\n\n💳 $${(walletBal || 0).toFixed(2)} · Need $${CALL_FORWARDING_RATE_MIN}/min\n\n👉 Top up <b>$25</b> via 👛 Wallet to activate forwarding.`,
+  forwardingDisabled: (number) => `✅ Forwarding disabled for ${formatPhone(number)}.`,
 
   // SMS Settings
   smsSettingsMenu: (number, config, plan) => {
