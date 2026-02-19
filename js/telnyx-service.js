@@ -231,13 +231,17 @@ async function answerCall(callControlId) {
 }
 
 // ── Call Control: Transfer ──
-async function transferCall(callControlId, toNumber) {
+async function transferCall(callControlId, toNumber, fromNumber) {
   try {
     const body = { to: toNumber }
+    if (fromNumber) body.from = fromNumber
+    log(`[Telnyx] Transferring call ${callControlId} to ${toNumber}${fromNumber ? ' from ' + fromNumber : ''}`)
     const res = await axios.post(`${BASE}/calls/${callControlId}/actions/transfer`, body, { headers: headers() })
+    log(`[Telnyx] Transfer initiated successfully`)
     return res.data?.data || null
   } catch (e) {
-    log('Telnyx transferCall error:', e.response?.data || e.message)
+    const errDetail = e.response?.data?.errors?.[0]?.detail || e.response?.data || e.message
+    log(`[Telnyx] transferCall error (to=${toNumber}): ${JSON.stringify(errDetail)}`)
     return null
   }
 }
