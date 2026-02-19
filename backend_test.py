@@ -565,7 +565,7 @@ class CloudPhonePlanChangeTester:
         }
 
 if __name__ == "__main__":
-    tester = NomadlyCloudPhoneTester()
+    tester = CloudPhonePlanChangeTester()
     results = tester.run_all_tests()
     
     # Exit with appropriate code
