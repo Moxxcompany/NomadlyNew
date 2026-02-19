@@ -6132,7 +6132,7 @@ bot?.on('message', async msg => {
       await saveInfo('cpActiveNumber', num)
       send(chatId, phoneConfig.txt.ivrOptionRemoved(key))
     } else {
-      send(chatId, `❌ No option found for key "${key}".`)
+      send(chatId, phoneConfig.getMsg(info?.userLanguage).noOptionForKey(key))
     }
     set(state, chatId, 'action', a.cpIvr)
     return send(chatId, phoneConfig.txt.ivrMenu(num.phoneNumber, ivrConf), k.of([
