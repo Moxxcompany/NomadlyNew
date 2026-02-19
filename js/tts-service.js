@@ -39,21 +39,28 @@ const TTS_LANGUAGES = [
   { code: 'el', name: 'Ελληνικά', flag: '🇬🇷' },
 ]
 
-// Curated voice presets — mapped to EdenAI option/language params
+// Curated ElevenLabs voices — mapped via EdenAI option parameter with voice_id
+// These are real ElevenLabs voice IDs for distinct, recognizable voices
 const VOICES = {
-  rachel: { name: 'Rachel', desc: 'Calm, professional female', option: 'FEMALE', lang: 'en' },
-  sarah: { name: 'Sarah', desc: 'Soft, friendly female', option: 'FEMALE', lang: 'en' },
-  laura: { name: 'Laura', desc: 'Upbeat, energetic female', option: 'FEMALE', lang: 'en' },
-  drew: { name: 'Drew', desc: 'Confident, warm male', option: 'MALE', lang: 'en' },
-  charlie: { name: 'Charlie', desc: 'Casual, natural male', option: 'MALE', lang: 'en' },
-  clyde: { name: 'Clyde', desc: 'Deep, authoritative male', option: 'MALE', lang: 'en' },
+  rachel:  { name: 'Rachel',  desc: 'Calm, professional female',      voiceId: '21m00Tcm4TlvDq8ikWAM', gender: 'F' },
+  sarah:   { name: 'Sarah',   desc: 'Soft, friendly female',          voiceId: 'EXAVITQu4vr4xnSDxMaL', gender: 'F' },
+  laura:   { name: 'Laura',   desc: 'Upbeat, energetic female',       voiceId: 'FGY2WhTYpPnrIDTdsKH5', gender: 'F' },
+  emily:   { name: 'Emily',   desc: 'Young, clear female',            voiceId: 'LcfcDJNUP1GQjkzn1xUU', gender: 'F' },
+  domi:    { name: 'Domi',    desc: 'Strong, expressive female',      voiceId: 'AZnzlk1XvdvUeBnXmlld', gender: 'F' },
+  dorothy: { name: 'Dorothy', desc: 'Warm, pleasant female',          voiceId: 'ThT5KcBeYPX3keUQqHPh', gender: 'F' },
+  glinda:  { name: 'Glinda',  desc: 'Witty, sophisticated female',    voiceId: 'z9fAnlkpzviPz146aGWa', gender: 'F' },
+  drew:    { name: 'Drew',    desc: 'Confident, warm male',           voiceId: '29vD33N1CtxCmqQRPOHJ', gender: 'M' },
+  charlie: { name: 'Charlie', desc: 'Casual, natural Australian male',voiceId: 'IKne3meq5aSn9XLyUdCD', gender: 'M' },
+  clyde:   { name: 'Clyde',   desc: 'Deep, authoritative male',       voiceId: '2EiwWnXFnvU5JabPnv8n', gender: 'M' },
+  adam:    { name: 'Adam',    desc: 'Clear, deep male',               voiceId: 'pNInz6obpgDQGcFmaJgB', gender: 'M' },
+  josh:    { name: 'Josh',    desc: 'Young, dynamic male',            voiceId: 'TxGEqnHWrfWFTfGW9XjX', gender: 'M' },
+  arnold:  { name: 'Arnold',  desc: 'Crisp, clear male',              voiceId: 'VR6AewLTigWG4xSOukaG', gender: 'M' },
+  sam:     { name: 'Sam',     desc: 'Raspy, authentic male',          voiceId: 'yoZ06aMxZJJ28mfd3POQ', gender: 'M' },
+  thomas:  { name: 'Thomas',  desc: 'Calm, collected male',           voiceId: 'GBv7mTt0atIp3Br8iCZE', gender: 'M' },
 }
 
-// Generic voices for non-English languages
-const GENERIC_VOICES = {
-  female: { name: 'Female', desc: 'Professional female voice', option: 'FEMALE' },
-  male: { name: 'Male', desc: 'Professional male voice', option: 'MALE' },
-}
+// For non-English languages, use the same voice library — ElevenLabs multilingual v2 handles all languages
+const GENERIC_VOICES = VOICES
 
 const DEFAULT_VOICE = 'rachel'
 
