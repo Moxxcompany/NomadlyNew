@@ -1280,6 +1280,14 @@ bot?.on('message', async msg => {
       send(chatId, t.showWallet(usdBal, ngnBal))
       send(chatId, phoneConfig.txt.paymentPrompt(info.cpPrice), k.pay)
     },
+    'leads-pay': async () => {
+      set(state, chatId, 'action', 'leads-pay')
+      const price = info?.couponApplied ? info?.newPrice : info?.price
+      const { usdBal, ngnBal } = await getBalance(walletOf, chatId)
+      send(chatId, t.showWallet(usdBal, ngnBal))
+      const amount = info?.amount || 0
+      send(chatId, `💰 <b>Payment for ${info?.lastStep === a.validatorSelectFormat ? 'Phone Validation' : 'Phone Leads'}</b>\n\n📦 Quantity: <b>${amount.toLocaleString()}</b>\n💵 Total: <b>$${Number(price).toFixed(2)}</b>\n\nSelect payment method:`, k.pay)
+    },
     'choose-domain-to-buy': async () => {
       let text = ``
       if (await isSubscribed(chatId)) {
