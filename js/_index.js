@@ -9036,7 +9036,8 @@ app.get('/crypto-pay-leads', auth, async (req, res) => {
   const lang = info?.userLanguage ?? 'en'
   del(chatIdOfPayment, ref)
   const name = await get(nameOf, chatId)
-  const label = lastStep === 'validatorSelectFormat' ? 'Validation' : 'Leads'
+  const isValidator = lastStep === 'validatorSelectFormat'
+  const label = isValidator ? 'Validation' : 'Leads'
   set(payments, ref, `Crypto,${label},$${price},${chatId},${name},${new Date()},${value} ${coin}`)
   const usdIn = await convert(value, coin, 'usd')
   if (usdIn * 1.06 < price) {
@@ -9048,25 +9049,46 @@ app.get('/crypto-pay-leads', auth, async (req, res) => {
     addFundsTo(walletOf, chatId, 'usd', usdIn - price, lang)
     sendMessage(chatId, translation('t.sentMoreMoney', lang, `$${price}`, `$${usdIn}`))
   }
-  // Restore info fields needed for walletOk processing
-  await state.updateOne({ _id: parseFloat(chatId) }, { $set: {
-    amount: leadsData?.amount, country: leadsData?.country, stateName: leadsData?.state,
-    areaCode: leadsData?.area, carrier: leadsData?.carrier, targetName: leadsData?.targetName,
-    couponApplied: leadsData?.couponApplied, format: leadsData?.format, cnamMode: leadsData?.cnamMode,
-    price: Number(price), lastStep, coin: 'USD'
-  }})
-  // Execute the leads/validation order using the walletOk handler
+  // Process the leads order directly
   try {
-    const walletOkHandler = lastStep === 'validatorSelectFormat' ? 'validatorSelectFormat' : 'buyLeadsSelectFormat'
-    sendMessage(chatId, `✅ Crypto payment confirmed! Processing your ${label.toLowerCase()} order...`)
-    // Trigger the order by calling the internal endpoint
-    const axios = require('axios')
-    await axios.post(`http://localhost:${process.env.PORT || 5000}/trigger-leads-order`, {
-      chatId: String(chatId), lastStep: walletOkHandler, coin: 'USD'
-    }, { headers: { 'x-internal': 'true' } })
+    const ld = leadsData || {}
+    let cc = countryCodeOf[ld.country]
+    const cnam = ld.country === 'USA' ? ld.cnamMode : false
+    const format = ld.format
+    const l = format === buyLeadsSelectFormat[0]
+    if (isValidator) {
+      sendMessage(chatId, translation('t.validatorBulkNumbersStart', lang))
+      const phones = info?.phones?.slice(0, ld.amount)
+      const result = await validatePhoneBulkFile(ld.carrier, phones, cc, cnam, bot, chatId)
+      if (!result) return sendMessage(chatId, translation('t.validatorError', lang)) || res.send(html())
+      sendMessage(chatId, translation('t.validatorSuccess', lang, ld.amount, result.length))
+      cc = '+' + cc; const re = cc === '+1' ? '' : '0'
+      const file1 = 'leads.txt'
+      fs.writeFile(file1, result.map(a => (l ? a[0].replace(cc, re) : a[0])).join('\n'), () => bot?.sendDocument(chatId, file1).catch(() => {}))
+      if (cnam) { const f2 = 'leads_with_cnam.txt'; fs.writeFile(f2, result.map(a => (l ? a[0].replace(cc, re) : a[0]) + ' ' + a[3]).join('\n'), () => { bot?.sendDocument(chatId, f2).catch(() => {}); bot?.sendDocument(TELEGRAM_ADMIN_CHAT_ID, f2).catch(() => {}) }) }
+      else if (ld.country !== 'USA') { const f2 = 'leads_with_carriers.txt'; fs.writeFile(f2, result.map(a => (l ? a[0].replace(cc, re) : a[0]) + ' ' + a[1]).join('\n'), () => { bot?.sendDocument(chatId, f2).catch(() => {}); bot?.sendDocument(TELEGRAM_ADMIN_CHAT_ID, f2).catch(() => {}) }) }
+    } else {
+      const _startMsg = ld.targetName ? '🎯 Sourcing real data in progress. Please wait...' : translation('t.validatorBulkNumbersStart', lang)
+      sendMessage(chatId, _startMsg)
+      let areaCodes
+      if (info?.targetAreaCodes) { areaCodes = ld.area === 'Mixed Area Codes' ? info.targetAreaCodes : [ld.area] }
+      else if (['Australia'].includes(ld.country)) { areaCodes = ['4'] }
+      else { areaCodes = ld.area === 'Mixed Area Codes' ? _buyLeadsSelectAreaCode(ld.country, ld.area) : [ld.area] }
+      const result = await validateBulkNumbers(ld.carrier, ld.amount, cc, areaCodes, cnam, bot, chatId, lang)
+      if (!result) return sendMessage(chatId, translation('t.buyLeadsError', lang)) || res.send(html())
+      const _successMsg = ld.targetName ? `🎯 Your ${ld.amount} targeted leads are ready.` : translation('t.buyLeadsSuccess', lang, ld.amount)
+      sendMessage(chatId, _successMsg)
+      cc = '+' + cc; const re = cc === '+1' ? '' : '0'
+      const file1 = 'leads.txt'
+      fs.writeFile(file1, result.map(a => (l ? a[0].replace(cc, re) : a[0])).join('\n'), () => bot?.sendDocument(chatId, file1).catch(() => {}))
+      if (cnam) { const f2 = 'leads_with_cnam.txt'; fs.writeFile(f2, result.map(a => (l ? a[0].replace(cc, re) : a[0]) + ' ' + a[3]).join('\n'), () => { bot?.sendDocument(chatId, f2).catch(() => {}); bot?.sendDocument(TELEGRAM_ADMIN_CHAT_ID, f2).catch(() => {}) }) }
+      else if (ld.country !== 'USA') { const f2 = 'leads_with_carriers.txt'; fs.writeFile(f2, result.map(a => (l ? a[0].replace(cc, re) : a[0]) + ' ' + a[1]).join('\n'), () => { bot?.sendDocument(chatId, f2).catch(() => {}); bot?.sendDocument(TELEGRAM_ADMIN_CHAT_ID, f2).catch(() => {}) }) }
+    }
+    set(payments, nanoid(), `Crypto,${label},${ld.amount} leads,$${price},${chatId},${name},${new Date()},${coin}`)
+    notifyGroup(`📱 <b>${label} Acquired!</b>\nUser ${maskName(name)} just got ${ld.amount?.toLocaleString()} verified phone leads via crypto.\nQuality leads on demand — try it — /start`)
   } catch (e) {
-    log(`[crypto-pay-leads] Error triggering order: ${e.message}`)
-    sendMessage(chatId, `✅ Payment received! Your wallet has been credited $${Number(price).toFixed(2)}. Please use wallet balance to complete your ${label.toLowerCase()} purchase.`)
+    log(`[crypto-pay-leads] Error: ${e.message}`)
+    sendMessage(chatId, `✅ Payment received! Your wallet has been credited $${Number(price).toFixed(2)}. Use wallet to complete your ${label.toLowerCase()} purchase.`)
     addFundsTo(walletOf, chatId, 'usd', Number(price), lang)
   }
   res.send(html())
