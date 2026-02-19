@@ -308,8 +308,8 @@ async function handleCallAnswered(payload) {
     const mode = fwdConfig.mode || 'always'
 
     if (mode === 'always') {
-      log(`[Voice] Forwarding call to ${fwdConfig.forwardTo}`)
-      await _telnyxApi.transferCall(callControlId, fwdConfig.forwardTo)
+      log(`[Voice] Forwarding call to ${fwdConfig.forwardTo} from ${to}`)
+      await _telnyxApi.transferCall(callControlId, fwdConfig.forwardTo, to)
       return
     }
     if (mode === 'no_answer') {
@@ -319,9 +319,9 @@ async function handleCallAnswered(payload) {
       setTimeout(async () => {
         const current = activeCalls[callControlId]
         if (current && current.phase === 'ringing') {
-          log(`[Voice] No answer after ${fwdConfig.ringTimeout}s, forwarding to ${fwdConfig.forwardTo}`)
+          log(`[Voice] No answer after ${fwdConfig.ringTimeout}s, forwarding to ${fwdConfig.forwardTo} from ${to}`)
           current.phase = 'forwarding'
-          await _telnyxApi.transferCall(callControlId, fwdConfig.forwardTo)
+          await _telnyxApi.transferCall(callControlId, fwdConfig.forwardTo, to)
         }
       }, ringTime)
       return
