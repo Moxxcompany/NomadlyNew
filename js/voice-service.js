@@ -217,25 +217,55 @@ async function handleCallInitiated(payload) {
     recordingEnabled: num.features?.recording === true && canAccessFeature(num.plan, 'callRecording'),
   }
 
-  // ── MID-CALL LIMIT MONITOR (with overage billing) ──
+  // ── MID-CALL LIMIT MONITOR ──
+  // For forwarded calls: check wallet can cover CALL_FORWARDING_RATE_MIN each minute
+  // For regular calls: check plan minutes + overage
   const minuteLimit = getMinuteLimit(num.plan)
-  if (minuteLimit !== Infinity) {
-    const session = activeCalls[callControlId]
-    session._limitTimer = setInterval(async () => {
-      const sess = activeCalls[callControlId]
-      if (!sess) { clearInterval(session._limitTimer); return }
-      const elapsedSec = Math.floor((Date.now() - sess.startedAt.getTime()) / 1000)
-      const elapsedMin = Math.ceil(elapsedSec / 60)
+  const sessionRef = activeCalls[callControlId]
+  sessionRef._limitTimer = setInterval(async () => {
+    const sess = activeCalls[callControlId]
+    if (!sess) { clearInterval(sessionRef._limitTimer); return }
+    const elapsedSec = Math.floor((Date.now() - sess.startedAt.getTime()) / 1000)
+    const elapsedMin = Math.ceil(elapsedSec / 60)
+
+    // Forwarded calls: bill at CALL_FORWARDING_RATE_MIN per minute from wallet
+    if (sess.phase === 'forwarding' || sess.phase === 'ivr_forward') {
+      if (_walletOf) {
+        try {
+          const { usdBal } = await getBalance(_walletOf, chatId)
+          if (usdBal >= CALL_FORWARDING_RATE_MIN) {
+            await atomicIncrement(_walletOf, chatId, 'usdOut', CALL_FORWARDING_RATE_MIN)
+            if (!sess._fwdBillingNotified) {
+              sess._fwdBillingNotified = true
+              _bot?.sendMessage(chatId, `💰 <b>Forwarding Active</b>\n\n📞 ${formatPhone(to)}\nCharging $${CALL_FORWARDING_RATE_MIN}/min from wallet.\nWallet: $${(usdBal - CALL_FORWARDING_RATE_MIN).toFixed(2)}`, { parse_mode: 'HTML' }).catch(() => {})
+            }
+          } else {
+            log(`[Voice] Forwarded call wallet empty for ${to}: $${usdBal}. Disconnecting.`)
+            clearInterval(sessionRef._limitTimer)
+            sess._limitDisconnect = true
+            try {
+              await _telnyxApi.speakOnCall(callControlId, 'Your wallet balance has been exhausted. This forwarded call will now end.')
+              setTimeout(() => _telnyxApi.hangupCall(callControlId), 5000)
+            } catch (e) {
+              await _telnyxApi.hangupCall(callControlId).catch(() => {})
+            }
+            _bot?.sendMessage(chatId, `🚫 <b>Forwarded Call Disconnected — Wallet Empty</b>\n\n📞 ${formatPhone(to)}\n⏱️ ~${elapsedMin} min\n\nWallet ran out during forwarded call ($${CALL_FORWARDING_RATE_MIN}/min). Top up wallet to continue.`, { parse_mode: 'HTML' }).catch(() => {})
+          }
+        } catch (e) { log(`[Voice] Mid-call forwarding billing error: ${e.message}`) }
+      }
+      return
+    }
+
+    // Regular (non-forwarded) calls: plan minutes + overage
+    if (minuteLimit !== Infinity) {
       const projectedTotal = (num.minutesUsed || 0) + elapsedMin
       if (projectedTotal >= minuteLimit) {
-        // Check wallet for overage
         let canContinue = false
         if (_walletOf) {
           try {
             const { usdBal } = await getBalance(_walletOf, chatId)
             if (usdBal >= OVERAGE_RATE_MIN) {
               canContinue = true
-              // Charge 1 minute of overage
               await atomicIncrement(_walletOf, chatId, 'usdOut', OVERAGE_RATE_MIN)
               if (!sess._overageNotified) {
                 sess._overageNotified = true
@@ -246,7 +276,7 @@ async function handleCallInitiated(payload) {
         }
         if (!canContinue) {
           log(`[Voice] Mid-call limit reached for ${to}: projected ${projectedTotal}/${minuteLimit} min, no wallet balance. Disconnecting.`)
-          clearInterval(session._limitTimer)
+          clearInterval(sessionRef._limitTimer)
           sess._limitDisconnect = true
           try {
             await _telnyxApi.speakOnCall(callControlId, 'Your call limit and wallet balance have been exhausted. This call will now end.')
@@ -257,8 +287,8 @@ async function handleCallInitiated(payload) {
           _bot?.sendMessage(chatId, `🚫 <b>Call Disconnected — Wallet Empty</b>\n\n📞 ${formatPhone(to)}\n👤 Caller: ${formatPhone(from)}\n⏱️ ~${elapsedMin} min\n\nPlan minutes (${minuteLimit}) exhausted and wallet balance ran out during the call. Top up your wallet ($${OVERAGE_RATE_MIN}/min overage) or upgrade your plan.`, { parse_mode: 'HTML' }).catch(() => {})
         }
       }
-    }, 60000)
-  }
+    }
+  }, 60000)
 
   // Answer the call
   await _telnyxApi.answerCall(callControlId)
