@@ -158,24 +158,17 @@ const bal = (usd, ngn) =>
     : `$${view(usd)}`
 
 const t = {
-  becomeReseller: `Hi,
+  becomeReseller: (() => {
+    const services = ['URL Shortening', 'Domain Registration']
+    if (process.env.PHONE_SERVICE_ON === 'true') services.push('Cloud Phone')
+    if (HIDE_SMS_APP !== 'true') services.push('BulkSMS')
+    if (process.env.OFFSHORE_HOSTING_ON !== 'false') services.push('Offshore Hosting')
+    return `<b>Become a ${CHAT_BOT_BRAND} Reseller</b>
 
-I'm reaching out to offer you a fantastic opportunity to become a reseller for ${CHAT_BOT_BRAND}Bot's powerful SMS marketing and hosting software.
+Resell our full suite — ${services.join(', ')} — under your brand.
 
-Key Details:
-
-Profit Share: Earn a competitive 65/35% split on each sale.
-
-Set-up Fee: Contact support for details
-
-Interested? Reach out to us at ${SUPPORT_HANDLE} to learn more about this lucrative partnership.
-
-Looking forward to potentially collaborating with you!
-
-Best regards,
-
-${CHAT_BOT_BRAND} Team
-`,
+<b>65/35%</b> profit share on every sale. Tap 💬 <b>Get Support</b> to get started.`
+  })(),
   resetLoginAdmit: `${CHAT_BOT_BRAND} SMS: You have been successfully logged out of your previous device.Please login now`,
   resetLoginDeny: 'Ok sure. No further action required.',
   resetLogin: `${CHAT_BOT_BRAND}SMS: Are you trying to log out of your previous device?`,
@@ -738,7 +731,7 @@ const userKeyboard = {
       [user.cloudPhone],
       [user.phoneNumberLeads],
       HIDE_SMS_APP === 'true' ? [user.domainNames] : [user.freeTrialAvailable, user.domainNames],
-      [user.wallet, user.viewPlan, user.buyPlan],
+      [user.wallet, user.viewPlan],
       HIDE_BECOME_RESELLER === 'true'
         ? [user.changeSetting, user.getSupport, user.joinChannel]
         : [user.changeSetting, user.becomeReseller, user.getSupport],
