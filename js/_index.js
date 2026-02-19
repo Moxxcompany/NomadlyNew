@@ -861,7 +861,7 @@ bot?.on('message', async msg => {
         }
       } catch (e) {
         log(`[Voice] Audio greeting upload error: ${e.message}`)
-        return send(chatId, '❌ Failed to process audio. Please try again.')
+        return send(chatId, t.failedAudio)
       }
     }
     // If not in audio upload state, ignore voice/audio messages
@@ -1405,7 +1405,7 @@ bot?.on('message', async msg => {
     //
     //
     [admin.messageUsers]: () => {
-      send(chatId, 'Enter message', bc)
+      send(chatId, t.enterBroadcastMessage, bc)
       set(state, chatId, 'action', admin.messageUsers)
     },
     adminConfirmMessage: () => {
@@ -4224,7 +4224,7 @@ bot?.on('message', async msg => {
     if (message === t.back) return goto.domainNsSelect()
     const nsParts = message.trim().split(/\s+/)
     if (nsParts.length < 2) {
-      return send(chatId, 'Please provide at least 2 nameservers separated by space.')
+      return send(chatId, t.provide2Nameservers)
     }
     // Basic validation
     const nsRegex = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
@@ -4771,7 +4771,7 @@ bot?.on('message', async msg => {
 
     if (message === t.activateShortener) {
       const domain = info?.domainToManage
-      if (!domain) return send(chatId, 'No domain selected.')
+      if (!domain) return send(chatId, t.noDomainSelected)
       send(chatId, `🔗 <b>Activating URL Shortener</b> for <b>${domain}</b>...\n\nThis will configure DNS to point your domain to our shortener service. Please wait — this may take a few minutes.`)
       
       // Run the same linking process as when user answers "Yes" during purchase
