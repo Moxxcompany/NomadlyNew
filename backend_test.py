@@ -529,21 +529,20 @@ class CloudPhonePlanChangeTester:
             )
 
     def run_all_tests(self):
-        """Run all Nomadly Cloud Phone Bot UX Improvement tests"""
-        print("🔍 Testing Nomadly Telegram Cloud Phone Bot - UX Improvements\n")
+        """Run all Cloud Phone Plan Change Flow tests"""
+        print("🔍 Testing Cloud Phone Plan Change Flow\n")
         
         # Core functionality tests
         self.test_health_endpoint()
         self.test_nodejs_bot_loads_without_errors()
         
-        # UX-specific improvement tests
-        self.test_no_remaining_kof_back_patterns()
-        self.test_phone_config_sip_settings_renamed()
-        self.test_phone_config_delete_number_changes()
-        self.test_phone_config_stronger_warnings()
-        self.test_phone_config_admin_release_changes()
-        self.test_index_build_manage_menu_sip_credentials()
-        self.test_config_kof_recognizes_back_cancel()
+        # Plan change flow specific tests
+        self.test_sip_credentials_created_during_purchase()
+        self.test_plan_change_downgrade_pre_warning()
+        self.test_plan_change_downgrade_disables_features()
+        self.test_plan_change_upgrade_re_enables_sip()
+        self.test_sip_credentials_handler_checks_flags()
+        self.test_sip_credentials_button_always_visible()
         
         # Generate summary
         print(f"\n📊 Test Summary:")
