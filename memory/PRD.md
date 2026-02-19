@@ -28,7 +28,8 @@ User requested setup of the Nomadly Telegram Bot application. Tasks: update .env
 - Verified webhook URLs use pod URL with /api prefix
 - Installed Node.js dependencies (npm install)
 - Verified all services: backend proxy, Node.js bot, MongoDB, Telegram webhook, Telnyx resources
-- Testing passed: 95% overall (Backend 85.7%, Frontend 100%)
+- **CNAM Priority Change**: Switched from Multitel (primary) → SignalWire (fallback) to **Telnyx (primary) → Multitel (fallback) → SignalWire (last resort)**. Telnyx uses Number Lookup API (`/v2/number_lookup/{phone}?type=caller-name`). All errors (insufficient balance, network, etc.) cascade to Multitel, then SignalWire.
+- Testing passed: 94% overall
 
 ## Prioritized Backlog
 - P0: None - system fully operational
