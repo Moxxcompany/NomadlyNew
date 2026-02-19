@@ -34,7 +34,13 @@ User requested setup of the Nomadly Telegram Bot application. Tasks: update .env
 - **SIP Setup Guide**: Renamed "SIP Settings" → "SIP Setup Guide" (clearer it's a guide, not config). Trimmed verbose multi-section softphone text to clean compact format.
 - **SIP Credentials Always Visible**: Moved out of Pro/Business plan gate in `buildManageMenu` — now always shown so users can find their SIP creds (Starter users get upgrade prompt).
 - **Delete Number (was Release)**: Renamed "Release Number" → "Delete Number" with stronger double confirmation: first warning says "This cannot be undone" + lists consequences, second asks for last 4 digits as "Final confirmation". Button text: "Yes, Permanently Delete" / "No, Keep It". Admin notification updated to "Number Deleted".
-- Testing passed: 100% (iterations 26-29)
+- **SIP Lifecycle Management**: 
+  - SIP credentials ARE created for all plans at purchase (sipUsername + sipPassword + Telnyx telephony_credential).
+  - On downgrade to a plan without SIP access (e.g., Pro→Starter): SIP soft-disabled via `sipDisabled=true` flag (credentials kept on Telnyx for later re-enable). User warned before downgrade.
+  - On upgrade back to SIP-eligible plan: auto re-enabled (`sipDisabled=false`).
+  - Pre-downgrade warning shows ALL features that will be lost (SIP, IVR, Recording, Voicemail, Email) with limit changes (minutes/SMS) before user confirms.
+  - SIP Credentials handler checks both `sipDisabled` flag AND `canAccessFeature()`.
+- Testing passed: 100% (iterations 26-30)
 
 ## Prioritized Backlog
 - P0: None - system fully operational
