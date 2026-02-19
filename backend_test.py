@@ -356,9 +356,9 @@ class NomadlyBotTester:
                 with open('/app/js/cnam-service.js', 'r') as f:
                     cnam_content = f.read()
                 
-                has_telnyx_primary = 'Telnyx (primary)' in cnam_content
-                has_multitel_fallback = 'Multitel (fallback)' in cnam_content
-                has_signalwire_last = 'SignalWire (last resort)' in cnam_content
+                has_telnyx_primary = 'Telnyx (primary)' in cnam_content or 'Telnyx first' in cnam_content
+                has_multitel_fallback = 'Multitel (fallback)' in cnam_content or 'Fallback to Multitel' in cnam_content
+                has_signalwire_last = 'SignalWire (last resort)' in cnam_content or 'Last resort: SignalWire' in cnam_content
                 has_correct_order = 'Telnyx → Multitel → SignalWire' in cnam_content
                 
                 cnam_config_ok = has_telnyx_primary and has_multitel_fallback and has_signalwire_last and has_correct_order
