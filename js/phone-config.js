@@ -689,6 +689,11 @@ const msg = {
     changePlanHeader: (number, plan, price) => `📦 Changer de forfait pour ${formatPhone(number)}\n\nActuel : ${plan.charAt(0).toUpperCase() + plan.slice(1)} — $${price}/mois`,
     planChanged: (plan, price) => `✅ Forfait changé : <b>${plan.charAt(0).toUpperCase() + plan.slice(1)}</b> — $${price}/mois`,
     featuresDisabled: 'Fonctionnalités désactivées :',
+    noIvrOptions: 'Aucune option de menu IVR configurée.',
+    whichKeyRemove: 'Quelle touche voulez-vous supprimer ?',
+    sendVoiceOrText: 'Envoyez un message vocal, un fichier audio, ou tapez un texte personnalisé.',
+    noActivity: 'Aucune activité pour le moment.',
+    insufficientBalUpgrade: (needed, bal) => `❌ Solde insuffisant. Vous avez besoin de $${needed.toFixed(2)} mais n'avez que $${bal.toFixed(2)}.\n\nVeuillez recharger votre portefeuille.`,
   },
   zh: {
     selectOption: '请选择一个选项。',
@@ -717,6 +722,11 @@ const msg = {
     changePlanHeader: (number, plan, price) => `📦 更改 ${formatPhone(number)} 的套餐\n\n当前：${plan.charAt(0).toUpperCase() + plan.slice(1)} — $${price}/月`,
     planChanged: (plan, price) => `✅ 套餐已更改为 <b>${plan.charAt(0).toUpperCase() + plan.slice(1)}</b> — $${price}/月`,
     featuresDisabled: '已禁用的功能：',
+    noIvrOptions: '尚未配置 IVR 菜单选项。',
+    whichKeyRemove: '要删除哪个按键？',
+    sendVoiceOrText: '发送语音消息、音频文件，或输入自定义问候语文本。',
+    noActivity: '暂无活动记录。',
+    insufficientBalUpgrade: (needed, bal) => `❌ 余额不足。需要 $${needed.toFixed(2)}，但仅有 $${bal.toFixed(2)}。\n\n请先充值。`,
   },
   hi: {
     selectOption: 'कृपया एक विकल्प चुनें।',
@@ -745,6 +755,11 @@ const msg = {
     changePlanHeader: (number, plan, price) => `📦 ${formatPhone(number)} का प्लान बदलें\n\nवर्तमान: ${plan.charAt(0).toUpperCase() + plan.slice(1)} — $${price}/माह`,
     planChanged: (plan, price) => `✅ प्लान <b>${plan.charAt(0).toUpperCase() + plan.slice(1)}</b> — $${price}/माह में बदला`,
     featuresDisabled: 'अक्षम सुविधाएँ:',
+    noIvrOptions: 'कोई IVR मेनू विकल्प कॉन्फ़िगर नहीं किया गया।',
+    whichKeyRemove: 'कौन सी कुंजी हटानी है?',
+    sendVoiceOrText: 'वॉइस मैसेज, ऑडियो फ़ाइल भेजें, या कस्टम ग्रीटिंग टेक्स्ट टाइप करें।',
+    noActivity: 'अभी तक कोई गतिविधि नहीं।',
+    insufficientBalUpgrade: (needed, bal) => `❌ अपर्याप्त बैलेंस। आपको $${needed.toFixed(2)} चाहिए लेकिन $${bal.toFixed(2)} है।\n\nकृपया पहले वॉलेट में रिचार्ज करें।`,
   },
 }
 
