@@ -2513,7 +2513,7 @@ bot?.on('message', async msg => {
       }
 
       // Buy number via Telnyx
-      send(chatId, '🔄 Purchasing your number...')
+      send(chatId, phoneConfig.getMsg(info?.userLanguage).purchasingNumber)
       const selectedNumber = info?.cpSelectedNumber
       const planKey = info?.cpPlanKey
       const plan = phoneConfig.plans[planKey]
@@ -5110,14 +5110,14 @@ bot?.on('message', async msg => {
       // Show overall usage if they have numbers
       const userData = await get(phoneNumbersOf, chatId)
       const numbers = (userData?.numbers || []).filter(n => n.status === 'active')
-      if (!numbers.length) return send(chatId, 'No active numbers. Buy one first!', k.of([[pc.buyPhoneNumber]]))
+      if (!numbers.length) return send(chatId, phoneConfig.getMsg(info?.userLanguage).noActiveNumbers, k.of([[pc.buyPhoneNumber]]))
       // Show list to pick a number
       set(state, chatId, 'action', a.cpMyNumbers)
       await saveInfo('cpNumbers', numbers)
       const numBtns = numbers.map((_, i) => String(i + 1))
       return send(chatId, phoneConfig.txt.myNumbersList(numbers), k.of([numBtns]))
     }
-    return send(chatId, 'Please select an option.')
+    return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectOption)
   }
 
   // ── BUY FLOW: Select Country ──
@@ -5125,7 +5125,7 @@ bot?.on('message', async msg => {
     const pc = phoneConfig.btn
     if (message === t.back || message === pc.back) return goto.submenu5()
     const countryCode = phoneConfig.countryByName[message]
-    if (!countryCode) return send(chatId, 'Please select a valid country.')
+    if (!countryCode) return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectValidCountry)
     await saveInfo('cpCountryCode', countryCode)
     await saveInfo('cpCountryName', message)
     set(state, chatId, 'action', a.cpSelectType)
@@ -5145,7 +5145,7 @@ bot?.on('message', async msg => {
     let numberType = null
     if (message === pc.localNumber) numberType = 'local'
     if (message === pc.tollFreeNumber) numberType = 'toll_free'
-    if (!numberType) return send(chatId, 'Please select Local or Toll-Free.')
+    if (!numberType) return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectLocalOrTollFree)
     await saveInfo('cpNumberType', numberType)
 
     // If US, show area codes. Otherwise, skip to search.
@@ -5181,7 +5181,7 @@ bot?.on('message', async msg => {
       return send(chatId, phoneConfig.txt.enterAreaCode)
     }
     const areaCode = phoneConfig.areaByLabel[message]
-    if (!areaCode) return send(chatId, 'Please select a valid area or use Search.')
+    if (!areaCode) return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectValidArea)
     await saveInfo('cpAreaCode', areaCode)
     await saveInfo('cpAreaName', message)
 
@@ -5206,7 +5206,7 @@ bot?.on('message', async msg => {
       return send(chatId, phoneConfig.txt.selectArea, k.of(rows))
     }
     const areaCode = message.replace(/\D/g, '')
-    if (!areaCode || areaCode.length < 2) return send(chatId, 'Enter a valid area code (e.g. 415).')
+    if (!areaCode || areaCode.length < 2) return send(chatId, phoneConfig.getMsg(info?.userLanguage).enterValidAreaCode)
     await saveInfo('cpAreaCode', areaCode)
     await saveInfo('cpAreaName', `Area ${areaCode}`)
 
@@ -5246,7 +5246,7 @@ bot?.on('message', async msg => {
     }
     const idx = parseInt(message) - 1
     const results = info?.cpSearchResults || []
-    if (isNaN(idx) || idx < 0 || idx >= results.length) return send(chatId, 'Tap a number (1-5) to select.')
+    if (isNaN(idx) || idx < 0 || idx >= results.length) return send(chatId, phoneConfig.getMsg(info?.userLanguage).tapNumberToSelect)
     const selected = results[idx]
     await saveInfo('cpSelectedNumber', selected.phone_number)
 
@@ -5268,7 +5268,7 @@ bot?.on('message', async msg => {
       return send(chatId, phoneConfig.txt.showNumbers(location, results), k.of([numBtns, [pc.showMore]]))
     }
     const planKey = phoneConfig.planByButton[message]
-    if (!planKey) return send(chatId, 'Please select a plan.')
+    if (!planKey) return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectPlan)
     const plan = phoneConfig.plans[planKey]
     await saveInfo('cpPlanKey', planKey)
     await saveInfo('cpPrice', plan.price)
@@ -5295,7 +5295,7 @@ bot?.on('message', async msg => {
     if (message === pc.proceedPayment) {
       return goto['phone-pay']()
     }
-    return send(chatId, 'Please proceed to payment or go back.')
+    return send(chatId, phoneConfig.getMsg(info?.userLanguage).proceedOrBack)
   }
 
   // ── PHONE PAY ──
@@ -5433,7 +5433,7 @@ bot?.on('message', async msg => {
     }
     const idx = parseInt(message) - 1
     const numbers = info?.cpNumbers || []
-    if (isNaN(idx) || idx < 0 || idx >= numbers.length) return send(chatId, 'Select a number by tapping its index.')
+    if (isNaN(idx) || idx < 0 || idx >= numbers.length) return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectByIndex)
     const num = numbers[idx]
     await saveInfo('cpActiveNumber', num)
     set(state, chatId, 'action', a.cpManageNumber)
@@ -5596,7 +5596,7 @@ bot?.on('message', async msg => {
       ]))
     }
 
-    return send(chatId, 'Please select an option.')
+    return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectOption)
   }
 
   // ━━━ CALL FORWARDING ━━━
@@ -5637,7 +5637,7 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpEnterForwardNumber)
       return send(chatId, t.fwdEnterNumber(phoneConfig.CALL_FORWARDING_RATE_MIN, walletBal), { parse_mode: 'HTML' })
     }
-    return send(chatId, 'Select a forwarding mode.')
+    return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectForwardMode)
   }
   if (action === a.cpEnterForwardNumber) {
     const pc = phoneConfig.btn
@@ -5654,7 +5654,7 @@ bot?.on('message', async msg => {
       return send(chatId, phoneConfig.txt.forwardingStatus(num.phoneNumber, fwd, walletBal), k.of(btns))
     }
     const forwardTo = message.replace(/[^+\d]/g, '')
-    if (!forwardTo || forwardTo.length < 7) return send(chatId, 'Enter a valid phone number with country code (e.g. +14155551234).')
+    if (!forwardTo || forwardTo.length < 7) return send(chatId, phoneConfig.getMsg(info?.userLanguage).enterValidPhone)
 
     // ── Block premium-rate prefixes ──
     if (phoneConfig.isBlockedPrefix(forwardTo)) {
@@ -5741,7 +5741,7 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpEnterWebhook)
       return send(chatId, phoneConfig.txt.enterWebhook)
     }
-    return send(chatId, 'Select an option.')
+    return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectOption)
   }
   if (action === a.cpEnterEmail) {
     const pc = phoneConfig.btn
@@ -5755,7 +5755,7 @@ bot?.on('message', async msg => {
       const whLabel = `🔗 Webhook URL ${smsConf.webhookUrl ? '✅ Set' : '❌ Not Set'}`
       return send(chatId, phoneConfig.txt.smsSettingsMenu(num.phoneNumber, smsConf), k.of([[tgLabel], [emLabel], [whLabel]]))
     }
-    if (!isValidEmail(message)) return send(chatId, 'Enter a valid email address.')
+    if (!isValidEmail(message)) return send(chatId, phoneConfig.getMsg(info?.userLanguage).enterValidEmail)
     const smsConf = num.features?.smsForwarding || {}
     await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'smsForwarding', { ...smsConf, toEmail: message })
     num.features.smsForwarding = { ...smsConf, toEmail: message }
@@ -5809,7 +5809,7 @@ bot?.on('message', async msg => {
       await saveInfo('cpInboxPage', page)
       return showSmsInbox(chatId, num, page)
     }
-    return send(chatId, 'Select an option.')
+    return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectOption)
   }
 
   // ━━━ VOICEMAIL ━━━
@@ -5871,7 +5871,7 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpManageNumber)
       return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
-    return send(chatId, 'Select an option.')
+    return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectOption)
   }
 
   // ━━━ VOICEMAIL GREETING ━━━
@@ -5914,7 +5914,7 @@ bot?.on('message', async msg => {
         : [[pc.enableVoicemail]]
       return send(chatId, phoneConfig.txt.voicemailMenu(num.phoneNumber, vm), k.of(btns))
     }
-    return send(chatId, 'Select an option.')
+    return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectOption)
   }
 
   // ━━━ VOICEMAIL AUDIO UPLOAD ━━━
@@ -5981,7 +5981,7 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpManageNumber)
       return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
-    return send(chatId, 'Select an option.')
+    return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectOption)
   }
 
   // ━━━ IVR / AUTO-ATTENDANT (Business) ━━━
@@ -6040,7 +6040,7 @@ bot?.on('message', async msg => {
         [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
       ]))
     }
-    return send(chatId, 'Select an option.')
+    return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectOption)
   }
 
   // IVR Greeting input
@@ -6179,7 +6179,7 @@ bot?.on('message', async msg => {
     if (message === pc.softphoneGuide) {
       return send(chatId, phoneConfig.txt.softphoneGuide(phoneConfig.SIP_DOMAIN), k.of([]))
     }
-    return send(chatId, 'Select an option.')
+    return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectOption)
   }
 
   // ━━━ RENEW / CHANGE PLAN ━━━
@@ -6223,7 +6223,7 @@ bot?.on('message', async msg => {
       if (currentPlan !== 'business') btns.push([`👑 Upgrade to Business — $${phoneConfig.PHONE_BUSINESS_PRICE}/mo`])
       return send(chatId, `📦 Change plan for ${phoneConfig.formatPhone(num.phoneNumber)}\n\nCurrent: ${num.plan.charAt(0).toUpperCase() + num.plan.slice(1)} — $${num.planPrice}/mo`, k.of(btns))
     }
-    return send(chatId, 'Select an option.')
+    return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectOption)
   }
   if (action === a.cpChangePlan) {
     const pc = phoneConfig.btn
@@ -6304,7 +6304,7 @@ bot?.on('message', async msg => {
     if (message.includes('Starter')) newPlan = 'starter'
     if (message.includes('Pro')) newPlan = 'pro'
     if (message.includes('Business')) newPlan = 'business'
-    if (!newPlan) return send(chatId, 'Select a valid plan.')
+    if (!newPlan) return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectValidPlan)
     const oldPlan = num.plan
 
     // Check what features will be lost on downgrade
@@ -6394,7 +6394,7 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpReleaseDigits)
       return send(chatId, phoneConfig.txt.releaseConfirmDigits(last4))
     }
-    return send(chatId, 'Please confirm or cancel.')
+    return send(chatId, phoneConfig.getMsg(info?.userLanguage).confirmOrCancel)
   }
   if (action === a.cpReleaseDigits) {
     const pc = phoneConfig.btn
