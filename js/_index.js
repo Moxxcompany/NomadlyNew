@@ -6190,6 +6190,7 @@ bot?.on('message', async msg => {
     if (message === pc.ivrGreeting) {
       set(state, chatId, 'action', a.cpIvrGreeting)
       return send(chatId, `🎤 <b>Set IVR Greeting</b>\n\nChoose how to create your greeting:`, k.of([
+        ['📋 Use Template'],
         ['📝 Type Text (AI Voice)'],
         ['🎙️ Upload Audio'],
       ]))
@@ -6251,7 +6252,7 @@ bot?.on('message', async msg => {
       set(state, chatId, 'action', a.cpIvrTemplate)
       await saveInfo('cpTtsDraft', { type: 'ivrGreeting', method: 'template' })
       const catBtns = ttsService.getTemplateCategoryButtons().map(b => [b])
-      return send(chatId, `📋 <b>Greeting Templates</b>\n\nSelect a category:`, k.of(catBtns))
+      return send(chatId, `📋 <b>Greeting Templates</b>\n\nProfessional templates for financial institutions — fraud hotlines, customer support, after-hours, and more. Select a category:`, k.of(catBtns))
     }
     return send(chatId, `Choose an option:`, k.of([['📋 Use Template'], ['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio']]))
   }
