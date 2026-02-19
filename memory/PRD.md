@@ -1,45 +1,44 @@
-# Nomadly Bot - PRD & Architecture
+# Nomadly Bot - PRD
 
-## Problem Statement
-1. Set up Nomadly Telegram bot on Emergent platform
-2. Complete greeting templates library with modification + translation
-3. Integrate crypto payment for Cloud Phone and Leads
-4. Fix IVR menu option wizard
-5. Fix "Try Different Voice" crash + upgrade to 15 ElevenLabs voices via EdenAI
-6. Plan availability toggle via .env (Coming Soon)
-7. Restrict phone number countries to US + Canada only
+## Original Problem Statement
+Update backend .env with provided API keys and credentials, using current pod URL for webhooks with /api prefix.
 
 ## Architecture
-- **Python FastAPI** (port 8001): Proxy → Node.js
-- **Node.js Express** (port 5000): Telegram bot + all business logic
-- **React Frontend** (port 3000): Web UI
-- **MongoDB**: Remote Railway-hosted
+- **Backend**: FastAPI (server.py) acts as reverse proxy to Node.js Express app
+- **Node.js**: Telegram Bot (Nomadly) with Express server on port 5000
+- **Frontend**: React app (basic shell)
+- **Database**: MongoDB (Railway-hosted)
+- **Integrations**: Telegram Bot, Telnyx (Cloud Phone), BlockBee (Crypto), DynoPay, Fincra, Connect Reseller (Domains), Cloudflare, Brevo (Email), OpenAI
 
-## What's Been Implemented
+## Core Features
+- URL Shortening (Bitly, Cuttly, custom domains)
+- Domain Registration & DNS Management
+- Phone Number Leads (targeted + validation)
+- Cloud Phone (Telnyx - SIP, SMS, Voice, IVR, Voicemail)
+- VPS Hosting
+- Wallet system (USD/NGN, crypto payments)
+- Subscription plans (Daily/Weekly/Monthly)
+- Multi-language support (EN, FR, HI, ZH)
 
-### Session 1 — Setup
-- Env vars, SELF_URL, npm install, webhook verified
+## What's Been Implemented (Feb 19, 2026)
+- Updated backend .env with all provided API keys
+- Set SELF_URL and SELF_URL_PROD to pod URL with /api: `https://quickstart-setup-1.preview.emergentagent.com/api`
+- Updated API_ALCAZAR, API_KEY_RAILWAY, RAILWAY_ENVIRONMENT_ID, RAILWAY_SERVICE_ID, TELNYX_MESSAGING_PROFILE_ID
+- Set PHONE_STARTER_ON, PHONE_PRO_ON, PHONE_BUSINESS_ON to empty (as specified)
+- Installed Node.js dependencies (npm install)
+- Verified all services running: FastAPI proxy, Node.js bot, MongoDB connected
+- Telegram webhook set to pod URL
+- Telnyx webhooks (voice, SMS) set to pod URL
+- All services healthy (confirmed via /api/health)
 
-### Session 2 — Templates + Cloud Phone Crypto
-- 3 template categories (18 templates), crypto/bank callbacks for phone
+## Status
+- All services: RUNNING
+- Database: CONNECTED
+- Telegram webhook: CONFIGURED
+- Telnyx webhooks: CONFIGURED
+- Connect Reseller API: WORKING
 
-### Session 3 — IVR Wizard + Leads Crypto
-- 5-step IVR option wizard, leads-pay with crypto/bank/wallet
-
-### Session 4 — Voice Bug + ElevenLabs
-- Fixed rawMsg → msg, 15 distinct ElevenLabs voices via EdenAI
-
-### Session 5 — Plan Availability Toggle
-- PHONE_STARTER_ON, PHONE_PRO_ON, PHONE_BUSINESS_ON env vars
-- Coming Soon message with feature teasers for disabled plans
-- Blocks purchase/change to unavailable plans
-
-### Session 6 — Country Restriction
-- Limited Buy Number to US + Canada only
-- Removed 30+ other countries and "More Countries" button
-- Can re-enable by adding countries back to arrays
-
-## Backlog
-- P1: Frontend UI development
-- P2: Re-enable international countries when ready
-- P2: More template categories
+## Next Tasks / Backlog
+- P0: None - setup complete
+- P1: Frontend dashboard development (if needed)
+- P2: Additional feature development per user requests
