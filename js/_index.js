@@ -5889,7 +5889,7 @@ bot?.on('message', async msg => {
     const pc = phoneConfig.btn
     const num = info?.cpActiveNumber
     if (!num) return goto.submenu5()
-    if (message === t.back || message === pc.back) {
+    if (message === t.back || message === pc.back || message === t.cancel) {
       set(state, chatId, 'action', a.cpVoicemail)
       const vm = num.features?.voicemail || {}
       const btns = vm.enabled
@@ -5903,7 +5903,11 @@ bot?.on('message', async msg => {
     }
     if (message === pc.vmCustomGreeting) {
       set(state, chatId, 'action', a.cpVmAudioUpload)
-      return send(chatId, phoneConfig.txt.vmSendAudioPrompt, k.of([]))
+      await saveInfo('cpTtsDraft', { type: 'vmGreeting' })
+      return send(chatId, `🎤 <b>Custom Greeting</b>\n\nChoose how to create your greeting:`, k.of([
+        ['📝 Type Text (AI Voice)'],
+        ['🎙️ Upload Audio'],
+      ]))
     }
     if (message === pc.vmDefaultGreeting) {
       const vm = num.features?.voicemail || {}
@@ -5913,60 +5917,166 @@ bot?.on('message', async msg => {
       await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'voicemail', vm)
       num.features.voicemail = vm
       await saveInfo('cpActiveNumber', num)
-      send(chatId, phoneConfig.txt.vmDefaultRestored)
+      send(chatId, `✅ Default greeting restored.`)
       set(state, chatId, 'action', a.cpVoicemail)
-      const btns = vm.enabled
-        ? [['🔊 Greeting'],
+      const btns = [['🔊 Greeting'],
            ['📲 VM to Telegram ' + (vm.forwardToTelegram !== false ? '✅ ON' : '❌ OFF')],
            ['📧 VM to Email ' + (vm.forwardToEmail ? '✅ ' + vm.forwardToEmail : '❌ OFF')],
            [`⏰ Ring Time: ${vm.ringTimeout || 25}s`],
            [pc.disableVoicemail]]
-        : [[pc.enableVoicemail]]
       return send(chatId, phoneConfig.txt.voicemailMenu(num.phoneNumber, vm), k.of(btns))
     }
-    return send(chatId, phoneConfig.getMsg(info?.userLanguage).selectOption)
+    return send(chatId, phoneConfig.txt.vmGreetingMenu(num.phoneNumber, num.features?.voicemail || {}), k.of([
+      [pc.vmCustomGreeting], [pc.vmDefaultGreeting],
+    ]))
   }
 
-  // ━━━ VOICEMAIL AUDIO UPLOAD ━━━
+  // ━━━ VOICEMAIL CUSTOM GREETING (TTS / Upload) ━━━
   if (action === a.cpVmAudioUpload) {
     const pc = phoneConfig.btn
     const num = info?.cpActiveNumber
     if (!num) return goto.submenu5()
-    if (message === t.back || message === pc.back) {
+    if (message === t.back || message === pc.back || message === t.cancel) {
       set(state, chatId, 'action', a.cpVmGreeting)
-      const vm = num.features?.voicemail || {}
-      return send(chatId, phoneConfig.txt.vmGreetingMenu(num.phoneNumber, vm), k.of([
-        [pc.vmCustomGreeting],
-        [pc.vmDefaultGreeting],
+      return send(chatId, phoneConfig.txt.vmGreetingMenu(num.phoneNumber, num.features?.voicemail || {}), k.of([
+        [pc.vmCustomGreeting], [pc.vmDefaultGreeting],
       ]))
     }
-    if (message === t.cancel) return goto.submenu5()
-    // Reject voicemail/greeting button text as greeting
-    const vmButtons = [pc.vmCustomGreeting, pc.vmDefaultGreeting, pc.enableVoicemail, pc.disableVoicemail]
-    if (vmButtons.includes(message) || message.startsWith('🔊 ') || message.startsWith('📲 ') || message.startsWith('📧 ') || message.startsWith('⏰ ')) {
-      return send(chatId, phoneConfig.txt.vmSendAudioPrompt, k.of([]))
+    const draft = info?.cpTtsDraft || {}
+    if (message === '📝 Type Text (AI Voice)') {
+      draft.method = 'tts'
+      await saveInfo('cpTtsDraft', draft)
+      set(state, chatId, 'action', a.cpVmGreetingVoice)
+      return send(chatId, `📝 Type the greeting callers will hear:`, k.of([]))
     }
-    // If user sends text instead of audio, treat as custom text greeting
-    if (message && !rawMsg?.voice && !rawMsg?.audio) {
+    if (message === '🎙️ Upload Audio') {
+      draft.method = 'upload'
+      await saveInfo('cpTtsDraft', draft)
+      set(state, chatId, 'action', a.cpVmGreetingPreview)
+      return send(chatId, `🎙️ Send a voice message or audio file.`, k.of([]))
+    }
+    if (rawMsg?.voice || rawMsg?.audio) {
+      const fileId = rawMsg.voice?.file_id || rawMsg.audio?.file_id
+      try {
+        const localPath = await ttsService.downloadTelegramAudio(bot, fileId, 'vm_greeting')
+        draft.audioPath = localPath
+        draft.method = 'uploaded'
+        await saveInfo('cpTtsDraft', draft)
+        await bot.sendVoice(chatId, localPath)
+        set(state, chatId, 'action', a.cpVmGreetingPreview)
+        return send(chatId, `✅ Audio received. Save as greeting?`, k.of([['✅ Save Greeting'], ['🎙️ Re-upload']]))
+      } catch (e) {
+        return send(chatId, `❌ Failed. Try again.`, k.of([]))
+      }
+    }
+    return send(chatId, `Choose:`, k.of([['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio']]))
+  }
+
+  // ━━━ VM GREETING: Text → Voice selection ━━━
+  if (action === a.cpVmGreetingVoice) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back || message === t.cancel) {
+      set(state, chatId, 'action', a.cpVmAudioUpload)
+      return send(chatId, `🎤 <b>Custom Greeting</b>\n\nChoose:`, k.of([['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio']]))
+    }
+    const draft = info?.cpTtsDraft || {}
+    if (draft.text && !draft.voice) {
+      const voiceKey = ttsService.getVoiceKeyByButton(message)
+      draft.voice = voiceKey
+      await saveInfo('cpTtsDraft', draft)
+      send(chatId, '🔄 Generating audio preview...')
+      try {
+        const result = await ttsService.generateTTS(draft.text, voiceKey)
+        draft.audioPath = result.audioPath
+        draft.audioUrl = result.audioUrl
+        await saveInfo('cpTtsDraft', draft)
+        await bot.sendVoice(chatId, result.audioPath)
+        set(state, chatId, 'action', a.cpVmGreetingPreview)
+        return send(chatId, `✅ Preview (${result.voice})\n\nSave this greeting?`, k.of([
+          ['✅ Save Greeting'], ['🔄 Try Different Voice'], ['📝 Re-type Text'],
+        ]))
+      } catch (e) {
+        log(`[TTS] Error: ${e.message}`)
+        return send(chatId, `❌ Audio generation failed: ${e.message}`, k.of([['📝 Type Text (AI Voice)'], ['🎙️ Upload Audio']]))
+      }
+    }
+    const vmButtons = [pc.vmCustomGreeting, pc.vmDefaultGreeting, pc.enableVoicemail, pc.disableVoicemail]
+    if (vmButtons.includes(message)) return send(chatId, `📝 Type the greeting text:`, k.of([]))
+    draft.text = message
+    await saveInfo('cpTtsDraft', draft)
+    const voiceBtns = ttsService.getVoiceButtons().map(v => [v])
+    return send(chatId, `🎙️ Choose a voice:\n\n<i>"${message.length > 80 ? message.slice(0, 80) + '...' : message}"</i>`, k.of(voiceBtns))
+  }
+
+  // ━━━ VM GREETING: Preview & Save ━━━
+  if (action === a.cpVmGreetingPreview) {
+    const pc = phoneConfig.btn
+    const num = info?.cpActiveNumber
+    if (!num) return goto.submenu5()
+    if (message === t.back || message === pc.back || message === t.cancel) {
+      set(state, chatId, 'action', a.cpVmGreeting)
+      return send(chatId, phoneConfig.txt.vmGreetingMenu(num.phoneNumber, num.features?.voicemail || {}), k.of([
+        [pc.vmCustomGreeting], [pc.vmDefaultGreeting],
+      ]))
+    }
+    const draft = info?.cpTtsDraft || {}
+    if (message === '🔄 Try Different Voice') {
+      draft.voice = null; draft.audioPath = null
+      await saveInfo('cpTtsDraft', draft)
+      set(state, chatId, 'action', a.cpVmGreetingVoice)
+      const voiceBtns = ttsService.getVoiceButtons().map(v => [v])
+      return send(chatId, `🎙️ Choose a different voice:`, k.of(voiceBtns))
+    }
+    if (message === '📝 Re-type Text') {
+      draft.text = null; draft.voice = null; draft.audioPath = null
+      await saveInfo('cpTtsDraft', draft)
+      set(state, chatId, 'action', a.cpVmGreetingVoice)
+      return send(chatId, `📝 Type the greeting text:`, k.of([]))
+    }
+    if (message === '🎙️ Re-upload') {
+      draft.audioPath = null; draft.method = 'upload'
+      await saveInfo('cpTtsDraft', draft)
+      return send(chatId, `🎙️ Send a voice message or audio file.`, k.of([]))
+    }
+    if (rawMsg?.voice || rawMsg?.audio) {
+      const fileId = rawMsg.voice?.file_id || rawMsg.audio?.file_id
+      try {
+        const localPath = await ttsService.downloadTelegramAudio(bot, fileId, 'vm_greeting')
+        draft.audioPath = localPath; draft.method = 'uploaded'
+        await saveInfo('cpTtsDraft', draft)
+        await bot.sendVoice(chatId, localPath)
+        return send(chatId, `✅ Audio received. Save?`, k.of([['✅ Save Greeting'], ['🎙️ Re-upload']]))
+      } catch (e) {
+        return send(chatId, `❌ Failed. Try again.`, k.of([]))
+      }
+    }
+    if (message === '✅ Save Greeting') {
       const vm = num.features?.voicemail || {}
       vm.greetingType = 'custom'
-      vm.customGreetingText = message
-      vm.customAudioGreetingUrl = null
+      if (draft.audioPath) {
+        vm.customAudioGreetingUrl = draft.audioUrl || draft.audioPath
+        vm.customGreetingText = draft.text || null
+        vm.greetingVoice = draft.voice || null
+      } else if (draft.text) {
+        vm.customGreetingText = draft.text
+        vm.customAudioGreetingUrl = null
+      }
       await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'voicemail', vm)
       num.features.voicemail = vm
       await saveInfo('cpActiveNumber', num)
-      send(chatId, phoneConfig.txt.vmTextGreetingSet(message))
+      await saveInfo('cpTtsDraft', null)
+      send(chatId, `✅ Voicemail greeting saved!`)
       set(state, chatId, 'action', a.cpVoicemail)
-      const btns = vm.enabled
-        ? [['🔊 Greeting'],
+      const btns = [['🔊 Greeting'],
            ['📲 VM to Telegram ' + (vm.forwardToTelegram !== false ? '✅ ON' : '❌ OFF')],
            ['📧 VM to Email ' + (vm.forwardToEmail ? '✅ ' + vm.forwardToEmail : '❌ OFF')],
            [`⏰ Ring Time: ${vm.ringTimeout || 25}s`],
            [pc.disableVoicemail]]
-        : [[pc.enableVoicemail]]
       return send(chatId, phoneConfig.txt.voicemailMenu(num.phoneNumber, vm), k.of(btns))
     }
-    return send(chatId, phoneConfig.getMsg(info?.userLanguage).sendVoiceOrText, k.of([]))
+    return send(chatId, `Choose:`, k.of([['✅ Save Greeting'], ['🔄 Try Different Voice'], ['📝 Re-type Text']]))
   }
 
   // ━━━ CALL RECORDING (Business) ━━━
