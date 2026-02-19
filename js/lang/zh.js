@@ -173,24 +173,17 @@ const t = {
   back: '返回',
   cancel: '取消',
   skip: '跳过',
-  becomeReseller: `你好，
+  becomeReseller: (() => {
+    const services = ['URL缩短', '域名注册']
+    if (process.env.PHONE_SERVICE_ON === 'true') services.push('云电话')
+    if (HIDE_SMS_APP !== 'true') services.push('群发短信')
+    if (process.env.OFFSHORE_HOSTING_ON !== 'false') services.push('离岸托管')
+    return `<b>成为${CHAT_BOT_BRAND}经销商</b>
 
-我联系您是为了向您提供一个绝佳的机会，成为${CHAT_BOT_BRAND}Bot强大SMS营销和托管软件的经销商。
-  
-关键细节：
-  
-利润分成：每笔销售可赚取65/35%的竞争性分成。
-  
-设置费用：详情请联系支持。
-  
-感兴趣？请点击 💬 获取支持，以了解更多有关此盈利合作的信息。
-  
-期待与您合作！
-  
-最好的祝福，
-  
-${CHAT_BOT_BRAND}团队
-  `,
+以您自己的品牌转售我们的全套服务 — ${services.join('、')}。
+
+每笔销售<b>65/35%</b>利润分成。点击 💬 <b>获取支持</b> 开始合作。`
+  })(),
   resetLoginAdmit: `${CHAT_BOT_BRAND} SMS: 您已成功退出您之前的设备。请立即登录。`,
   resetLoginDeny: '好的，不需要进一步操作。',
   resetLogin: `${CHAT_BOT_BRAND} SMS: 您是否试图从之前的设备上注销？`,
@@ -506,7 +499,8 @@ ${CHAT_BOT_NAME}`,
   redIssueUrlBitly: `链接缩短失败。您的钱包未被扣费。请重试或点击 💬 获取支持。`,
   redIssueSlugCuttly: `您选择的链接名称已被使用，请尝试另一个`,
   redIssueUrlCuttly: `链接缩短失败。请重试或点击 💬 获取支持。`,
-  freeLinksExhausted: `您已用完全部${FREE_LINKS}次试用链接！点击"⚡ 升级计划"获取无限链接、免费域名等。`,
+  freeLinksExhausted: `您的${FREE_LINKS}次试用链接已用完！订阅即可享受无限链接+免费域名+${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+次验证。`,
+  subscriptionLeadsHint: `💡 订阅者每个计划可获得${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+次免费验证。每天仅需$${PRICE_DAILY}起。`,
   linksRemaining: (count, total) => `您还剩 ${count}/${total || FREE_LINKS} 次Shortit试用链接。`,
   redNewPrice: (price, newPrice) => `价格现在为 $${view(newPrice)} <s>($${price})</s>。请选择支付方式。`,
   customLink: '自定义链接',
@@ -733,7 +727,7 @@ const userKeyboard = {
       [user.cloudPhone],
       [user.phoneNumberLeads],
       HIDE_SMS_APP === 'true' ? [user.domainNames] : [user.freeTrialAvailable, user.domainNames],
-      [user.wallet, user.viewPlan, user.buyPlan],
+      [user.wallet, user.viewPlan],
       HIDE_BECOME_RESELLER === 'true'
         ? [user.changeSetting, user.getSupport, user.joinChannel]
         : [user.changeSetting, user.becomeReseller, user.getSupport],
