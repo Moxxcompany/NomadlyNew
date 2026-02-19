@@ -677,8 +677,11 @@ const isDbHealthy = () => isDbConnected
 async function sendRemindersForExpiringPackages() {
   const now = new Date()
   const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000)
+  const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
+  const threeDaysMinusFive = new Date(now.getTime() + (3 * 24 * 60 - 5) * 60 * 1000)
 
   try {
+    // ── Freedom Plan: 1-hour reminder ──
     const users = await state.find({
       'currentPackage.name': 'Freedom Plan',
       'currentPackage.expiresAt': { $lte: oneHourFromNow, $gt: now },
@@ -695,6 +698,7 @@ async function sendRemindersForExpiringPackages() {
       )
     }
 
+    // ── Freedom Plan: expired ──
     const expiredUsers = await state.find({
       'currentPackage.name': 'Freedom Plan',
       'currentPackage.expiresAt': { $lte: now },
@@ -715,6 +719,94 @@ async function sendRemindersForExpiringPackages() {
           },
         },
       )
+    }
+
+    // ── Bot Plan (Daily/Weekly/Monthly): 3-day expiry reminder ──
+    try {
+      const allPlanUsers = await planEndingTime.find({}).toArray()
+      for (const entry of allPlanUsers) {
+        const chatId = entry._id
+        const rawTime = entry.val
+        if (!rawTime || rawTime <= now.getTime()) continue
+
+        const msLeft = rawTime - now.getTime()
+        const daysLeft = msLeft / (1000 * 60 * 60 * 24)
+
+        // Send 3-day reminder (check within 2.9 - 3.1 day window)
+        if (daysLeft > 2.9 && daysLeft <= 3.1) {
+          const userState = await state.findOne({ _id: String(chatId) })
+          if (userState?.reminders?.botPlan3DayReminderSent) continue
+
+          const plan = await get(planOf, chatId)
+          if (!plan) continue
+          const lang = userState?.userLanguage ?? 'en'
+          const expiryDate = new Date(rawTime).toLocaleDateString()
+
+          const msgs = {
+            en: `📋 <b>Subscription Expiring Soon</b>\n\n📦 ${plan} expires in <b>3 days</b> (${expiryDate}).\n\nRenew now to keep your benefits active.`,
+            fr: `📋 <b>Abonnement bientôt expiré</b>\n\n📦 ${plan} expire dans <b>3 jours</b> (${expiryDate}).\n\nRenouvelez pour garder vos avantages.`,
+            hi: `📋 <b>सदस्यता जल्द समाप्त</b>\n\n📦 ${plan} <b>3 दिनों</b> में समाप्त होगा (${expiryDate}).\n\nअभी नवीनीकरण करें।`,
+            zh: `📋 <b>订阅即将到期</b>\n\n📦 ${plan} 将在 <b>3天</b> 后到期 (${expiryDate})。\n\n请立即续订。`,
+          }
+          send(chatId, msgs[lang] || msgs.en, { parse_mode: 'HTML' })
+          await state.updateOne(
+            { _id: String(chatId) },
+            { $set: { 'reminders.botPlan3DayReminderSent': true } },
+            { upsert: true }
+          )
+          log(`[Reminders] 3-day bot plan reminder sent to ${chatId}`)
+        }
+
+        // Reset the flag when user renews (days > 3.5)
+        if (daysLeft > 3.5) {
+          await state.updateOne(
+            { _id: String(chatId) },
+            { $set: { 'reminders.botPlan3DayReminderSent': false } },
+          )
+        }
+      }
+    } catch (e) {
+      console.error('Error in bot plan reminders:', e.message)
+    }
+
+    // ── VPS Plans: 3-day expiry reminder ──
+    try {
+      const allVps = await vpsPlansOf.find({}).toArray()
+      for (const entry of allVps) {
+        const chatId = entry._id
+        const plans = entry.val?.plans || entry.plans || []
+        for (const vps of plans) {
+          if (vps.status !== 'active') continue
+          const expiresAt = vps.expiresAt || vps.subscriptionEnd
+          if (!expiresAt) continue
+
+          const msLeft = new Date(expiresAt).getTime() - now.getTime()
+          const daysLeft = msLeft / (1000 * 60 * 60 * 24)
+
+          if (daysLeft > 2.9 && daysLeft <= 3.1 && !vps._reminder3DaySent) {
+            const userState = await state.findOne({ _id: String(chatId) })
+            const lang = userState?.userLanguage ?? 'en'
+            const name = vps.name || vps.hostname || 'VPS'
+            const expiryDate = new Date(expiresAt).toLocaleDateString()
+
+            const msgs = {
+              en: `🖥️ <b>VPS Expiring Soon</b>\n\n${name} expires in <b>3 days</b> (${expiryDate}).\nRenew to avoid service interruption.`,
+              fr: `🖥️ <b>VPS bientôt expiré</b>\n\n${name} expire dans <b>3 jours</b> (${expiryDate}).\nRenouvelez pour éviter l'interruption.`,
+              hi: `🖥️ <b>VPS जल्द समाप्त</b>\n\n${name} <b>3 दिनों</b> में समाप्त (${expiryDate}).\nनवीनीकरण करें।`,
+              zh: `🖥️ <b>VPS即将到期</b>\n\n${name} 将在 <b>3天</b> 后到期 (${expiryDate})。\n请续订。`,
+            }
+            send(chatId, msgs[lang] || msgs.en, { parse_mode: 'HTML' })
+            vps._reminder3DaySent = true
+            await vpsPlansOf.updateOne(
+              { _id: chatId },
+              { $set: { [`val.plans`]: plans } }
+            )
+            log(`[Reminders] 3-day VPS reminder sent to ${chatId} for ${name}`)
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error in VPS reminders:', e.message)
     }
 
   } catch (error) {
