@@ -532,30 +532,46 @@ async function handleCallHangup(payload) {
   const { chatId, num, from, to } = session
   const time = new Date().toLocaleString()
 
-  // ── REAL-TIME MINUTE TRACKING + OVERAGE BILLING ──
+  // ── REAL-TIME MINUTE TRACKING + BILLING ──
   const minutesBilled = duration > 0 ? Math.ceil(duration / 60) : 0
-  if (minutesBilled > 0) {
-    await incrementMinutesUsed(chatId, num.phoneNumber, minutesBilled)
+  const isForwarded = session.phase === 'forwarding' || session.phase === 'ivr_forward'
+  const effectiveRate = isForwarded ? CALL_FORWARDING_RATE_MIN : OVERAGE_RATE_MIN
 
-    // Calculate overage minutes and charge wallet
-    const plan = plans[num.plan]
-    const minuteLimit = plan ? (plan.minutes === 'Unlimited' ? Infinity : plan.minutes) : 0
-    if (minuteLimit !== Infinity && _walletOf) {
-      const totalUsed = (num.minutesUsed || 0) + minutesBilled
-      const overageMinutes = Math.max(0, totalUsed - minuteLimit)
-      if (overageMinutes > 0) {
-        const overageCharge = overageMinutes * OVERAGE_RATE_MIN
-        try {
-          await atomicIncrement(_walletOf, chatId, 'usdOut', overageCharge)
-          const ref = _nanoid?.() || `ov_${Date.now()}`
-          if (_payments) set(_payments, ref, `Overage,CloudPhoneMin,$${overageCharge.toFixed(2)},${chatId},${num.phoneNumber},${new Date()}`)
-          log(`[Voice] Overage charged: $${overageCharge.toFixed(2)} for ${overageMinutes} min on ${num.phoneNumber}`)
-          _bot?.sendMessage(chatId, `💰 <b>Overage Charge</b>\n\n📞 ${formatPhone(to)}\n⏱️ ${overageMinutes} overage min × $${OVERAGE_RATE_MIN} = <b>$${overageCharge.toFixed(2)}</b> charged from wallet.`, { parse_mode: 'HTML' }).catch(() => {})
-        } catch (e) { log(`[Voice] Overage charge error: ${e.message}`) }
+  if (minutesBilled > 0) {
+    // Forwarded calls: charge forwarding rate per minute from wallet (not plan minutes)
+    if (isForwarded && _walletOf) {
+      const forwardingCharge = minutesBilled * CALL_FORWARDING_RATE_MIN
+      try {
+        await atomicIncrement(_walletOf, chatId, 'usdOut', forwardingCharge)
+        const ref = _nanoid?.() || `fwd_${Date.now()}`
+        if (_payments) set(_payments, ref, `CallForwarding,$${forwardingCharge.toFixed(2)},${chatId},${num.phoneNumber},${new Date()}`)
+        log(`[Voice] Forwarding charge: $${forwardingCharge.toFixed(2)} for ${minutesBilled} min on ${num.phoneNumber}`)
+        _bot?.sendMessage(chatId, `💰 <b>Forwarding Charge</b>\n\n📞 ${formatPhone(to)}\n📲 Forwarded to: ${formatPhone(num.features?.callForwarding?.forwardTo || 'unknown')}\n⏱️ ${minutesBilled} min × $${CALL_FORWARDING_RATE_MIN} = <b>$${forwardingCharge.toFixed(2)}</b> charged from wallet.`, { parse_mode: 'HTML' }).catch(() => {})
+      } catch (e) { log(`[Voice] Forwarding charge error: ${e.message}`) }
+    } else {
+      // Non-forwarded calls: use plan minutes + overage
+      await incrementMinutesUsed(chatId, num.phoneNumber, minutesBilled)
+
+      // Calculate overage minutes and charge wallet
+      const plan = plans[num.plan]
+      const minuteLimit = plan ? (plan.minutes === 'Unlimited' ? Infinity : plan.minutes) : 0
+      if (minuteLimit !== Infinity && _walletOf) {
+        const totalUsed = (num.minutesUsed || 0) + minutesBilled
+        const overageMinutes = Math.max(0, totalUsed - minuteLimit)
+        if (overageMinutes > 0) {
+          const overageCharge = overageMinutes * OVERAGE_RATE_MIN
+          try {
+            await atomicIncrement(_walletOf, chatId, 'usdOut', overageCharge)
+            const ref = _nanoid?.() || `ov_${Date.now()}`
+            if (_payments) set(_payments, ref, `Overage,CloudPhoneMin,$${overageCharge.toFixed(2)},${chatId},${num.phoneNumber},${new Date()}`)
+            log(`[Voice] Overage charged: $${overageCharge.toFixed(2)} for ${overageMinutes} min on ${num.phoneNumber}`)
+            _bot?.sendMessage(chatId, `💰 <b>Overage Charge</b>\n\n📞 ${formatPhone(to)}\n⏱️ ${overageMinutes} overage min × $${OVERAGE_RATE_MIN} = <b>$${overageCharge.toFixed(2)}</b> charged from wallet.`, { parse_mode: 'HTML' }).catch(() => {})
+          } catch (e) { log(`[Voice] Overage charge error: ${e.message}`) }
+        }
       }
     }
 
-    log(`[Voice] Billed ${minutesBilled} min for ${to} (${duration}s call, ${session.phase})`)
+    log(`[Voice] Billed ${minutesBilled} min for ${to} (${duration}s call, ${session.phase}, rate: $${effectiveRate}/min)`)
   }
 
   // Clean up mid-call limit timer
