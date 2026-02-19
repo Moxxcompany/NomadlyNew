@@ -182,7 +182,7 @@ Profit Share: Earn a competitive 65/35% split on each sale.
 
 Set-up Fee: Contact support for details
 
-Interested? Reach out to us at ${SUPPORT_HANDLE} to learn more about this lucrative partnership.
+Interested? Tap 💬 Get Support to learn more about this lucrative partnership.
 
 Looking forward to potentially collaborating with you!
 
@@ -241,7 +241,7 @@ To continue using our services, please buy one of our premium plans.`,
   what: `That option isn't available right now. Please pick from the buttons below.`,
   whatNum: `That doesn't look right. Please enter a valid number.`,
   phoneGenTimeout: 'Timeout',
-  phoneGenNoGoodHits: `Please contact support ${SUPPORT_HANDLE} or select another area code`,
+  phoneGenNoGoodHits: `Please tap 💬 Get Support or select another area code`,
 
   subscribeRCS: p =>
     `Subscribed! Unsubscribe anytime by clicking the <a href="${SELF_URL}/unsubscribe?a=b&Phone=${p}">link</a>`,
@@ -292,7 +292,7 @@ ${CHAT_BOT_NAME}`,
 
   lowPrice: `Sent price less than needed`,
 
-  freeTrialAvailable: `Your BulkSMS free trial is now enabled. Please download the ${SMS_APP_NAME} Android App here: ${SMS_APP_LINK}. Need E-sim cards? Contact ${SUPPORT_HANDLE}`,
+  freeTrialAvailable: `Your BulkSMS free trial is now enabled. Please download the ${SMS_APP_NAME} Android App here: ${SMS_APP_LINK}. Need E-sim cards? Tap 💬 Get Support`,
 
   freeTrialNotAvailable: 'You have already used the free trial',
 
