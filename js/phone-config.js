@@ -656,6 +656,11 @@ const msg = {
     changePlanHeader: (number, plan, price) => `📦 Change plan for ${formatPhone(number)}\n\nCurrent: ${plan.charAt(0).toUpperCase() + plan.slice(1)} — $${price}/mo`,
     planChanged: (plan, price) => `✅ Plan changed to <b>${plan.charAt(0).toUpperCase() + plan.slice(1)}</b> — $${price}/mo`,
     featuresDisabled: 'Features disabled:',
+    noIvrOptions: 'No IVR menu options configured yet.',
+    whichKeyRemove: 'Which key do you want to remove?',
+    sendVoiceOrText: 'Send a voice message, audio file, or type a custom greeting text.',
+    noActivity: 'No activity yet.',
+    insufficientBalUpgrade: (needed, bal) => `❌ Insufficient balance. You need $${needed.toFixed(2)} but have $${bal.toFixed(2)}.\n\nPlease top up your wallet first.`,
   },
   fr: {
     selectOption: 'Veuillez sélectionner une option.',
