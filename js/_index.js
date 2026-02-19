@@ -5411,6 +5411,79 @@ bot?.on('message', async msg => {
     }
   }
 
+  // ── LEADS PAY (Crypto / Bank / Wallet for both Buy Leads & Validate Leads) ──
+  if (action === 'leads-pay') {
+    if (message === t.back) {
+      const lastStep = info?.lastStep
+      if (lastStep === a.validatorSelectFormat) return goto.validatorSelectFormat()
+      if (info?.targetName) return goto.targetLeadsConfirm()
+      return goto.buyLeadsSelectFormat()
+    }
+    const payOption = message
+    if (payOption === payIn.crypto) {
+      set(state, chatId, 'action', 'crypto-pay-leads')
+      return send(chatId, t.selectCryptoToDeposit, trans('k.of', trans('supportedCryptoViewOf')))
+    }
+    if (payOption === payIn.bank) {
+      set(state, chatId, 'action', 'bank-pay-leads')
+      return send(chatId, t.askEmail, bc)
+    }
+    if (payOption === payIn.wallet) {
+      return goto.walletSelectCurrency()
+    }
+    return send(chatId, t.askValidPayOption)
+  }
+  if (action === 'bank-pay-leads') {
+    if (message === t.back) return goto['leads-pay']()
+    const email = message
+    const price = info?.couponApplied ? info?.newPrice : info?.price
+    if (!isValidEmail(email)) return send(chatId, t.askValidEmail)
+    const ref = nanoid()
+    set(state, chatId, 'action', 'none')
+    const priceNGN = Number(await usdToNgn(price))
+    const lastStep = info?.lastStep
+    set(chatIdOfPayment, ref, { chatId, price, lastStep, leadsData: { amount: info?.amount, country: info?.country, state: info?.stateName, area: info?.areaCode, carrier: info?.carrier, targetName: info?.targetName, couponApplied: info?.couponApplied, format: info?.format, cnamMode: info?.cnamMode }, endpoint: '/bank-pay-leads' })
+    const { url, error } = await createCheckout(priceNGN, `/ok?a=b&ref=${ref}&`, email, username, ref)
+    if (error) return send(chatId, error, trans('o'))
+    const label = lastStep === a.validatorSelectFormat ? 'Phone Validation' : 'Phone Leads'
+    return send(chatId, `${label} ₦${priceNGN.toLocaleString()}`, trans('payBank', url))
+  }
+  if (action === 'crypto-pay-leads') {
+    if (message === t.back) return goto['leads-pay']()
+    const tickerView = message
+    const supportedCryptoView = trans('supportedCryptoView')
+    const ticker = supportedCryptoView[tickerView]
+    if (!ticker) return send(chatId, t.askValidCrypto)
+    const price = info?.couponApplied ? info?.newPrice : info?.price
+    const ref = nanoid()
+    const lastStep = info?.lastStep
+    const leadsData = { amount: info?.amount, country: info?.country, state: info?.stateName, area: info?.areaCode, carrier: info?.carrier, targetName: info?.targetName, couponApplied: info?.couponApplied, format: info?.format, cnamMode: info?.cnamMode }
+    const label = lastStep === a.validatorSelectFormat ? 'Phone Validation' : 'Phone Leads'
+    if (BLOCKBEE_CRYTPO_PAYMENT_ON === 'true') {
+      const coin = tickerOf[ticker]
+      set(chatIdOfPayment, ref, { chatId, price, lastStep, leadsData })
+      const url = await generateBlockBeeAddress(price, coin, `${SELF_URL}/crypto-pay-leads?ref=${ref}`, { chatId, coin })
+      if (!url) return send(chatId, t.cryptoPayError)
+      await sendQrCode(bot, chatId, url, info?.userLanguage ?? 'en')
+      set(state, chatId, 'action', 'none')
+      const priceCrypto = await convert(price, 'usd', coin)
+      return send(chatId, t.showDepositCryptoInfoDomain(priceCrypto, ticker, url, label), trans('o'))
+    } else {
+      const coin = tickerOfDyno[ticker]
+      const redirect_url = `${SELF_URL}/dynopay/crypto-pay-leads`
+      const meta_data = { "product_name": dynopayActions.payLeads, "refId": ref }
+      const { qr_code, address } = await getDynopayCryptoAddress(price, coin, redirect_url, meta_data)
+      if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
+      set(chatIdOfDynopayPayment, ref, { chatId, price, lastStep, leadsData, action: dynopayActions.payLeads, address })
+      saveInfo('ref', ref)
+      log({ ref })
+      await generateQr(bot, chatId, qr_code, info?.userLanguage ?? 'en')
+      set(state, chatId, 'action', 'none')
+      const priceCrypto = await convert(price, 'usd', tickerOf[ticker])
+      return send(chatId, t.showDepositCryptoInfoDomain(priceCrypto, ticker, address, label), trans('o'))
+    }
+  }
+
   // Helper: Build feature-gated manage menu keyboard
   function buildManageMenu(num) {
     const pc = phoneConfig.btn
