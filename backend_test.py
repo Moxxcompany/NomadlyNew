@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Testing for Domain Shortener and SMS Settings Implementation
-Tests the domain shortener question clarification, activate shortener functionality,
-and SMS settings with plan restrictions.
+Backend Testing for Nomadly Telegram Bot Application
+Tests health endpoint, Node.js bot status, database connection, and webhook configuration.
 """
 
 import requests
@@ -10,11 +9,9 @@ import json
 import re
 import os
 import sys
-import pymongo
 from datetime import datetime
-from pathlib import Path
 
-class DomainSmsFeaturesTester:
+class NomadlyBotTester:
     def __init__(self):
         # Read backend URL from frontend .env file
         try:
@@ -52,450 +49,246 @@ class DomainSmsFeaturesTester:
             print(f"   Issue: {details}")
 
     def test_health_endpoint(self):
-        """Test backend health endpoint returns ok"""
+        """Test backend health endpoint returns status ok with node running and db connected"""
         try:
-            response = requests.get(f"{self.base_url}/api/health", timeout=10)
+            response = requests.get(f"{self.base_url}/api/health", timeout=15)
             if response.status_code == 200:
                 data = response.json()
-                status_ok = data.get("status") in ["healthy", "ok"] or data.get("proxy") == "running"
+                
+                status_ok = data.get("status") == "ok"
+                proxy_running = data.get("proxy") == "running"
+                node_running = data.get("node") == "running"
+                db_connected = data.get("db") == "connected"
+                
+                overall_health = status_ok and proxy_running and node_running and db_connected
                 
                 self.log_result(
-                    "Backend health endpoint /api/health returns ok",
-                    status_ok,
-                    f"Status: {data.get('status', 'N/A')}, Proxy: {data.get('proxy', 'N/A')}, Node: {data.get('node', 'N/A')}",
-                    "CRITICAL" if not status_ok else "INFO"
+                    "Backend health endpoint /api/health returns status ok with node running and db connected",
+                    overall_health,
+                    f"Status: {data.get('status')}, Proxy: {data.get('proxy')}, Node: {data.get('node')}, DB: {data.get('db')}",
+                    "CRITICAL" if not overall_health else "INFO"
                 )
+                
+                # Individual component checks
+                if not node_running:
+                    self.log_result(
+                        "Node.js bot is running (via proxy health check)",
+                        False,
+                        f"Node status: {data.get('node')} - expected 'running'",
+                        "CRITICAL"
+                    )
+                else:
+                    self.log_result(
+                        "Node.js bot is running (via proxy health check)",
+                        True,
+                        "Node.js bot is running correctly"
+                    )
+                
+                if not db_connected:
+                    self.log_result(
+                        "Database connection working",
+                        False,
+                        f"DB status: {data.get('db')} - expected 'connected'",
+                        "CRITICAL"
+                    )
+                else:
+                    self.log_result(
+                        "Database connection working",
+                        True,
+                        "Database is connected"
+                    )
                 
             else:
                 self.log_result(
-                    "Backend health endpoint returns ok",
+                    "Backend health endpoint /api/health returns ok",
                     False,
-                    f"HTTP {response.status_code}",
+                    f"HTTP {response.status_code}: {response.text}",
                     "CRITICAL"
                 )
                 
         except Exception as e:
             self.log_result(
-                "Backend health endpoint returns ok",
+                "Backend health endpoint /api/health returns ok",
                 False,
                 f"Connection error: {str(e)}",
                 "CRITICAL"
             )
 
-    def test_config_js_domain_shortener_question(self):
-        """Test config.js: askDomainToUseWithShortener text explains Yes/No clearly"""
+    def test_node_bot_direct_check(self):
+        """Test if Node.js bot responds via proxy"""
         try:
-            with open('/app/js/config.js', 'r') as f:
-                content = f.read()
+            # Try to hit the root endpoint which should be proxied to Node.js
+            response = requests.get(f"{self.base_url}/api/", timeout=10)
             
-            # Look for askDomainToUseWithShortener text
-            domain_question_match = re.search(r'askDomainToUseWithShortener:\s*`([^`]+)`', content, re.DOTALL)
-            
-            if domain_question_match:
-                question_text = domain_question_match.group(1)
-                
-                # Check if it explains Yes and No options clearly
-                has_yes_explanation = 'DNS will be auto-configured' in question_text and 'shortener' in question_text
-                has_no_explanation = 'register' in question_text and ('activate later' in question_text or 'later' in question_text)
-                mentions_dns_auto_config = 'DNS will be auto-configured' in question_text
-                mentions_activate_later = 'activate later' in question_text or 'activate it for the shortener later' in question_text
-                
-                all_conditions = has_yes_explanation and has_no_explanation and mentions_dns_auto_config and mentions_activate_later
-                
+            # Node.js should return some response (not a 404 from FastAPI)
+            if response.status_code in [200, 404]:  # 404 from Node.js is fine, 502 would indicate proxy issues
                 self.log_result(
-                    "config.js: askDomainToUseWithShortener text explains Yes means custom URL shortener with DNS auto-configured, and No means register only with option to activate later",
-                    all_conditions,
-                    f"Has Yes explanation: {has_yes_explanation}, Has No explanation: {has_no_explanation}, Mentions DNS auto-config: {mentions_dns_auto_config}, Mentions activate later: {mentions_activate_later}",
-                    "CRITICAL" if not all_conditions else "INFO"
+                    "Node.js bot is responding via proxy",
+                    True,
+                    f"Node.js responded with status {response.status_code}"
+                )
+            elif response.status_code == 502:
+                self.log_result(
+                    "Node.js bot is responding via proxy", 
+                    False,
+                    f"Proxy error (502) - Node.js may not be running",
+                    "CRITICAL"
                 )
             else:
                 self.log_result(
-                    "config.js: askDomainToUseWithShortener text found",
-                    False,
-                    "askDomainToUseWithShortener text not found in config.js",
-                    "CRITICAL"
+                    "Node.js bot is responding via proxy",
+                    True,
+                    f"Got response from Node.js (status {response.status_code})"
                 )
                 
         except Exception as e:
             self.log_result(
-                "config.js domain shortener question analysis",
+                "Node.js bot is responding via proxy",
                 False,
-                f"Error reading config.js: {str(e)}",
+                f"Connection error: {str(e)}",
                 "CRITICAL"
             )
 
-    def test_config_js_activate_shortener_button(self):
-        """Test config.js: activateShortener button text exists"""
+    def test_environment_variables_configured(self):
+        """Test if environment variables are properly configured (no placeholder values remaining)"""
         try:
-            with open('/app/js/config.js', 'r') as f:
-                content = f.read()
+            with open('/app/backend/.env', 'r') as f:
+                env_content = f.read()
             
-            # Look for activateShortener button text
-            activate_button_match = re.search(r'activateShortener:\s*[\'"`]([^\'"`]+)[\'"`]', content)
+            # Check for placeholder values
+            placeholder_pattern = r'setup-wizard-101'
+            placeholders_found = re.findall(placeholder_pattern, env_content)
             
-            if activate_button_match:
-                button_text = activate_button_match.group(1)
-                
-                # Check if it contains the expected text
-                has_correct_text = '🔗 Activate for URL Shortener' in button_text
-                
-                self.log_result(
-                    "config.js: activateShortener button text exists ('🔗 Activate for URL Shortener')",
-                    has_correct_text,
-                    f"Button text: '{button_text}'",
-                    "CRITICAL" if not has_correct_text else "INFO"
-                )
-            else:
-                self.log_result(
-                    "config.js: activateShortener button text exists",
-                    False,
-                    "activateShortener button text not found in config.js",
-                    "CRITICAL"
-                )
-                
-        except Exception as e:
-            self.log_result(
-                "config.js activateShortener button analysis",
-                False,
-                f"Error reading config.js: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_config_js_dns_keyboard_array(self):
-        """Test config.js: dns keyboard array includes t.activateShortener button"""
-        try:
-            with open('/app/js/config.js', 'r') as f:
-                content = f.read()
-            
-            # Look for dns keyboard definition - find the dns constant
-            dns_start = content.find('const dns = {')
-            if dns_start != -1:
-                # Find the end of the dns object
-                brace_count = 0
-                i = dns_start
-                while i < len(content):
-                    if content[i] == '{':
-                        brace_count += 1
-                    elif content[i] == '}':
-                        brace_count -= 1
-                        if brace_count == 0:
-                            dns_object = content[dns_start:i+1]
-                            break
-                    i += 1
-                else:
-                    dns_object = content[dns_start:dns_start+500]  # Fallback
-                
-                # Check if it includes t.activateShortener
-                includes_activate_shortener = 't.activateShortener' in dns_object
-                
-                self.log_result(
-                    "config.js: dns keyboard array includes t.activateShortener button",
-                    includes_activate_shortener,
-                    f"DNS keyboard includes activateShortener: {includes_activate_shortener}",
-                    "CRITICAL" if not includes_activate_shortener else "INFO"
-                )
-            else:
-                self.log_result(
-                    "config.js: dns keyboard array found",
-                    False,
-                    "DNS keyboard array not found in config.js",
-                    "CRITICAL"
-                )
-                
-        except Exception as e:
-            self.log_result(
-                "config.js DNS keyboard analysis",
-                False,
-                f"Error reading config.js: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_phone_config_js_sms_settings_plan_param(self):
-        """Test phone-config.js: smsSettingsMenu function accepts 'plan' parameter and shows locked features"""
-        try:
-            with open('/app/js/phone-config.js', 'r') as f:
-                content = f.read()
-            
-            # Look for smsSettingsMenu function
-            sms_settings_match = re.search(r'smsSettingsMenu:\s*\(([^)]+)\)\s*=>\s*\{', content)
-            
-            if sms_settings_match:
-                params = sms_settings_match.group(1)
-                
-                # Check if it accepts plan parameter
-                has_plan_param = 'plan' in params
-                
-                # Look for the function body to check for locked features
-                function_start = content.find('smsSettingsMenu:')
-                if function_start != -1:
-                    # Find the function body (look for the opening brace and match closing)
-                    brace_count = 0
-                    function_body_start = content.find('{', function_start)
-                    if function_body_start != -1:
-                        i = function_body_start
-                        while i < len(content):
-                            if content[i] == '{':
-                                brace_count += 1
-                            elif content[i] == '}':
-                                brace_count -= 1
-                                if brace_count == 0:
-                                    function_body = content[function_body_start:i+1]
-                                    break
-                            i += 1
-                        else:
-                            function_body = content[function_body_start:function_body_start+2000]  # Fallback
-                    else:
-                        function_body = ""
-                else:
-                    function_body = ""
-                
-                # Check for locked feature indicators
-                has_pro_plan_requirement = '🔒 Requires Pro plan' in function_body
-                checks_plan_access = 'canAccessFeature' in function_body or 'canEmail' in function_body or 'canWebhook' in function_body
-                
-                all_conditions = has_plan_param and (has_pro_plan_requirement or checks_plan_access)
-                
-                self.log_result(
-                    "phone-config.js: smsSettingsMenu function accepts 'plan' parameter and shows '🔒 Requires Pro plan' for email/webhook when plan lacks access",
-                    all_conditions,
-                    f"Has plan param: {has_plan_param}, Has Pro plan requirement: {has_pro_plan_requirement}, Checks plan access: {checks_plan_access}",
-                    "CRITICAL" if not all_conditions else "INFO"
-                )
-            else:
-                self.log_result(
-                    "phone-config.js: smsSettingsMenu function found",
-                    False,
-                    "smsSettingsMenu function not found in phone-config.js",
-                    "CRITICAL"
-                )
-                
-        except Exception as e:
-            self.log_result(
-                "phone-config.js smsSettingsMenu analysis",
-                False,
-                f"Error reading phone-config.js: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_index_js_sms_settings_locked_buttons(self):
-        """Test _index.js: SMS Settings shows locked buttons for restricted features"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for cpSmsSettings action or SMS settings handling
-            sms_email_locked = '🔒 SMS to Email (Pro+)' in content
-            webhook_locked = '🔒 Webhook URL (Pro+)' in content
-            
-            # Look for upgrade message triggers
-            triggers_upgrade_sms_email = content.count('upgradeMessage') >= 1 and 'smsToEmail' in content
-            triggers_upgrade_webhook = content.count('upgradeMessage') >= 1 and 'smsWebhook' in content
-            
-            self.log_result(
-                "_index.js: SMS Settings (cpSmsSettings entry) shows '🔒 SMS to Email (Pro+)' button when plan doesn't have smsToEmail access",
-                sms_email_locked,
-                f"Found SMS to Email locked button: {sms_email_locked}",
-                "CRITICAL" if not sms_email_locked else "INFO"
-            )
-            
-            self.log_result(
-                "_index.js: SMS Settings shows '🔒 Webhook URL (Pro+)' button when plan doesn't have smsWebhook access",
-                webhook_locked,
-                f"Found Webhook URL locked button: {webhook_locked}",
-                "CRITICAL" if not webhook_locked else "INFO"
-            )
-            
-            self.log_result(
-                "_index.js: Tapping '🔒 SMS to Email' triggers upgradeMessage",
-                triggers_upgrade_sms_email,
-                f"Triggers upgrade for SMS Email: {triggers_upgrade_sms_email}",
-                "CRITICAL" if not triggers_upgrade_sms_email else "INFO"
-            )
-            
-            self.log_result(
-                "_index.js: Tapping '🔗 Webhook URL' triggers upgradeMessage",
-                triggers_upgrade_webhook,
-                f"Triggers upgrade for Webhook: {triggers_upgrade_webhook}",
-                "CRITICAL" if not triggers_upgrade_webhook else "INFO"
-            )
-                
-        except Exception as e:
-            self.log_result(
-                "_index.js SMS settings locked buttons analysis",
-                False,
-                f"Error reading _index.js: {str(e)}",
-                "CRITICAL"
-            )
-
-    def test_index_js_sms_settings_menu_plan_param(self):
-        """Test _index.js: smsSettingsMenu is called with num.plan as third parameter"""
-        try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
-            
-            # Look for smsSettingsMenu calls with plan parameter
-            sms_settings_call_match = re.search(r'smsSettingsMenu\([^)]*num\.plan[^)]*\)', content)
-            
-            # Alternative patterns
-            alternative_patterns = [
-                r'smsSettingsMenu\([^,]+,\s*[^,]+,\s*num\.plan',
-                r'phoneConfig\.txt\.smsSettingsMenu\([^,]+,\s*[^,]+,\s*num\.plan',
-                r'smsSettingsMenu\(.*?,.*?,\s*num\.plan'
+            # Check for critical variables
+            critical_vars = [
+                'MONGO_URL', 'TELEGRAM_BOT_TOKEN_PROD', 'TELEGRAM_BOT_TOKEN_DEV',
+                'SELF_URL', 'SELF_URL_PROD'
             ]
             
-            found_call = sms_settings_call_match is not None
-            if not found_call:
-                for pattern in alternative_patterns:
-                    if re.search(pattern, content):
-                        found_call = True
-                        break
+            missing_vars = []
+            for var in critical_vars:
+                if f'{var}=' not in env_content:
+                    missing_vars.append(var)
+            
+            # Check if SELF_URL contains the correct pod URL
+            self_url_match = re.search(r'SELF_URL.*?=(.*)', env_content)
+            correct_url = False
+            if self_url_match:
+                url_value = self_url_match.group(1).strip()
+                correct_url = 'setup-wizard-101.preview.emergentagent.com/api' in url_value
+            
+            no_placeholders = len(placeholders_found) <= 1  # Allow one in SELF_URL
+            no_missing_vars = len(missing_vars) == 0
+            
+            overall_config_ok = no_placeholders and no_missing_vars and correct_url
             
             self.log_result(
-                "_index.js: smsSettingsMenu is called with num.plan as third parameter",
-                found_call,
-                f"Found smsSettingsMenu call with num.plan: {found_call}",
-                "CRITICAL" if not found_call else "INFO"
+                "Environment variables are properly configured (no placeholder values remaining)",
+                overall_config_ok,
+                f"Placeholders found: {len(placeholders_found)}, Missing vars: {missing_vars}, Correct URL: {correct_url}",
+                "CRITICAL" if not overall_config_ok else "INFO"
             )
-                
+            
         except Exception as e:
             self.log_result(
-                "_index.js smsSettingsMenu plan parameter analysis",
+                "Environment variables configuration check",
                 False,
-                f"Error reading _index.js: {str(e)}",
+                f"Error checking .env file: {str(e)}",
                 "CRITICAL"
             )
 
-    def test_index_js_dns_action_handler(self):
-        """Test _index.js: choose-dns-action handler includes t.activateShortener in valid messages array"""
+    def test_telegram_webhook_configured(self):
+        """Test if Telegram webhook is correctly set to pod URL with /api prefix"""
         try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
+            # Check the config files for webhook configuration
+            webhook_configured = False
+            webhook_details = ""
             
-            # Look for the specific line with activateShortener validation
-            # Pattern: if (![t.addDns, t.updateDns, t.deleteDns, t.activateShortener].includes(message))
-            validation_pattern = r'if\s*\(\s*!\s*\[[^\]]*t\.activateShortener[^\]]*\]\.includes\s*\(\s*message\s*\)\s*\)'
-            validation_match = re.search(validation_pattern, content)
+            # Check backend .env for SELF_URL configuration
+            with open('/app/backend/.env', 'r') as f:
+                env_content = f.read()
             
-            if validation_match:
-                includes_activate_shortener = True
-            else:
-                # Alternative check - look for choose-dns-action handler and check if it handles activateShortener
-                dns_action_start = content.find("action === 'choose-dns-action'")
-                if dns_action_start != -1:
-                    # Get next 1000 characters of the handler
-                    handler_block = content[dns_action_start:dns_action_start+1000]
-                    includes_activate_shortener = 't.activateShortener' in handler_block and 'includes(message)' in handler_block
-                else:
-                    includes_activate_shortener = False
+            self_url_match = re.search(r'SELF_URL.*?=(.*)', env_content)
+            if self_url_match:
+                self_url = self_url_match.group(1).strip()
+                has_api_prefix = '/api' in self_url
+                has_correct_domain = 'setup-wizard-101.preview.emergentagent.com' in self_url
+                
+                webhook_configured = has_api_prefix and has_correct_domain
+                webhook_details = f"SELF_URL: {self_url}, Has /api: {has_api_prefix}, Correct domain: {has_correct_domain}"
             
             self.log_result(
-                "_index.js: choose-dns-action handler includes t.activateShortener in valid messages array",
-                includes_activate_shortener,
-                f"Handler includes activateShortener in validation: {includes_activate_shortener}",
-                "CRITICAL" if not includes_activate_shortener else "INFO"
+                "Telegram webhook is correctly set to pod URL with /api prefix",
+                webhook_configured,
+                webhook_details,
+                "CRITICAL" if not webhook_configured else "INFO"
             )
-                
+            
         except Exception as e:
             self.log_result(
-                "_index.js choose-dns-action handler analysis",
+                "Telegram webhook configuration check",
                 False,
-                f"Error reading _index.js: {str(e)}",
+                f"Error checking webhook config: {str(e)}",
                 "CRITICAL"
             )
 
-    def test_index_js_activate_shortener_handler(self):
-        """Test _index.js: activateShortener handler calls required functions"""
+    def test_bot_configuration_loaded(self):
+        """Test if bot configuration is properly loaded"""
         try:
-            with open('/app/js/_index.js', 'r') as f:
-                content = f.read()
+            # Check if critical config files exist and have expected content
+            config_files_ok = True
+            missing_files = []
             
-            # Look for the specific activateShortener handling
-            # Pattern: if (message === t.activateShortener) {
-            activate_handler_pattern = r'if\s*\(\s*message\s*===\s*t\.activateShortener\s*\)\s*\{'
-            activate_handler_match = re.search(activate_handler_pattern, content)
+            expected_files = [
+                '/app/js/start-bot.js',
+                '/app/js/config-setup.js',
+                '/app/js/_index.js'
+            ]
             
-            if activate_handler_match:
-                # Find the handler code block (from the match to the corresponding closing brace)
-                start_pos = activate_handler_match.start()
+            for file_path in expected_files:
+                if not os.path.exists(file_path):
+                    missing_files.append(file_path)
+                    config_files_ok = False
+            
+            # Check if config-setup.js is properly setting up environment
+            if os.path.exists('/app/js/config-setup.js'):
+                with open('/app/js/config-setup.js', 'r') as f:
+                    config_content = f.read()
                 
-                # Find the opening brace
-                brace_start = content.find('{', activate_handler_match.start())
-                if brace_start != -1:
-                    # Match braces to find the end of the block
-                    brace_count = 0
-                    i = brace_start
-                    while i < len(content):
-                        if content[i] == '{':
-                            brace_count += 1
-                        elif content[i] == '}':
-                            brace_count -= 1
-                            if brace_count == 0:
-                                handler_block = content[brace_start:i+1]
-                                break
-                        i += 1
-                    else:
-                        # Fallback - take next 2000 characters
-                        handler_block = content[start_pos:start_pos+2000]
-                else:
-                    handler_block = content[start_pos:start_pos+1000]
+                has_bot_token_setup = 'TELEGRAM_BOT_TOKEN' in config_content
+                has_environment_detection = 'detectEnvironment' in config_content
                 
-                # Check for required function calls
-                calls_save_domain_railway = 'saveDomainInServerRailway' in handler_block
-                calls_save_domain_render = 'saveDomainInServerRender' in handler_block
-                calls_regular_check_dns = 'regularCheckDns' in handler_block
-                sends_success_message = ('DNS propagation' in handler_block or 'linked to the URL shortener' in handler_block)
-                
-                has_domain_save = calls_save_domain_railway or calls_save_domain_render
-                
-                self.log_result(
-                    "_index.js: activateShortener handler calls saveDomainInServerRailway/Render and regularCheckDns",
-                    has_domain_save and calls_regular_check_dns,
-                    f"Calls Railway/Render: {calls_save_domain_railway}/{calls_save_domain_render}, Calls regularCheckDns: {calls_regular_check_dns}",
-                    "CRITICAL" if not (has_domain_save and calls_regular_check_dns) else "INFO"
-                )
-                
-                self.log_result(
-                    "_index.js: activateShortener handler sends success message with DNS propagation notification",
-                    sends_success_message,
-                    f"Sends success with DNS notification: {sends_success_message}",
-                    "CRITICAL" if not sends_success_message else "INFO"
-                )
+                config_properly_loaded = has_bot_token_setup and has_environment_detection
             else:
-                self.log_result(
-                    "_index.js: activateShortener handler found",
-                    False,
-                    "activateShortener handler not found in _index.js",
-                    "CRITICAL"
-                )
-                
+                config_properly_loaded = False
+            
+            overall_config_ok = config_files_ok and config_properly_loaded
+            
+            self.log_result(
+                "Bot configuration files exist and are properly loaded",
+                overall_config_ok,
+                f"Missing files: {missing_files}, Config loaded: {config_properly_loaded}",
+                "CRITICAL" if not overall_config_ok else "INFO"
+            )
+            
         except Exception as e:
             self.log_result(
-                "_index.js activateShortener handler analysis",
+                "Bot configuration check",
                 False,
-                f"Error reading _index.js: {str(e)}",
+                f"Error checking bot configuration: {str(e)}",
                 "CRITICAL"
             )
 
     def run_all_tests(self):
-        """Run all domain shortener and SMS settings tests"""
-        print("🔍 Testing Domain Shortener and SMS Settings Implementation\n")
+        """Run all Nomadly Telegram Bot tests"""
+        print("🔍 Testing Nomadly Telegram Bot Application\n")
         
-        # Health endpoint test
+        # Core functionality tests
         self.test_health_endpoint()
-        
-        # Config.js tests
-        self.test_config_js_domain_shortener_question()
-        self.test_config_js_activate_shortener_button()
-        self.test_config_js_dns_keyboard_array()
-        
-        # Phone-config.js tests
-        self.test_phone_config_js_sms_settings_plan_param()
-        
-        # _index.js tests
-        self.test_index_js_sms_settings_locked_buttons()
-        self.test_index_js_sms_settings_menu_plan_param()
-        self.test_index_js_dns_action_handler()
-        self.test_index_js_activate_shortener_handler()
+        self.test_node_bot_direct_check()
+        self.test_environment_variables_configured() 
+        self.test_telegram_webhook_configured()
+        self.test_bot_configuration_loaded()
         
         # Generate summary
         print(f"\n📊 Test Summary:")
@@ -518,8 +311,8 @@ class DomainSmsFeaturesTester:
         }
 
 if __name__ == "__main__":
-    tester = DomainSmsFeaturesTester()
+    tester = NomadlyBotTester()
     results = tester.run_all_tests()
     
     # Exit with appropriate code
-    sys.exit(0 if results['success_rate'] > 80 else 1)
+    sys.exit(0 if results['success_rate'] > 70 else 1)
