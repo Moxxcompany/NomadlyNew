@@ -181,6 +181,7 @@ const { handleInboundSms, initSmsLimits } = require('./sms-service.js')
 const { handleVoiceWebhook, initVoiceService, getIvrAnalytics, incrementSmsUsed, isSmsLimitReached } = require('./voice-service.js')
 const { initCnamService, lookupCnam, batchLookupCnam } = require('./cnam-service.js')
 const phoneConfig = require('./phone-config.js')
+const ttsService = require('./tts-service.js')
 const { initPhoneScheduler } = require('./phone-scheduler.js')
 
 process.env['NTBA_FIX_350'] = 1
