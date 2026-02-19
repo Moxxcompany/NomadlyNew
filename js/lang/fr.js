@@ -288,12 +288,12 @@ ${CHAT_BOT_NAME}`,
     )} <s>($${price})</s>. Veuillez choisir une méthode de paiement.`,
   couponInvalid: `Code promo invalide. Veuillez entrer un autre code promo :`,
   lowPrice: `Prix inférieur au minimum requis.`,
-  freeTrialAvailable: `Votre essai gratuit BulkSMS est maintenant activé. Veuillez télécharger l'application Android ${SMS_APP_NAME} ici : ${SMS_APP_LINK}. Besoin de cartes E-sim ? Contactez ${SUPPORT_HANDLE}.`,
+  freeTrialAvailable: `Votre essai gratuit BulkSMS est maintenant activé. Veuillez télécharger l'application Android ${SMS_APP_NAME} ici : ${SMS_APP_LINK}. Besoin de cartes E-sim ? Appuyez sur 💬 Obtenir de l'aide.`,
   freeTrialNotAvailable: `Vous avez déjà utilisé l'essai gratuit.`,
   planSubscribed:
     HIDE_SMS_APP === 'true'
-      ? `Vous vous êtes abonné avec succès au plan {{plan}} ! Profitez de domaines ".sbs/.xyz" gratuits, de liens Shortit illimités et de validations de numéros USA gratuites. Besoin d'une carte E-sim ? Contactez ${SUPPORT_HANDLE}.`
-      : `Vous vous êtes abonné avec succès au plan {{plan}} ! Profitez de domaines ".sbs/.xyz" gratuits, de liens Shortit illimités, de validations USA gratuites et de ${SMS_APP_NAME}. Téléchargez l'application ici : ${SMS_APP_LINK}. Besoin d'une carte E-sim ? Contactez ${SUPPORT_HANDLE}.`,
+      ? `Vous vous êtes abonné avec succès au plan {{plan}} ! Profitez de domaines ".sbs/.xyz" gratuits, de liens Shortit illimités et de validations de numéros USA gratuites. Besoin d'une carte E-sim ? Appuyez sur 💬 Obtenir de l'aide.`
+      : `Vous vous êtes abonné avec succès au plan {{plan}} ! Profitez de domaines ".sbs/.xyz" gratuits, de liens Shortit illimités, de validations USA gratuites et de ${SMS_APP_NAME}. Téléchargez l'application ici : ${SMS_APP_LINK}. Besoin d'une carte E-sim ? Appuyez sur 💬 Obtenir de l'aide.`,
   alreadySubscribedPlan: days => `Votre abonnement est actif et expire dans ${days} jours.`,
   payError: `Session de paiement introuvable. Veuillez réessayer ou appuyer sur 💬 Obtenir de l'aide. Découvrez plus sur ${TG_HANDLE}.`,
   chooseFreeDomainText: `<b>Bonne nouvelle !</b> Ce domaine est disponible gratuitement avec votre abonnement. Souhaitez-vous le réclamer ?`,
