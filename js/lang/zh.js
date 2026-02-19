@@ -183,7 +183,7 @@ const t = {
   
 设置费用：详情请联系支持。
   
-感兴趣？请通过${SUPPORT_HANDLE}与我们联系，以了解更多有关此盈利合作的信息。
+感兴趣？请点击 💬 获取支持，以了解更多有关此盈利合作的信息。
   
 期待与您合作！
   
@@ -235,7 +235,7 @@ ${CHAT_BOT_BRAND}团队
   what: `该选项目前不可用。请从下方按钮中选择。`,
   whatNum: `请选择一个有效的数字。`,
   phoneGenTimeout: `超时。`,
-  phoneGenNoGoodHits: `请联系支持 ${SUPPORT_HANDLE} 或选择其他区号。`,
+  phoneGenNoGoodHits: `请点击 💬 获取支持 或选择其他区号。`,
 
   subscribeRCS: p => `已订阅！随时通过点击<a href="${SELF_URL}/unsubscribe?a=b&Phone=${p}">链接</a>取消订阅。`,
   unsubscribeRCS: p => `您已取消订阅！要重新订阅，请点击<a href="${SELF_URL}/subscribe?a=b&Phone=${p}">链接</a>。`,
@@ -278,25 +278,25 @@ ${CHAT_BOT_NAME}`,
     `${domain} 域名的价格现在是 $${view(newPrice)} <s>($${price})</s>。请选择支付方式。`,
   couponInvalid: `优惠券代码无效，请重新输入：`,
   lowPrice: `提供的价格低于所需金额。`,
-  freeTrialAvailable: `您的 BulkSMS 免费试用现已启用。请在此处下载 ${SMS_APP_NAME} 安卓应用程序：${SMS_APP_LINK}。需要 E-sim 卡吗？请联系 ${SUPPORT_HANDLE}。`,
+  freeTrialAvailable: `您的 BulkSMS 免费试用现已启用。请在此处下载 ${SMS_APP_NAME} 安卓应用程序：${SMS_APP_LINK}。需要 E-sim 卡吗？请点击 💬 获取支持。`,
   freeTrialNotAvailable: `您已使用过免费试用。`,
   planSubscribed:
     HIDE_SMS_APP === 'true'
-      ? `您已成功订阅 {{plan}} 计划！享受免费 ".sbs/.xyz" 域名、无限Shortit链接和免费USA电话号码验证。需要 E-sim 卡？请联系 ${SUPPORT_HANDLE}。`
-      : `您已成功订阅 {{plan}} 计划！享受免费 ".sbs/.xyz" 域名、无限Shortit链接、免费USA验证和 ${SMS_APP_NAME}。请在此下载应用: ${SMS_APP_LINK}。需要 E-sim 卡？请联系 ${SUPPORT_HANDLE}。`,
+      ? `您已成功订阅 {{plan}} 计划！享受免费 ".sbs/.xyz" 域名、无限Shortit链接和免费USA电话号码验证。需要 E-sim 卡？请点击 💬 获取支持。`
+      : `您已成功订阅 {{plan}} 计划！享受免费 ".sbs/.xyz" 域名、无限Shortit链接、免费USA验证和 ${SMS_APP_NAME}。请在此下载应用: ${SMS_APP_LINK}。需要 E-sim 卡？请点击 💬 获取支持。`,
   alreadySubscribedPlan: days => `您的订阅已激活，并将在 ${days} 天后到期。`,
-  payError: `未找到支付会话，请重试或联系支持 ${SUPPORT_USERNAME}。了解更多信息，请访问 ${TG_HANDLE}。`,
+  payError: `未找到支付会话，请重试或点击 💬 获取支持。了解更多信息，请访问 ${TG_HANDLE}。`,
   chooseFreeDomainText: `<b>好消息！</b> 此域名可随您的订阅免费提供。您想领取吗？`,
 
   chooseDomainToBuy: text => `<b>获取你的网络角落！</b> 请分享你希望购买的域名，例如“abcpay.com”。${text}`,
   askDomainToUseWithShortener: `你是否希望使用此域名进行链接简化？`,
   blockUser: `请分享需要被封锁的用户的用户名。`,
   unblockUser: `请分享需要解封的用户的用户名。`,
-  blockedUser: `你目前被封锁，无法使用机器人。请联系支持 ${SUPPORT_USERNAME}。更多信息 ${TG_HANDLE}。`,
+  blockedUser: `你目前被封锁，无法使用机器人。请点击 💬 获取支持。更多信息 ${TG_HANDLE}。`,
   greet: `${CHAT_BOT_BRAND} — 缩短URL、注册域名、购买电话线索，从Telegram发展您的业务。
 
 使用${FREE_LINKS}次Shortit试用链接开始 — /start
-支持: ${SUPPORT_USERNAME}`,
+支持: 点击 💬 获取支持`,
 
   linkExpired: `您的 ${CHAT_BOT_BRAND} 测试期已结束，您的短链接已停用。我们邀请您订阅以继续访问我们的URL服务和免费域名。选择适当的计划并按照说明订阅。请联系我们的任何问题。
 敬启者，
@@ -305,8 +305,8 @@ ${CHAT_BOT_BRAND}团队
   successPayment: `支付成功处理！现在可以关闭此窗口。`,
   welcome: `感谢选择 ${CHAT_BOT_NAME}！请在下面选择一个选项：`,
   welcomeFreeTrial: `${CHAT_BOT_BRAND}欢迎您！您有${FREE_LINKS}次Shortit试用链接来缩短URL。订阅可获得无限Shortit链接、免费 ".sbs/.xyz" 域名和免费USA电话验证。体验${CHAT_BOT_BRAND}的不同！`,
-  unknownCommand: `找不到命令。按 /start 或联系支持 ${SUPPORT_USERNAME}。了解更多 ${TG_HANDLE}。`,
-  support: `请联系支持 ${SUPPORT_USERNAME}。了解更多 ${TG_HANDLE}。`,
+  unknownCommand: `找不到命令。按 /start 或点击 💬 获取支持。了解更多 ${TG_HANDLE}。`,
+  support: `请点击 💬 获取支持。了解更多 ${TG_HANDLE}。`,
   joinChannel: `请加入频道 ${TG_CHANNEL}。`,
   dnsPropagated: `{{domain}}的DNS传播已完成，进行无限链接简化。`,
   dnsNotPropagated: `{{domain}}的DNS传播正在进行，您将会在完成后更新。 ✅`,
@@ -318,7 +318,7 @@ ${CHAT_BOT_NAME}`,
   domainBought: `您的域名 {{domain}} 已成功链接到您的账户，DNS传播即将完成。稍后您将自动收到更新。🚀`,
   domainLinking: domain =>
     `正在将域名与您的账户链接中。请注意，DNS更新可能需要最长 30 分钟。您可以在此处检查 DNS 更新状态：https://www.whatsmydns.net/#A/${domain}`,
-  errorSavingDomain: `保存域名时出错，请联系支持 ${SUPPORT_USERNAME}。更多信息请访问 ${TG_HANDLE}。`,
+  errorSavingDomain: `保存域名时出错，请点击 💬 获取支持。更多信息请访问 ${TG_HANDLE}。`,
   chooseDomainToManage: `请选择您要管理的域名。`,
   chooseDomainWithShortener: `请选择或购买您想要连接到短链接的域名。`,
   viewDnsRecords: (records, domain) => `以下是 ${domain} 的 DNS 记录
@@ -389,7 +389,7 @@ ${
   dnsRecordDeleted: `记录已删除`,
   dnsRecordUpdated: `记录已更新`,
   provideLink: `请输入有效的 URL。例如：https://google.com`,
-  comingSoonWithdraw: `提现功能暂未开放。需要帮助？请联系 ${SUPPORT_USERNAME}。`,
+  comingSoonWithdraw: `提现功能暂未开放。需要帮助？请点击 💬 获取支持。`,
   promoOptOut: `您已取消订阅促销消息。输入 /start_promos 随时重新订阅。`,
   promoOptIn: `您已重新订阅促销消息。您将收到我们最新的优惠和活动！`,
   selectCurrencyToDeposit: `请选择要存入的货币`,
@@ -493,9 +493,9 @@ ${CHAT_BOT_NAME}`,
 
   redValidUrl: `请提供一个有效的 URL，例如 https://google.com`,
   redTakeUrl: url => `您的缩短后的 URL 是: ${url}`,
-  redIssueUrlBitly: `链接缩短失败。您的钱包未被扣费。请重试或联系 ${SUPPORT_USERNAME}。`,
+  redIssueUrlBitly: `链接缩短失败。您的钱包未被扣费。请重试或点击 💬 获取支持。`,
   redIssueSlugCuttly: `您选择的链接名称已被使用，请尝试另一个`,
-  redIssueUrlCuttly: `链接缩短失败。请重试或联系 ${SUPPORT_USERNAME}。`,
+  redIssueUrlCuttly: `链接缩短失败。请重试或点击 💬 获取支持。`,
   freeLinksExhausted: `您已用完全部${FREE_LINKS}次Shortit试用链接！订阅可获得无限Shortit链接、免费".sbs/.xyz"域名等更多功能。点击"🔔 订阅"选择计划。`,
   linksRemaining: (count, total) => `您还剩 ${count}/${total || FREE_LINKS} 次Shortit试用链接。`,
   redNewPrice: (price, newPrice) => `价格现在为 $${view(newPrice)} <s>($${price})</s>。请选择支付方式。`,
@@ -1021,7 +1021,7 @@ ${CHAT_BOT_NAME}`,
 您的 ${info.hostingType} 凭证已成功发送到您的电子邮件 ${info.email} 中。`,
 
   support: (plan, statusCode) => `设置过程中出现问题 ${plan} | ${statusCode}. 
-                                              请联系支持 ${SUPPORT_USERNAME}.
+                                              请点击 💬 获取支持.
                                               更多信息 ${TG_HANDLE}.`,
 
   bankPayDomain: (
@@ -1168,7 +1168,7 @@ ${list.map(item => `${name == 'whm' ? `<strong>• ${item.name} - </strong>` : '
 
   errorPurchasingVPS: plan => `在设置您的 ${plan} VPS 计划时出现问题。
 
-请联系支持 ${SUPPORT_USERNAME}。
+请点击 💬 获取支持。
 了解更多 ${TG_HANDLE}。`,
 
   generateBillSummary: vpsDetails => `<strong>📋 最终费用明细：</strong>
@@ -1544,7 +1544,7 @@ ${
 
   errorUpgradingVPS: vpsName => `升级 VPS 计划 ${vpsName} 时出现错误。
 
-请联系支持 ${SUPPORT_USERNAME}。
+请点击 💬 获取支持。
 了解更多信息 ${TG_HANDLE}。`,
 
   vpsUpgradePlanTypeSuccess: vpsDetails => `
