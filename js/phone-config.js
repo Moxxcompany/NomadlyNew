@@ -104,9 +104,9 @@ const btn = {
   tollFreeNumber: '🆓 Toll-Free Number',
 
   // Plans
-  starterPlan: `💡 Starter — $${PHONE_STARTER_PRICE}/mo`,
-  proPlan: `⭐ Pro — $${PHONE_PRO_PRICE}/mo`,
-  businessPlan: `👑 Business — $${PHONE_BUSINESS_PRICE}/mo`,
+  starterPlan: PHONE_STARTER_ON ? `💡 Starter — $${PHONE_STARTER_PRICE}/mo` : `💡 Starter — Coming Soon 🔜`,
+  proPlan: PHONE_PRO_ON ? `⭐ Pro — $${PHONE_PRO_PRICE}/mo` : `⭐ Pro — Coming Soon 🔜`,
+  businessPlan: PHONE_BUSINESS_ON ? `👑 Business — $${PHONE_BUSINESS_PRICE}/mo` : `👑 Business — Coming Soon 🔜`,
 
   // Management
   callForwarding: '📞 Call Forwarding',
