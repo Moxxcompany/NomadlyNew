@@ -3997,6 +3997,9 @@ bot?.on('message', async msg => {
           freeLinks = remaining
           set(state, chatId, 'action', 'none')
           send(chatId, _shortUrl, trans('o'))
+          if (remaining <= 2) {
+            return send(chatId, t.linksRemaining(remaining, FREE_LINKS), k.of([user.buyPlan]))
+          }
           return send(chatId, t.linksRemaining(remaining, FREE_LINKS))
         }
 
@@ -4042,6 +4045,9 @@ bot?.on('message', async msg => {
         freeLinks = remaining
         set(state, chatId, 'action', 'none')
         send(chatId, _shortUrl, trans('o'))
+        if (remaining <= 2) {
+          return send(chatId, t.linksRemaining(remaining, FREE_LINKS), k.of([user.buyPlan]))
+        }
         return send(chatId, t.linksRemaining(remaining, FREE_LINKS))
       }
 
