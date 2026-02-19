@@ -62,6 +62,17 @@ const SERVICE_CONTEXT = {
     cta: 'HQ SMS Lead',
     crossPromo: 'Shorten campaign links — tap URL Shortener',
   },
+  cloudphone: {
+    services: 'CloudPhone — virtual phone numbers with IVR, SMS & SIP',
+    details: [
+      'Virtual numbers in US, Canada, UK, Puerto Rico & 30+ countries',
+      'IVR auto-attendant with multilingual AI voice greetings',
+      'Call forwarding, voicemail, SMS to Telegram & SIP access',
+      'Plans from $5/mo with included minutes & SMS',
+    ],
+    cta: 'Cloud Phone',
+    crossPromo: 'Need leads? Tap HQ SMS Lead',
+  },
 }
 
 /**
