@@ -5854,7 +5854,7 @@ bot?.on('message', async msg => {
       await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'voicemail', { ...vm, forwardToTelegram: newState })
       num.features.voicemail = { ...vm, forwardToTelegram: newState }
       await saveInfo('cpActiveNumber', num)
-      send(chatId, `📲 Voicemail to Telegram is now ${newState ? '✅ ON' : '❌ OFF'}`)
+      send(chatId, phoneConfig.getMsg(info?.userLanguage).vmTelegramToggled(newState))
     }
     // Ring time
     if (message.startsWith('⏰ Ring Time')) {
@@ -5867,7 +5867,7 @@ bot?.on('message', async msg => {
       await updatePhoneNumberFeature(phoneNumbersOf, chatId, num.phoneNumber, 'voicemail', { ...vm, ringTimeout: seconds })
       num.features.voicemail = { ...vm, ringTimeout: seconds }
       await saveInfo('cpActiveNumber', num)
-      send(chatId, `✅ Ring time updated to ${seconds} seconds.`)
+      send(chatId, phoneConfig.getMsg(info?.userLanguage).ringTimeUpdated(seconds))
       set(state, chatId, 'action', a.cpManageNumber)
       return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
@@ -6197,7 +6197,7 @@ bot?.on('message', async msg => {
       await updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'autoRenew', newState)
       num.autoRenew = newState
       await saveInfo('cpActiveNumber', num)
-      send(chatId, `🔁 Auto-Renew is now ${newState ? '✅ ON' : '❌ OFF'}`)
+      send(chatId, phoneConfig.getMsg(info?.userLanguage).autoRenewToggled(newState))
       const plan = phoneConfig.plans[num.plan] || { name: num.plan, price: num.planPrice }
       return send(chatId, phoneConfig.txt.renewMenu(num.phoneNumber, plan.name, num.planPrice, num.expiresAt, newState), k.of([
         ['🔄 Renew Now ($' + num.planPrice + ')'],
