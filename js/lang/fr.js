@@ -174,24 +174,17 @@ const t = {
   back: 'Retour',
   cancel: 'Annuler',
   skip: 'Ignorer',
-  becomeReseller: `Bonjour,
+  becomeReseller: (() => {
+    const services = ['Raccourcissement URL', 'Enregistrement de domaines']
+    if (process.env.PHONE_SERVICE_ON === 'true') services.push('Cloud Phone')
+    if (HIDE_SMS_APP !== 'true') services.push('BulkSMS')
+    if (process.env.OFFSHORE_HOSTING_ON !== 'false') services.push('Hébergement Offshore')
+    return `<b>Devenez revendeur ${CHAT_BOT_BRAND}</b>
 
-Je vous contacte pour vous offrir une opportunité fantastique de devenir revendeur du puissant logiciel de marketing par SMS et d'hébergement de ${CHAT_BOT_BRAND}Bot.
+Revendez notre suite complète — ${services.join(', ')} — sous votre marque.
 
-Détails clés :
-
-Partage des bénéfices : Gagnez une commission compétitive de 65/35 % sur chaque vente.
-
-Frais d'installation : Contactez le support pour plus de détails.
-
-Intéressé ? Appuyez sur 💬 Obtenir de l'aide pour en savoir plus sur ce partenariat lucratif.
-
-Dans l'attente d'une éventuelle collaboration avec vous !
-
-Cordialement,
-
-L'équipe ${CHAT_BOT_BRAND}
-`,
+<b>65/35%</b> de partage des bénéfices. Appuyez sur 💬 <b>Obtenir de l'aide</b> pour commencer.`
+  })(),
   resetLoginAdmit: `${CHAT_BOT_BRAND} SMS: You have been successfully logged out of your previous device.Please login now`,
   resetLoginDeny: 'Ok sure. No further action required.',
   resetLogin: `${CHAT_BOT_BRAND}SMS: Are you trying to log out of your previous device?`,
@@ -751,7 +744,7 @@ const userKeyboard = {
       [user.cloudPhone],
       [user.phoneNumberLeads],
       HIDE_SMS_APP === 'true' ? [user.domainNames] : [user.freeTrialAvailable, user.domainNames],
-      [user.wallet, user.viewPlan, user.buyPlan],
+      [user.wallet, user.viewPlan],
       HIDE_BECOME_RESELLER === 'true'
         ? [user.changeSetting, user.getSupport, user.joinChannel]
         : [user.changeSetting, user.becomeReseller, user.getSupport],
