@@ -487,7 +487,7 @@ Are you sure?`,
 
   // Admin notifications
   adminPurchase: (user, number, plan, price, method) => `🎉 <b>New Phone Number Purchase!</b>\nUser ${user} bought ${formatPhone(number)}\nPlan: ${plan} ($${price}/mo)\nPayment: ${method}`,
-  adminRelease: (user, number, plan) => `📤 <b>Number Released</b>\nUser ${user} released ${formatPhone(number)}\nWas: ${plan} Plan`,
+  adminRelease: (user, number, plan) => `🗑️ <b>Number Deleted</b>\nUser ${user} deleted ${formatPhone(number)}\nWas: ${plan} Plan`,
 
   // Expiry reminders
   expiryReminder: (number, days, plan, price, balance) => `🔔 <b>Renewal Reminder</b>
