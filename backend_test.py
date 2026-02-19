@@ -122,43 +122,48 @@ class NomadlyBotTester:
             with open("/app/js/_index.js", "r") as f:
                 content = f.read()
             
-            # Check for IVR Set Greeting handler with k.of([]) keyboard clearing
+            # Check for IVR Set Greeting handler with k.of([]) keyboard clearing and button guards
             ivr_greeting_checks = [
-                "cpIvrGreeting",
-                "k.of([])",
-                "action === 'cpIvrGreeting'"
+                ("cpIvrGreeting", "IVR greeting action constant"),
+                ("action === a.cpIvrGreeting", "IVR greeting handler"),
+                ("k.of([]))", "Keyboard clearing in IVR greeting"),
+                ("Reject IVR button text", "Button text guard in IVR greeting"),
+                ("ivrButtons.includes(message)", "Button text validation")
             ]
             
-            for check in ivr_greeting_checks:
+            for check, desc in ivr_greeting_checks:
                 if check not in content:
-                    self.log(f"Missing IVR greeting handler code: {check}")
+                    self.log(f"Missing {desc}: {check}")
                     return False
             
-            # Check for IVR Add Menu Option handler with k.of([]) keyboard clearing
+            # Check for IVR Add Menu Option handler with k.of([]) keyboard clearing and button guards
             ivr_add_option_checks = [
-                "cpIvrAddOption", 
-                "k.of([])",
-                "action === 'cpIvrAddOption'"
+                ("cpIvrAddOption", "IVR add option action constant"), 
+                ("action === a.cpIvrAddOption", "IVR add option handler"),
+                ("k.of([]))", "Keyboard clearing in IVR add option"),
+                ("Reject IVR button text as input", "Button text guard in IVR add option")
             ]
             
-            for check in ivr_add_option_checks:
+            for check, desc in ivr_add_option_checks:
                 if check not in content:
-                    self.log(f"Missing IVR add option handler code: {check}")
+                    self.log(f"Missing {desc}: {check}")
                     return False
             
-            # Check for Voicemail audio upload handler with k.of([]) keyboard clearing  
+            # Check for Voicemail audio upload handler with k.of([]) keyboard clearing and button guards
             vm_audio_checks = [
-                "cpVmAudioUpload",
-                "k.of([])",
-                "action === 'cpVmAudioUpload'"
+                ("cpVmAudioUpload", "VM audio upload action constant"),
+                ("action === a.cpVmAudioUpload", "VM audio upload handler"),
+                ("k.of([]))", "Keyboard clearing in VM audio upload"),
+                ("Reject voicemail", "Button text guard in VM audio"),
+                ("vmButtons.includes(message)", "VM button text validation")
             ]
             
-            for check in vm_audio_checks:
+            for check, desc in vm_audio_checks:
                 if check not in content:
-                    self.log(f"Missing VM audio handler code: {check}")
+                    self.log(f"Missing {desc}: {check}")
                     return False
                     
-            self.log("IVR and Voicemail handler structure verified")
+            self.log("IVR and Voicemail handler structure verified - all handlers have k.of([]) and button guards")
             return True
             
         except Exception as e:
