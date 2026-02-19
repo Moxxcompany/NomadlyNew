@@ -6087,6 +6087,12 @@ bot?.on('message', async msg => {
         [pc.ivrGreeting], [pc.ivrAddOption], [pc.ivrRemoveOption], [pc.ivrViewOptions], [pc.ivrAnalytics], [pc.disableIvr]
       ]))
     }
+    if (message === t.cancel) return goto.submenu5()
+    // Reject IVR button text as input
+    const ivrButtons = [pc.ivrGreeting, pc.ivrAddOption, pc.ivrRemoveOption, pc.ivrViewOptions, pc.ivrAnalytics, pc.disableIvr, pc.enableIvr]
+    if (ivrButtons.includes(message)) {
+      return send(chatId, phoneConfig.txt.ivrAddOption, k.of([]))
+    }
     // Parse: KEY ACTION DESTINATION
     const parts = message.trim().split(/\s+/)
     if (parts.length < 2) return send(chatId, phoneConfig.txt.ivrInvalidFormat)
