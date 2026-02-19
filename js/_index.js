@@ -6583,13 +6583,13 @@ bot?.on('message', async msg => {
   // ═══════════════════════════════════════════════════
   if (action === a.customLeadRequestName) {
     if (message === (t.backButton || '⬅️ Back')) return goto.targetSelectTarget()
-    if (message.length < 2 || message.length > 100) return send(chatId, '⚠️ Please enter a valid institution name (2-100 characters).')
+    if (message.length < 2 || message.length > 100) return send(chatId, t.validInstitutionName)
     await saveInfo('customLeadTarget', message)
     return goto.customLeadRequestCity()
   }
   if (action === a.customLeadRequestCity) {
     if (message === (t.backButton || '⬅️ Back')) return goto.customLeadRequestName()
-    if (message.length < 2 || message.length > 100) return send(chatId, '⚠️ Please enter a valid city name.')
+    if (message.length < 2 || message.length > 100) return send(chatId, t.validCityName)
     await saveInfo('customLeadCity', message)
     return goto.customLeadRequestDetails()
   }
