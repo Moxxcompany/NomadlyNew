@@ -508,7 +508,11 @@ ${
   redIssueUrlCuttly: `लिंक शॉर्टनिंग विफल हुई। कृपया पुनः प्रयास करें या 💬 सहायता प्राप्त करें बटन दबाएं।`,
   freeLinksExhausted: `आपके सभी ${FREE_LINKS} ट्रायल लिंक समाप्त हो गए हैं! सब्सक्राइब करें — असीमित लिंक + मुफ्त डोमेन + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+ वैलिडेशन।`,
   subscriptionLeadsHint: `💡 सब्सक्राइबर्स को प्रत्येक प्लान पर ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+ मुफ्त वैलिडेशन मिलते हैं। $${PRICE_DAILY}/दिन से शुरू।`,
-  linksRemaining: (count, total) => `आपके पास ${count}/${total || FREE_LINKS} Shortit ट्रायल लिंक शेष हैं।`,
+  linksRemaining: (count, total) => {
+    const base = `आपके पास ${count}/${total || FREE_LINKS} Shortit ट्रायल लिंक शेष हैं।`
+    if (count <= 2) return `${base}\n\n⚡ <b>सिर्फ ${count} लिंक बचे!</b> सब्सक्राइब करें — असीमित लिंक + मुफ्त डोमेन + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+ वैलिडेशन। $${PRICE_DAILY}/दिन से।`
+    return base
+  },
   redNewPrice: (price, newPrice) =>
     `कीमत अब $${view(newPrice)} <s>($${price})</s> है। कृपया भुगतान पद्धति का चयन करें।`,
   customLink: 'कस्टम लिंक',

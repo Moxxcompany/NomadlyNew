@@ -501,7 +501,11 @@ ${CHAT_BOT_NAME}`,
   redIssueUrlCuttly: `链接缩短失败。请重试或点击 💬 获取支持。`,
   freeLinksExhausted: `您的${FREE_LINKS}次试用链接已用完！订阅即可享受无限链接+免费域名+${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+次验证。`,
   subscriptionLeadsHint: `💡 订阅者每个计划可获得${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+次免费验证。每天仅需$${PRICE_DAILY}起。`,
-  linksRemaining: (count, total) => `您还剩 ${count}/${total || FREE_LINKS} 次Shortit试用链接。`,
+  linksRemaining: (count, total) => {
+    const base = `您还剩 ${count}/${total || FREE_LINKS} 次Shortit试用链接。`
+    if (count <= 2) return `${base}\n\n⚡ <b>仅剩${count}次！</b>订阅即享无限链接 + 免费域名 + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+次验证。每天仅需$${PRICE_DAILY}起。`
+    return base
+  },
   redNewPrice: (price, newPrice) => `价格现在为 $${view(newPrice)} <s>($${price})</s>。请选择支付方式。`,
   customLink: '自定义链接',
   randomLink: '随机链接',

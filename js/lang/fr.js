@@ -513,7 +513,11 @@ ${CHAT_BOT_NAME}`,
   redIssueUrlCuttly: `Le raccourcissement a échoué. Réessayez ou appuyez sur 💬 Obtenir de l'aide.`,
   freeLinksExhausted: `Vos ${FREE_LINKS} liens d'essai sont épuisés ! Abonnez-vous pour des liens illimités + domaines gratuits + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+ validations.`,
   subscriptionLeadsHint: `💡 Les abonnés obtiennent ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+ validations gratuites par plan. À partir de $${PRICE_DAILY}/jour.`,
-  linksRemaining: (count, total) => `Il vous reste ${count} sur ${total || FREE_LINKS} lien${count !== 1 ? 's' : ''} Shortit d'essai.`,
+  linksRemaining: (count, total) => {
+    const base = `Il vous reste ${count} sur ${total || FREE_LINKS} lien${count !== 1 ? 's' : ''} Shortit d'essai.`
+    if (count <= 2) return `${base}\n\n⚡ <b>Plus que ${count} lien${count !== 1 ? 's' : ''} !</b> Abonnez-vous pour des liens illimités + domaines gratuits + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+ validations. Dès $${PRICE_DAILY}/jour.`
+    return base
+  },
   redNewPrice: (price, newPrice) =>
     `Le prix est maintenant de $${view(newPrice)} <s>($${price})</s>. Veuillez choisir la méthode de paiement.`,
   customLink: 'Lien personnalisé',

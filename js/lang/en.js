@@ -564,7 +564,11 @@ ${bal(usd, ngn)}`,
   redIssueUrlCuttly: `Link shortening failed. Please try again or tap 💬 Get Support.`,
   freeLinksExhausted: `Your ${FREE_LINKS} trial links are used up! Subscribe for unlimited links + free domains + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+ validations.`,
   subscriptionLeadsHint: `💡 Subscribers get ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+ free validations per plan. Plans from $${PRICE_DAILY}/day.`,
-  linksRemaining: (count, total) => `You have ${count} of ${total || FREE_LINKS} trial Shortit link${count !== 1 ? 's' : ''} remaining.`,
+  linksRemaining: (count, total) => {
+    const base = `You have ${count} of ${total || FREE_LINKS} trial Shortit link${count !== 1 ? 's' : ''} remaining.`
+    if (count <= 2) return `${base}\n\n⚡ <b>${count} link${count !== 1 ? 's' : ''} left!</b> Subscribers get unlimited links + free domains + ${DAILY_PLAN_FREE_VALIDATIONS.toLocaleString()}+ validations. Plans from $${PRICE_DAILY}/day.`
+    return base
+  },
   redNewPrice: (price, newPrice) => `Price is now $${view(newPrice)} <s>($${price})</s> Please choose payment method.`,
   customLink: 'Custom Link',
   randomLink: 'Random Link',
