@@ -441,17 +441,19 @@ Current Plan: ${plan} — $${price}/mo
 Renewal Date: ${shortDate(expiry)}
 Auto-Renew: ${autoRenewOn ? '✅ ON' : '❌ OFF'}`,
 
-  // Release
-  releaseConfirm: (number) => `⚠️ Release <b>${formatPhone(number)}</b>?
+  // Delete
+  releaseConfirm: (number) => `🗑️ <b>Delete ${formatPhone(number)}?</b>
 
-This action is <b>permanent and irreversible</b>. It will:
-• Cancel your monthly plan immediately
-• Permanently delete the number from our system
-• Remove all forwarding, voicemail & SIP settings
-• The number cannot be recovered after release
-• No refund for remaining days`,
-  releaseConfirmDigits: (digits) => `Are you absolutely sure?\nType the last 4 digits of the number to confirm: <b>${digits}</b>`,
-  released: (number) => `✅ Number ${formatPhone(number)} has been released.\n\nYour plan has been cancelled and all settings removed.`,
+⚠️ <b>This cannot be undone.</b>
+
+• Number permanently deleted
+• Monthly plan cancelled immediately
+• All settings (forwarding, voicemail, SIP) removed
+• No refund for remaining days
+
+Are you sure?`,
+  releaseConfirmDigits: (digits) => `⚠️ <b>Final confirmation</b>\n\nType the last 4 digits of the number to permanently delete it: <b>${digits}</b>`,
+  released: (number) => `✅ ${formatPhone(number)} has been permanently deleted.\n\nPlan cancelled. All settings removed.`,
 
   // Real-time events
   inboundSms: (to, from, body, time) => `📩 <b>SMS Received</b>
