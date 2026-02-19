@@ -5514,7 +5514,7 @@ bot?.on('message', async msg => {
 
     // SIP Credentials — Pro/Business only
     if (message === pc.sipCredentials) {
-      if (!phoneConfig.canAccessFeature(num.plan, 'sipCredentials')) {
+      if (num.sipDisabled || !phoneConfig.canAccessFeature(num.plan, 'sipCredentials')) {
         return send(chatId, phoneConfig.upgradeMessage('sipCredentials', num.plan), k.of(buildManageMenu(num)))
       }
       set(state, chatId, 'action', a.cpSipCredentials)
