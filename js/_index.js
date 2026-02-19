@@ -5362,8 +5362,9 @@ bot?.on('message', async msg => {
     rows.push([pc.callForwarding, pc.smsSettings])
     rows.push([pc.smsInbox])
     if (phoneConfig.canAccessFeature(plan, 'voicemail')) rows.push([pc.voicemail])
-    // Advanced
-    if (phoneConfig.canAccessFeature(plan, 'sipCredentials')) rows.push([pc.sipCredentials])
+    // SIP — always visible so users can find credentials (shows upgrade prompt if Starter)
+    rows.push([pc.sipCredentials])
+    // Advanced (plan-gated)
     if (phoneConfig.canAccessFeature(plan, 'callRecording')) rows.push([pc.callRecording])
     if (phoneConfig.canAccessFeature(plan, 'ivr')) rows.push([pc.ivrAutoAttendant])
     // Logs & Billing
