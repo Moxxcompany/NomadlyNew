@@ -6030,11 +6030,17 @@ bot?.on('message', async msg => {
     }
     if (message === pc.ivrGreeting) {
       set(state, chatId, 'action', a.cpIvrGreeting)
-      return send(chatId, phoneConfig.txt.ivrSetGreeting, k.of([]))
+      return send(chatId, `🎤 <b>Set IVR Greeting</b>\n\nChoose how to create your greeting:`, k.of([
+        ['📝 Type Text (AI Voice)'],
+        ['🎙️ Upload Audio'],
+      ]))
     }
     if (message === pc.ivrAddOption) {
-      set(state, chatId, 'action', a.cpIvrAddOption)
-      return send(chatId, phoneConfig.txt.ivrAddOption, k.of([]))
+      set(state, chatId, 'action', a.cpIvrOptionKey)
+      await saveInfo('cpIvrDraft', {})
+      const ivrConf = num.features?.ivr || {}
+      const usedKeys = Object.keys(ivrConf.options || {}).join(', ') || 'none'
+      return send(chatId, `➕ <b>Add Menu Option</b>\n\nUsed keys: ${usedKeys}\n\nEnter the key number (0-9) for this option:`, k.of([['0','1','2','3','4','5','6','7','8','9']]))
     }
     if (message === pc.ivrRemoveOption) {
       set(state, chatId, 'action', a.cpIvrRemoveOption)
