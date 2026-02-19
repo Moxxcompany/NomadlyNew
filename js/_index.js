@@ -5528,8 +5528,19 @@ bot?.on('message', async msg => {
     if (message === '📲 Change Forward-To Number') mode = num.features?.callForwarding?.mode || 'always'
     if (mode) {
       await saveInfo('cpForwardMode', mode)
+      // Check wallet balance before proceeding
+      let walletBal = 0
+      try {
+        const { usdBal } = await getBalance(walletOf, chatId)
+        walletBal = usdBal
+      } catch (e) {}
+      if (walletBal < phoneConfig.CALL_FORWARDING_RATE_MIN) {
+        send(chatId, phoneConfig.txt.forwardingInsufficientBalance(walletBal), { parse_mode: 'HTML' })
+        set(state, chatId, 'action', a.cpManageNumber)
+        return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
+      }
       set(state, chatId, 'action', a.cpEnterForwardNumber)
-      return send(chatId, phoneConfig.txt.enterForwardNumber)
+      return send(chatId, phoneConfig.txt.enterForwardNumber(walletBal), { parse_mode: 'HTML' })
     }
     return send(chatId, 'Select a forwarding mode.')
   }
@@ -5540,10 +5551,12 @@ bot?.on('message', async msg => {
     if (message === t.back || message === pc.back) {
       set(state, chatId, 'action', a.cpCallForwarding)
       const fwd = num.features?.callForwarding || {}
+      let walletBal = 0
+      try { const { usdBal } = await getBalance(walletOf, chatId); walletBal = usdBal } catch (e) {}
       const btns = fwd.enabled
         ? [[pc.alwaysForward], [pc.forwardBusy], [pc.forwardNoAnswer], ['📲 Change Forward-To Number'], [pc.disableForwarding]]
         : [[pc.alwaysForward], [pc.forwardBusy], [pc.forwardNoAnswer]]
-      return send(chatId, phoneConfig.txt.forwardingStatus(num.phoneNumber, fwd), k.of(btns))
+      return send(chatId, phoneConfig.txt.forwardingStatus(num.phoneNumber, fwd, walletBal), k.of(btns))
     }
     const forwardTo = message.replace(/[^+\d]/g, '')
     if (!forwardTo || forwardTo.length < 7) return send(chatId, 'Enter a valid phone number with country code (e.g. +14155551234).')
@@ -5551,6 +5564,15 @@ bot?.on('message', async msg => {
     // ── Block premium-rate prefixes ──
     if (phoneConfig.isBlockedPrefix(forwardTo)) {
       return send(chatId, phoneConfig.txt.forwardingBlocked(forwardTo), { parse_mode: 'HTML' })
+    }
+
+    // ── Re-check wallet balance ──
+    let walletBal = 0
+    try { const { usdBal } = await getBalance(walletOf, chatId); walletBal = usdBal } catch (e) {}
+    if (walletBal < phoneConfig.CALL_FORWARDING_RATE_MIN) {
+      send(chatId, phoneConfig.txt.forwardingInsufficientBalance(walletBal), { parse_mode: 'HTML' })
+      set(state, chatId, 'action', a.cpManageNumber)
+      return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
     }
 
     // ── Validate destination is routable via Telnyx ──
@@ -5565,7 +5587,7 @@ bot?.on('message', async msg => {
     num.features.callForwarding = { enabled: true, mode, forwardTo, ringTimeout: 25 }
     await saveInfo('cpActiveNumber', num)
     const modeLabel = mode === 'always' ? 'Always Forward' : mode === 'busy' ? 'Forward When Busy' : 'Forward If No Answer'
-    send(chatId, phoneConfig.txt.forwardingUpdated(num.phoneNumber, forwardTo, modeLabel), { parse_mode: 'HTML' })
+    send(chatId, phoneConfig.txt.forwardingUpdated(num.phoneNumber, forwardTo, modeLabel, walletBal), { parse_mode: 'HTML' })
     set(state, chatId, 'action', a.cpManageNumber)
     return send(chatId, phoneConfig.txt.manageNumber(num), k.of(buildManageMenu(num)))
   }
