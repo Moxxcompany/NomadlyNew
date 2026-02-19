@@ -81,7 +81,7 @@ const user = {
   vpsPlans: '购买防弹 VPS🛡️ - 按小时/按月',
   buyPlan: '🔔 订阅这里',
   domainNames: '🌐 注册域名 - ❌ DMCA',
-  viewPlan: '🔔 我的计划',
+  viewPlan: '📋 我的订阅',
   becomeReseller: '💼 成为代理商',
   getSupport: '💬 获取支持',
   freeTrialAvailable: '📧🆓 BulkSMS - 免费试用',

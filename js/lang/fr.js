@@ -82,7 +82,7 @@ const user = {
   vpsPlans: 'Acheter un VPS Bulletproof🛡️ - Horaire/Mensuel',
   buyPlan: '🔔 Souscrire ici',
   domainNames: '🌐 Enregistrer des noms de domaine - ❌ DMCA',
-  viewPlan: '🔔 Mon plan',
+  viewPlan: '📋 Mes Abonnements',
   becomeReseller: '💼 Devenir revendeur',
   getSupport: "💬 Obtenir de l'aide",
   freeTrialAvailable: '📧🆓 SMS en masse - Essai gratuit',
