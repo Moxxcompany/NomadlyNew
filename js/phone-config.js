@@ -219,14 +219,13 @@ planByButton[btn.businessPlan] = 'business'
 
 // ── Text messages ──
 const txt = {
-  hubWelcome: `📞 <b>Cloud Phone Service</b>
+  hubWelcome: `📞 <b>CloudPhone</b> <i>by Speechcue</i>
 
-Buy virtual phone numbers, receive inbound SMS directly in Telegram, configure call forwarding, voicemail, and connect via SIP.
+Get virtual numbers, receive SMS in Telegram, forward calls, set up voicemail & connect via SIP.
 
-📩 SMS: <b>Inbound only</b> — receive SMS, not send.
-📞 Minutes: Inbound calls count toward your plan minutes.
-📲 Forwarding: <b>$${CALL_FORWARDING_RATE_MIN}/min</b> from wallet for all forwarded calls.
-💰 Overage: Beyond plan limits, additional usage is charged at <b>$${OVERAGE_RATE_MIN}/min</b> and <b>$${OVERAGE_RATE_SMS}/SMS</b> from wallet balance. Service pauses if wallet is empty.
+📩 SMS: Inbound only · 📞 Calls: Plan minutes
+📲 Forwarding: <b>$${CALL_FORWARDING_RATE_MIN}/min</b> from wallet
+💰 Overage: $${OVERAGE_RATE_MIN}/min · $${OVERAGE_RATE_SMS}/SMS from wallet
 
 Select an option:`,
 
