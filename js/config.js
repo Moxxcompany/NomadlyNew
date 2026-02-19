@@ -79,7 +79,7 @@ const user = {
   phoneNumberLeads: '🎯 Targeted Leads & Validation',
   wallet: '👛 My Wallet',
   urlShortenerMain: `🔗✂️ URL Shortener - ${FREE_LINKS} Trial Links`,
-  buyPlan: '🔔 Subscribe Here',
+  buyPlan: '⚡ Upgrade Plan',
   domainNames: '🌐 Domain Names',
   viewPlan: '🔔 My Plan',
   becomeReseller: '💼 Become A Reseller',
