@@ -61,7 +61,7 @@ class NomadlyBackendTester:
             if response.status_code == 200:
                 data = response.json()
                 print(f"API Health response: {data}")
-                return 'status' in data and data.get('db', '').lower() in ['connected', 'running']
+                return 'status' in data and (data.get('database') == 'connected' or data.get('db', '').lower() in ['connected', 'running'])
             return False
         except Exception as e:
             print(f"API health check error: {e}")
