@@ -5553,7 +5553,7 @@ bot?.on('message', async msg => {
       const logs = await phoneLogs.find({ phoneNumber: num.phoneNumber.replace(/[^+\d]/g, '') }).sort({ timestamp: -1 }).limit(15).toArray()
       let text = `📊 <b>Recent Activity</b> — ${phoneConfig.formatPhone(num.phoneNumber)}\n\n`
       if (!logs.length) {
-        text += 'No activity yet.'
+        text += phoneConfig.getMsg(info?.userLanguage).noActivity
       } else {
         logs.forEach(l => {
           const time = phoneConfig.shortDate(l.timestamp)
