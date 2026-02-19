@@ -146,19 +146,14 @@ async function downloadTelegramAudio(bot, fileId, prefix = 'upload') {
  * Get voice options formatted for Telegram keyboard
  */
 function getVoiceButtons(langCode = 'en') {
-  if (langCode && langCode !== 'en') {
-    return Object.entries(GENERIC_VOICES).map(([key, v]) => `${v.name} — ${v.desc}`)
-  }
-  return Object.entries(VOICES).map(([key, v]) => `${v.name} — ${v.desc}`)
+  // Show all voices — ElevenLabs multilingual v2 supports all languages with all voices
+  // Group by gender for cleaner display
+  const females = Object.entries(VOICES).filter(([, v]) => v.gender === 'F')
+  const males = Object.entries(VOICES).filter(([, v]) => v.gender === 'M')
+  return [...females, ...males].map(([key, v]) => `${v.name} — ${v.desc}`)
 }
 
 function getVoiceKeyByButton(buttonText, langCode = 'en') {
-  if (langCode && langCode !== 'en') {
-    for (const [key, v] of Object.entries(GENERIC_VOICES)) {
-      if (buttonText.startsWith(v.name)) return key
-    }
-    return 'female'
-  }
   for (const [key, v] of Object.entries(VOICES)) {
     if (buttonText.startsWith(v.name)) return key
   }
