@@ -5380,9 +5380,27 @@ bot?.on('message', async msg => {
       set(chatIdOfPayment, ref, { chatId, price, cpData: { selectedNumber: info?.cpSelectedNumber, planKey: info?.cpPlanKey } })
       const url = await generateBlockBeeAddress(price, coin, `${SELF_URL}/crypto-pay-phone?ref=${ref}`, { chatId, coin })
       if (!url) return send(chatId, t.cryptoPayError)
-      send(chatId, t.cryptoPayWaiting(url, coin.toUpperCase()), { parse_mode: 'HTML' })
+      await sendQrCode(bot, chatId, url, info?.userLanguage ?? 'en')
+      set(state, chatId, 'action', 'none')
+      const priceCrypto = await convert(price, 'usd', coin)
+      return send(chatId, t.showDepositCryptoInfoDomain(priceCrypto, ticker, url, info?.cpSelectedNumber || 'Cloud Phone'), trans('o'))
+    } else {
+      const coin = tickerOfDyno[ticker]
+      const redirect_url = `${SELF_URL}/dynopay/crypto-pay-phone`
+      const meta_data = {
+        "product_name": dynopayActions.payPhone,
+        "refId": ref
+      }
+      const { qr_code, address } = await getDynopayCryptoAddress(price, coin, redirect_url, meta_data)
+      if (!address) return send(chatId, t.errorFetchingCryptoAddress, trans('o'))
+      set(chatIdOfDynopayPayment, ref, { chatId, price, cpData: { selectedNumber: info?.cpSelectedNumber, planKey: info?.cpPlanKey }, action: dynopayActions.payPhone, address })
+      saveInfo('ref', ref)
+      log({ ref })
+      await generateQr(bot, chatId, qr_code, info?.userLanguage ?? 'en')
+      set(state, chatId, 'action', 'none')
+      const priceCrypto = await convert(price, 'usd', tickerOf[ticker])
+      return send(chatId, t.showDepositCryptoInfoDomain(priceCrypto, ticker, address, info?.cpSelectedNumber || 'Cloud Phone'), trans('o'))
     }
-    return
   }
 
   // Helper: Build feature-gated manage menu keyboard
