@@ -191,6 +191,8 @@ setInterval(cleanOldAudio, 6 * 60 * 60 * 1000)
 
 const TEMPLATE_CATEGORIES = [
   { key: 'financial', name: 'Financial Services', icon: '🏦' },
+  { key: 'support', name: 'Customer Support', icon: '🎧' },
+  { key: 'voicemail', name: 'Voicemail Greetings', icon: '📞' },
 ]
 
 const GREETING_TEMPLATES = {
@@ -242,6 +244,70 @@ const GREETING_TEMPLATES = {
       name: 'Investment Services',
       icon: '📈',
       text: 'Welcome to Investment Services. For portfolio inquiries, press 1. For trading and brokerage, press 2. For retirement and IRA accounts, press 3. For wealth management, press 4. To speak with a financial advisor, press 0.',
+    },
+  ],
+  support: [
+    {
+      key: 'sup_general',
+      name: 'General Support',
+      icon: '🎧',
+      text: 'Thank you for calling [Company Name] Customer Support. For technical assistance, press 1. For billing inquiries, press 2. For account changes, press 3. For general information, press 4. To speak with an agent, press 0.',
+    },
+    {
+      key: 'sup_tech',
+      name: 'Technical Support',
+      icon: '🔧',
+      text: 'Welcome to Technical Support. For internet and connectivity issues, press 1. For software and application help, press 2. For hardware troubleshooting, press 3. For service outage updates, press 4. To speak with a technician, press 0.',
+    },
+    {
+      key: 'sup_billing',
+      name: 'Billing Department',
+      icon: '💳',
+      text: 'You have reached the Billing Department. For payment inquiries, press 1. To make a payment, press 2. To dispute a charge, press 3. For refund requests, press 4. To speak with a billing specialist, press 0.',
+    },
+    {
+      key: 'sup_callback',
+      name: 'Callback Request',
+      icon: '📲',
+      text: 'Thank you for calling [Company Name]. We are experiencing higher than normal call volume. Your call is important to us. To request a callback, press 1. To continue holding, press 2. To leave a voicemail, press 3. Our estimated wait time is approximately 10 minutes.',
+    },
+  ],
+  voicemail: [
+    {
+      key: 'vm_professional',
+      name: 'Professional',
+      icon: '💼',
+      text: 'You have reached [Your Name] at [Company Name]. I am unable to take your call right now. Please leave your name, number, and a brief message, and I will return your call as soon as possible. Thank you.',
+    },
+    {
+      key: 'vm_afterhours',
+      name: 'After Hours',
+      icon: '🌙',
+      text: 'Thank you for calling [Company Name]. Our office is currently closed. Our regular business hours are Monday through Friday, 9 AM to 5 PM. Please leave a message and we will return your call on the next business day.',
+    },
+    {
+      key: 'vm_outofoffice',
+      name: 'Out of Office',
+      icon: '✈️',
+      text: 'Hi, you have reached [Your Name]. I am currently out of the office and will return on [Date]. For immediate assistance, please contact [Colleague Name] at [Number]. Otherwise, leave a message and I will get back to you upon my return.',
+    },
+    {
+      key: 'vm_holiday',
+      name: 'Holiday Greeting',
+      icon: '🎄',
+      text: 'Thank you for calling [Company Name]. We are currently closed for the holidays. We will reopen on [Date]. For emergencies, please email [Email]. Wishing you a wonderful holiday season. Please leave a message after the tone.',
+    },
+    {
+      key: 'vm_personal',
+      name: 'Personal Short',
+      icon: '📱',
+      text: 'Hi, this is [Your Name]. I cannot take your call right now. Please leave a message and I will call you back. Thanks.',
+    },
+    {
+      key: 'vm_sales',
+      name: 'Sales Team',
+      icon: '🤝',
+      text: 'Thank you for calling the [Company Name] Sales Team. We are sorry we missed your call. Please leave your name, number, and what you are interested in, and a sales representative will follow up with you shortly.',
     },
   ],
 }

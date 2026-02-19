@@ -861,7 +861,8 @@ const dynopayActions = {
   payHosting: 'payHosting',
   payDomain: 'payDomain',
   payPlan: 'payPlan',
-  payVps: 'payVps'
+  payVps: 'payVps',
+  payPhone: 'payPhone'
 }
 
 module.exports = {
