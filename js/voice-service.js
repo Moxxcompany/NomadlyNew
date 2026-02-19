@@ -582,7 +582,7 @@ async function handleCallHangup(payload) {
   // Notify based on phase
   if (session.phase === 'forwarding' || session.phase === 'ivr_forward') {
     const forwardTo = num.features?.callForwarding?.forwardTo || 'unknown'
-    const msg = `📞 <b>Call Forwarded</b>\n\n📞 To: ${formatPhone(to)}\n👤 From: ${formatPhone(from)}\n📲 Forwarded: ${formatPhone(forwardTo)}\n⏱️ Duration: ${formatDuration(duration)} (${minutesBilled} min billed)\n🕐 ${time}`
+    const msg = `📞 <b>Call Forwarded</b>\n\n📞 To: ${formatPhone(to)}\n👤 From: ${formatPhone(from)}\n📲 Forwarded: ${formatPhone(forwardTo)}\n⏱️ Duration: ${formatDuration(duration)} (${minutesBilled} min billed)\n💰 Rate: $${CALL_FORWARDING_RATE_MIN}/min\n🕐 ${time}`
     _bot.sendMessage(chatId, msg, { parse_mode: 'HTML' }).catch(() => {})
     logEvent(to, from, 'forwarded', duration)
   } else if (session.phase === 'missed' || session.phase === 'answering') {
