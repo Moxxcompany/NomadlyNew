@@ -219,22 +219,25 @@ class CloudPhonePlanChangeTester:
             with open('/app/js/_index.js', 'r') as f:
                 index_content = f.read()
             
-            # Check for SIP re-enabling on upgrade
-            sip_reenable_on_upgrade = "sipDisabled.*false" in index_content and "canAccessFeature.*sipCredentials" in index_content
+            # Check for specific SIP re-enabling pattern
+            sip_reenable_pattern = "updatePhoneNumberField(phoneNumbersOf, chatId, num.phoneNumber, 'sipDisabled', false)" in index_content
             
             # Look for upgrade logic that applies immediately (no warning for upgrades)
-            upgrade_immediate = "No feature loss.*upgrade.*apply directly" in index_content or "upgrade.*apply.*directly" in index_content
+            upgrade_immediate_text = "No feature loss (upgrade or same-tier) — apply directly" in index_content
             
-            # Check that upgrade doesn't show warning (only downgrade does)
-            upgrade_no_warning_pattern = re.search(r'upgrade.*same-tier.*apply directly', index_content, re.IGNORECASE)
-            upgrade_immediate_application = upgrade_no_warning_pattern is not None
+            # Check that there's logic to re-enable SIP on upgrade
+            upgrade_reenable_section = re.search(r'No feature loss.*apply directly(.*?)return send.*upgraded', index_content, re.DOTALL)
+            sip_reenabled_on_upgrade = False
+            if upgrade_reenable_section:
+                upgrade_content = upgrade_reenable_section.group(1)
+                sip_reenabled_on_upgrade = "sipDisabled" in upgrade_content and "false" in upgrade_content
             
-            upgrade_re_enables_sip = sip_reenable_on_upgrade and upgrade_immediate_application
+            upgrade_re_enables_sip = sip_reenable_pattern and upgrade_immediate_text and sip_reenabled_on_upgrade
             
             self.log_result(
                 "Plan change flow: upgrade path re-enables SIP (sipDisabled=false) and applies immediately without warning",
                 upgrade_re_enables_sip,
-                f"SIP re-enable: {sip_reenable_on_upgrade}, Immediate application: {upgrade_immediate_application}",
+                f"SIP re-enable pattern: {sip_reenable_pattern}, Immediate text: {upgrade_immediate_text}, SIP re-enabled in upgrade: {sip_reenabled_on_upgrade}",
                 "CRITICAL" if not upgrade_re_enables_sip else "INFO"
             )
             
