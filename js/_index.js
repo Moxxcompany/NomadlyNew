@@ -1194,6 +1194,8 @@ bot?.on('message', async msg => {
     cpSmsInbox: 'cpSmsInbox',
     cpVmGreeting: 'cpVmGreeting',
     cpVmAudioUpload: 'cpVmAudioUpload',
+    cpVmTemplate: 'cpVmTemplate',
+    cpVmTemplateEdit: 'cpVmTemplateEdit',
     cpVmGreetingVoice: 'cpVmGreetingVoice',
     cpVmGreetingPreview: 'cpVmGreetingPreview',
     cpVmTextGreeting: 'cpVmTextGreeting',
